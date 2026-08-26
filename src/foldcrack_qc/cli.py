@@ -67,6 +67,128 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     manifest.add_argument("--json", action="store_true", help="emit a JSON report")
 
+    benchmark_contract = subparsers.add_parser(
+        "validate-benchmark",
+        help="validate a real-data benchmark contract and scientific eligibility",
+    )
+    benchmark_contract.add_argument("contract", type=Path)
+    benchmark_contract.add_argument(
+        "--cohort-records",
+        type=Path,
+        default=None,
+        help="optional realized fit/calibration/test record JSON",
+    )
+    benchmark_contract.add_argument(
+        "--require-report-eligible",
+        action="store_true",
+        help="fail unless real data, labels, methods, and governance gates are ready",
+    )
+    benchmark_contract.add_argument(
+        "--json", action="store_true", help="emit a JSON report"
+    )
+
+    foundation_smoke = subparsers.add_parser(
+        "foundation-smoke",
+        help="run an auditable DINOv2 CPU/MPS and optional LoRA engineering smoke",
+    )
+    foundation_smoke.add_argument(
+        "--revision",
+        required=True,
+        help="exact immutable 40-character Hugging Face commit hash",
+    )
+    foundation_smoke.add_argument("--model-id", default="facebook/dinov2-small")
+    foundation_smoke.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=Path(".cache/foldcrack_qc/huggingface"),
+    )
+    foundation_smoke.add_argument(
+        "--device", choices=("auto", "cpu", "mps"), default="auto"
+    )
+    foundation_smoke.add_argument(
+        "--allow-download",
+        action="store_true",
+        help="explicitly allow an unauthenticated public model download",
+    )
+    foundation_smoke.add_argument("--image-size", type=_positive_int, default=224)
+    foundation_smoke.add_argument("--steady-runs", type=_positive_int, default=3)
+    foundation_smoke.add_argument("--lora-rank", type=int, choices=(4, 8))
+    foundation_smoke.add_argument("--max-device-abs-error", type=float, default=1e-3)
+    foundation_smoke.add_argument(
+        "--min-device-cosine-similarity", type=float, default=0.9999
+    )
+    foundation_smoke.add_argument("--output-json", type=Path, default=None)
+
+    frozen_benchmark = subparsers.add_parser(
+        "frozen-feature-benchmark",
+        help="run the strict real H&E DINOv2 artifact-union anomaly benchmark",
+    )
+    frozen_benchmark.add_argument("--fit-manifest", type=Path, required=True)
+    frozen_benchmark.add_argument(
+        "--calibration-manifest", type=Path, required=True
+    )
+    frozen_benchmark.add_argument(
+        "--locked-test-manifest", type=Path, required=True
+    )
+    frozen_benchmark.add_argument("--revision", required=True)
+    frozen_benchmark.add_argument("--model-id", default="facebook/dinov2-small")
+    frozen_benchmark.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=Path(".cache/foldcrack_qc/huggingface"),
+    )
+    frozen_benchmark.add_argument(
+        "--device", choices=("auto", "cpu", "mps"), default="auto"
+    )
+    frozen_benchmark.add_argument("--allow-download", action="store_true")
+    frozen_benchmark.add_argument(
+        "--encoder-image-size", type=_positive_int, default=224
+    )
+    frozen_benchmark.add_argument(
+        "--patch-size-um",
+        type=float,
+        required=True,
+        help="physical H&E patch height/width in micrometres",
+    )
+    frozen_benchmark.add_argument(
+        "--stride-um",
+        type=float,
+        default=None,
+        help="physical stride in micrometres; defaults to half the patch size",
+    )
+    frozen_benchmark.add_argument("--batch-size", type=_positive_int, default=8)
+    frozen_benchmark.add_argument(
+        "--min-valid-token-fraction", type=float, default=0.5
+    )
+    frozen_benchmark.add_argument("--neighbors", type=_positive_int, default=1)
+    frozen_benchmark.add_argument(
+        "--calibration-quantile", type=float, default=0.995
+    )
+    frozen_benchmark.add_argument(
+        "--max-reference-tokens", type=_positive_int, default=100_000
+    )
+    frozen_benchmark.add_argument(
+        "--max-calibration-pixels", type=_positive_int, default=1_000_000
+    )
+    frozen_benchmark.add_argument(
+        "--max-raster-pixels", type=_positive_int, default=25_000_000
+    )
+    frozen_benchmark.add_argument("--n-resamples", type=_positive_int, default=2_000)
+    frozen_benchmark.add_argument("--bootstrap-seed", type=int, default=0)
+    frozen_benchmark.add_argument(
+        "--minimum-positive-test-samples", type=_positive_int, default=1
+    )
+    frozen_benchmark.add_argument(
+        "--minimum-negative-test-samples", type=_positive_int, default=1
+    )
+    frozen_benchmark.add_argument(
+        "--minimum-test-patient-clusters", type=_positive_int, default=2
+    )
+    frozen_benchmark.add_argument("--output-json", type=Path, required=True)
+    frozen_benchmark.add_argument(
+        "--json", action="store_true", help="also emit the complete report to stdout"
+    )
+
     operational = subparsers.add_parser(
         "operational-eval", help="evaluate PASS/REVIEW/FAIL acceptance records"
     )
@@ -152,7 +274,7 @@ def _clean_generated_output(
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise ValueError("Refusing to remove output with an unreadable marker") from exc
     if not isinstance(payload, Mapping):
-        raise ValueError("Refusing to remove output with an invalid marker")
+        raise TypeError("Refusing to remove output with an invalid marker")
     if (
         payload.get("kind") != "foldcrack_qc_generated_output"
         or payload.get("schema_version") != 1
@@ -206,6 +328,139 @@ def _run_manifest_validation(path: Path, *, strict: bool, emit_json: bool) -> in
     return 0 if report.valid else 2
 
 
+def _run_benchmark_validation(
+    contract_path: Path,
+    *,
+    cohort_records_path: Path | None,
+    require_report_eligible: bool,
+    emit_json: bool,
+) -> int:
+    from .benchmark_contract import validate_benchmark_contract
+
+    cohort_records = (
+        None if cohort_records_path is None else _read_json(cohort_records_path)
+    )
+    report = validate_benchmark_contract(
+        contract_path,
+        cohort_records=cohort_records,
+    )
+    if emit_json:
+        print(json.dumps(report.to_dict(), indent=2))
+    else:
+        print(
+            "Benchmark contract: "
+            f"{report.status}; configuration_valid={report.configuration_valid}; "
+            f"scientific_report_eligible={report.report_eligible}"
+        )
+        print(
+            f"Eligible methods: {', '.join(report.eligible_method_ids) or 'none'}"
+        )
+        for issue in report.issues:
+            print(
+                f"{issue.severity.upper()} [{issue.code}] "
+                f"{issue.path}: {issue.message}"
+            )
+    if not report.configuration_valid:
+        return 2
+    if require_report_eligible and not report.report_eligible:
+        return 3
+    return 0
+
+
+def _run_foundation_smoke(args: argparse.Namespace) -> int:
+    from .foundation_smoke import FoundationSmokeConfig, run_foundation_smoke
+
+    config = FoundationSmokeConfig(
+        revision=args.revision,
+        model_id=args.model_id,
+        cache_dir=args.cache_dir,
+        device=args.device,
+        allow_download=args.allow_download,
+        image_size=args.image_size,
+        steady_runs=args.steady_runs,
+        lora_rank=args.lora_rank,
+        max_device_abs_error=args.max_device_abs_error,
+        min_device_cosine_similarity=args.min_device_cosine_similarity,
+    )
+    report = run_foundation_smoke(config, output_json=args.output_json)
+    print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+    return 0 if report.get("status") == "passed" else 2
+
+
+def _run_frozen_feature_benchmark(args: argparse.Namespace) -> int:
+    from .foundation import DINOv2FeatureExtractor
+    from .foundation_smoke import (
+        FoundationSmokeConfig,
+        dinov2_model_geometry,
+        load_huggingface_model,
+    )
+    from .frozen_benchmark import run_frozen_anomaly_benchmark
+
+    model_config = FoundationSmokeConfig(
+        revision=args.revision,
+        model_id=args.model_id,
+        cache_dir=args.cache_dir,
+        device=args.device,
+        allow_download=args.allow_download,
+        image_size=args.encoder_image_size,
+        steady_runs=1,
+    )
+    loaded = load_huggingface_model(model_config)
+    patch_size, prefix_tokens = dinov2_model_geometry(
+        loaded.model, args.encoder_image_size
+    )
+    encoder = DINOv2FeatureExtractor(
+        loaded.model,
+        device=args.device,
+        image_size=args.encoder_image_size,
+        patch_size=patch_size,
+        prefix_tokens=prefix_tokens,
+        model_input_name="pixel_values",
+    )
+    report = run_frozen_anomaly_benchmark(
+        args.fit_manifest,
+        args.calibration_manifest,
+        args.locked_test_manifest,
+        encoder=encoder,
+        patch_size_um=args.patch_size_um,
+        stride_um=args.stride_um,
+        batch_size=args.batch_size,
+        min_valid_token_fraction=args.min_valid_token_fraction,
+        neighbors=args.neighbors,
+        calibration_quantile=args.calibration_quantile,
+        max_reference_tokens=args.max_reference_tokens,
+        max_calibration_pixels=args.max_calibration_pixels,
+        max_raster_pixels=args.max_raster_pixels,
+        n_resamples=args.n_resamples,
+        bootstrap_seed=args.bootstrap_seed,
+        minimum_positive_test_samples=args.minimum_positive_test_samples,
+        minimum_negative_test_samples=args.minimum_negative_test_samples,
+        minimum_test_patient_clusters=args.minimum_test_patient_clusters,
+    )
+    report["method"]["model_identity"] = {
+        "id": model_config.model_id,
+        "requested_revision": model_config.revision,
+        "resolved_revision": loaded.resolved_revision,
+        "weight_files": [digest.as_dict() for digest in loaded.weight_digests],
+        "trust_remote_code": False,
+        "token_used": False,
+    }
+    report["evidence_boundary"]["model_identity_locked"] = True
+    rendered = json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    args.output_json.parent.mkdir(parents=True, exist_ok=True)
+    args.output_json.write_text(rendered, encoding="utf-8")
+    summary = report["outcome_summary"]
+    if args.json:
+        print(rendered, end="")
+    else:
+        print(
+            "Frozen-feature benchmark complete: "
+            f"{summary['evaluated_count']}/{summary['test_sample_count']} evaluated; "
+            f"{summary['abstained_count']} abstained; report={args.output_json}"
+        )
+    return 0 if int(summary["abstained_count"]) == 0 else 3
+
+
 def _run_operational_evaluation(
     records_path: Path,
     acceptance_path: Path,
@@ -224,7 +479,7 @@ def _run_operational_evaluation(
             "Operational records must be a JSON list or an object containing 'records'"
         )
     if not isinstance(acceptance, Mapping):
-        raise ValueError("Acceptance configuration must be a JSON object")
+        raise TypeError("Acceptance configuration must be a JSON object")
     report = evaluate_operational_decisions(records, acceptance, synthetic=synthetic)
     rendered = json.dumps(report, indent=2) + "\n"
     if output is not None:
@@ -251,6 +506,17 @@ def main(argv: list[str] | None = None) -> int:
         return _run_manifest_validation(
             args.manifest, strict=args.strict, emit_json=args.json
         )
+    if args.command == "validate-benchmark":
+        return _run_benchmark_validation(
+            args.contract,
+            cohort_records_path=args.cohort_records,
+            require_report_eligible=args.require_report_eligible,
+            emit_json=args.json,
+        )
+    if args.command == "foundation-smoke":
+        return _run_foundation_smoke(args)
+    if args.command == "frozen-feature-benchmark":
+        return _run_frozen_feature_benchmark(args)
     if args.command == "operational-eval":
         return _run_operational_evaluation(
             args.records,
@@ -279,9 +545,15 @@ def main(argv: list[str] | None = None) -> int:
     raise AssertionError(f"Unhandled command {args.command}")
 
 
-if __name__ == "__main__":
+def entrypoint(argv: list[str] | None = None) -> int:
+    """Console/package entry point with concise, consistent failures."""
+
     try:
-        raise SystemExit(main())
-    except (OSError, RuntimeError, ValueError) as exc:
+        return main(argv)
+    except (ImportError, OSError, RuntimeError, TypeError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
-        raise SystemExit(2) from exc
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(entrypoint())

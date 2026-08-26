@@ -25,6 +25,9 @@
       "channel_names": ["red", "green", "blue"],
       "channel_axis": -1,
       "pixel_size_um": [0.25, 0.25],
+      "data_origin": "acquired_real",
+      "provenance_status": "approved",
+      "adjudication_status": "adjudicated",
       "split": "locked_test",
       "cohort": "prevalence"
     },

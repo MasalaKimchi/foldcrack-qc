@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from contextlib import redirect_stdout
-from io import StringIO
 import json
-from pathlib import Path
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import numpy as np
 
-from foldcrack_qc.cli import _clean_generated_output, main
+from foldcrack_qc.cli import _clean_generated_output, entrypoint, main
 
 
 class CleanCommandTests(unittest.TestCase):
@@ -84,6 +86,156 @@ class CleanCommandTests(unittest.TestCase):
 
 
 class EvaluationCommandTests(unittest.TestCase):
+    def test_foundation_smoke_cli_wires_auditable_configuration(self) -> None:
+        revision = "a" * 40
+        captured = StringIO()
+        with patch(
+            "foldcrack_qc.foundation_smoke.run_foundation_smoke",
+            return_value={
+                "status": "passed",
+                "result_type": "engineering_foundation_smoke_only",
+            },
+        ) as runner, redirect_stdout(captured):
+            status = main(
+                [
+                    "foundation-smoke",
+                    "--revision",
+                    revision,
+                    "--cache-dir",
+                    "model-cache",
+                    "--device",
+                    "mps",
+                    "--steady-runs",
+                    "2",
+                    "--lora-rank",
+                    "4",
+                    "--output-json",
+                    "smoke.json",
+                ]
+            )
+
+        self.assertEqual(status, 0)
+        self.assertEqual(json.loads(captured.getvalue())["status"], "passed")
+        config = runner.call_args.args[0]
+        self.assertEqual(config.revision, revision)
+        self.assertEqual(config.device, "mps")
+        self.assertEqual(config.steady_runs, 2)
+        self.assertEqual(config.lora_rank, 4)
+        self.assertFalse(config.allow_download)
+        self.assertEqual(runner.call_args.kwargs["output_json"], Path("smoke.json"))
+
+    def test_frozen_feature_cli_locks_model_provenance_and_physical_scale(
+        self,
+    ) -> None:
+        revision = "b" * 40
+        report = {
+            "method": {},
+            "evidence_boundary": {},
+            "outcome_summary": {
+                "test_sample_count": 2,
+                "evaluated_count": 2,
+                "abstained_count": 0,
+            },
+        }
+        loaded = SimpleNamespace(
+            model=object(),
+            resolved_revision=revision,
+            weight_digests=(
+                SimpleNamespace(
+                    as_dict=lambda: {
+                        "filename": "model.safetensors",
+                        "sha256": "c" * 64,
+                        "size_bytes": 123,
+                    }
+                ),
+            ),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            output_path = Path(temporary) / "benchmark.json"
+            with (
+                patch(
+                    "foldcrack_qc.foundation_smoke.load_huggingface_model",
+                    return_value=loaded,
+                ) as loader,
+                patch(
+                    "foldcrack_qc.foundation_smoke.dinov2_model_geometry",
+                    return_value=((14, 14), 1),
+                ),
+                patch(
+                    "foldcrack_qc.foundation.DINOv2FeatureExtractor",
+                    return_value=object(),
+                ),
+                patch(
+                    "foldcrack_qc.frozen_benchmark.run_frozen_anomaly_benchmark",
+                    return_value=report,
+                ) as runner,
+                redirect_stdout(StringIO()),
+            ):
+                status = main(
+                    [
+                        "frozen-feature-benchmark",
+                        "--fit-manifest",
+                        "fit.json",
+                        "--calibration-manifest",
+                        "calibration.json",
+                        "--locked-test-manifest",
+                        "test.json",
+                        "--revision",
+                        revision,
+                        "--cache-dir",
+                        "model-cache",
+                        "--device",
+                        "mps",
+                        "--patch-size-um",
+                        "112",
+                        "--stride-um",
+                        "56",
+                        "--n-resamples",
+                        "10",
+                        "--output-json",
+                        str(output_path),
+                    ]
+                )
+
+            self.assertEqual(status, 0)
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+            self.assertTrue(payload["evidence_boundary"]["model_identity_locked"])
+            model = payload["method"]["model_identity"]
+            self.assertEqual(model["requested_revision"], revision)
+            self.assertEqual(model["resolved_revision"], revision)
+            self.assertEqual(model["weight_files"][0]["sha256"], "c" * 64)
+            self.assertFalse(loader.call_args.args[0].allow_download)
+            self.assertEqual(runner.call_args.kwargs["patch_size_um"], 112.0)
+            self.assertEqual(runner.call_args.kwargs["stride_um"], 56.0)
+
+    def test_validate_benchmark_distinguishes_valid_plan_from_report_ready(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        contract = root / "configs" / "benchmark.real.example.json"
+        captured = StringIO()
+        with redirect_stdout(captured):
+            status = main(["validate-benchmark", str(contract), "--json"])
+        payload = json.loads(captured.getvalue())
+        self.assertEqual(status, 0)
+        self.assertTrue(payload["configuration_valid"])
+        self.assertFalse(payload["report_eligible"])
+
+        with redirect_stdout(StringIO()):
+            strict_status = main(
+                [
+                    "validate-benchmark",
+                    str(contract),
+                    "--require-report-eligible",
+                ]
+            )
+        self.assertEqual(strict_status, 3)
+
+    def test_shared_entrypoint_converts_validation_error_to_exit_code(self) -> None:
+        errors = StringIO()
+        with redirect_stderr(errors):
+            status = entrypoint(["validate-benchmark", "missing.json"])
+        self.assertEqual(status, 2)
+        self.assertIn("error:", errors.getvalue())
+
     def test_validate_manifest_cli_json_and_strict_exit_codes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)

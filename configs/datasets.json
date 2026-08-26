@@ -17,9 +17,20 @@
     "modalities": ["comet"],
     "labels": ["fold", "out_of_focus", "air_bubble", "external_artifact", "antibody_aggregate"],
     "annotation": "model_and_dataset_release",
-    "license_status": "verify_record_version_and_model_terms",
+    "license_status": "dataset_cc_by_4_code_terms_verify",
     "commercial_use": null,
-    "notes": "Direct COMET comparator but no crack class and a small published COMET source cohort."
+    "notes": "Best public COMET-related fold-localization candidate. The Zenodo v2 deposit states CC BY 4.0, while repository code terms require separate legal review. No crack class; audit archive contents and subject-level splits before use."
+  },
+  {
+    "id": "lunaphore_comet_lung_tma",
+    "name": "Official Lunaphore COMET lung TMA example",
+    "url": "https://lunaphore.com/download-center-tma-downstream-analysis/",
+    "modalities": ["comet"],
+    "labels": [],
+    "annotation": "preprocessed_ome_tiff_without_artifact_masks",
+    "license_status": "vendor_restricted_form_and_password_gated",
+    "commercial_use": false,
+    "notes": "Useful only for approved ingestion/performance testing. The download page terms restrict research-output, commercial, and external-sharing uses; no fold/crack reference masks are supplied."
   },
   {
     "id": "histoartifacts",
@@ -53,6 +64,16 @@
     "license_status": "verify_dataset_specific_terms",
     "commercial_use": null,
     "notes": "Useful for parser and nominal-domain testing, not fold/crack efficacy evaluation."
+  },
+  {
+    "id": "cosmx_dryad_melanoma",
+    "name": "Dryad CosMx melanoma morphology images",
+    "url": "https://datadryad.org/dataset/doi:10.5061/dryad.ksn02v7b1",
+    "modalities": ["cosmx"],
+    "labels": [],
+    "annotation": "raw_morphology_fovs_and_spatial_outputs",
+    "license_status": "cc0_public_domain_dedication",
+    "commercial_use": true,
+    "notes": "CC0 real-input and nominal-domain resource containing four CosMx slides and morphology FOVs. It has no artifact labels, so it cannot support fold/crack efficacy without a new expert reference set."
   }
 ]
-

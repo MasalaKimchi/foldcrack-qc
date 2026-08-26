@@ -27,8 +27,9 @@ The design deliberately separates two questions:
 - Operational `PASS / REVIEW / FAIL` safety-gate evaluator
 - Physical-scale tile/halo/stitching contract for WSI reader integration
 - JSON, CSV, Markdown, and visual-overlay reports
-- Optional interfaces for OME-TIFF and frozen DINOv2 without making them core
-  dependencies
+- Strict, machine-readable real-benchmark eligibility validation
+- Optional OME-TIFF support and a frozen DINOv2 feature/anomaly path
+- An auditable offline DINOv2 CPU/MPS smoke test with optional BF16 LoRA
 
 ## Run the complete feasibility test
 
@@ -79,7 +80,8 @@ The synthetic runner uses five factorial scenarios per modality. Therefore
 | Classical | None | Interpretable fold/crack baseline and candidate generator |
 | Clean-reference anomaly | Reviewed clean tiles only | Label-light detection of unusual regions |
 | Hybrid | Clean reference plus fixed fusion | Recommended phase-1 high-recall review aid |
-| Frozen DINOv2 | Optional pretrained weights | Later feature-extractor comparator, not required to run |
+| Frozen DINOv2 | Pinned pretrained weights plus clean fit/calibration cohorts | H&E/RGB feature and generic artifact-union anomaly comparator |
+| DINOv2 + LoRA | Adjudicated fit and disjoint calibration cohorts | Resource-feasibility path only until real labels exist |
 
 An anomaly score is not a fold or crack label. It must be calibrated against
 expert-reviewed positives and difficult normal anatomy.
@@ -109,6 +111,21 @@ The strict contract verifies MPP, channel metadata, lossless binary masks,
 patient/block/slide/run split isolation, valid/ignore regions, and SHA-256
 provenance. See `configs/internal_manifest.example.json` and `data/README.md`.
 
+Before any result can be called a real-data benchmark, validate the explicit
+method/cohort/task contract:
+
+```bash
+PYTHONPATH=src python3 -m foldcrack_qc validate-benchmark \
+  configs/benchmark.real.example.json \
+  --require-report-eligible --json
+```
+
+The checked-in example is intentionally a plan, not a fabricated result. It
+returns exit code `3` until realized, disjoint fit/calibration/locked-test
+records, complete adjudicated masks, governance approvals, and enabled method
+assets are supplied. Configuration validity and scientific report eligibility
+are separate states.
+
 The present executable is an ROI/downsampled-slide feasibility runner, not a
 production native-pyramid WSI engine. For deployment, wrap the same canonical
 contract with OpenSlide/cuCIM/vendor readers and use a two-scale path: screen
@@ -124,12 +141,58 @@ OME-Zarr, or vendor reader.
 
 ## Foundation-model path
 
-The executable core does not require PyTorch. To try standard DINOv2 after
-model-governance review:
+The executable core does not require PyTorch. To install the optional frozen
+feature and parameter-efficient adaptation stack after model-governance review:
 
 ```bash
-python3 -m pip install -e '.[foundation]'
+python3 -m pip install -e '.[foundation,adaptation]'
 ```
+
+An actual `facebook/dinov2-small` run has been verified on Apple MPS with an
+exact revision and SHA-256 weight identity. Reproduce it offline from an
+explicit local cache:
+
+```bash
+PYTHONPATH=src python3 -m foldcrack_qc foundation-smoke \
+  --model-id facebook/dinov2-small \
+  --revision ed25f3a31f01632728cabb09d1542f84ab7b0056 \
+  --cache-dir models/hf_home/hub \
+  --device mps --steady-runs 3 --lora-rank 4 \
+  --output-json artifacts/foundation_smoke/foundation_smoke.json
+```
+
+That run performs frozen CPU and MPS inference, checks global and spatial-token
+agreement, and takes one BF16 LoRA optimization step on the last four attention
+blocks. It is deliberately labeled `engineering_foundation_smoke_only`: the two
+deterministic patches establish runtime feasibility, not artifact-detection
+efficacy. See `docs/FOUNDATION_FEASIBILITY.md` for the measured result.
+
+Once three strict, mutually isolated H&E manifests exist, run the initial real
+frozen-feature comparator with physical patch geometry:
+
+```bash
+PYTHONPATH=src python3 -m foldcrack_qc frozen-feature-benchmark \
+  --fit-manifest /secure/foldcrack/he_fit.json \
+  --calibration-manifest /secure/foldcrack/he_calibration.json \
+  --locked-test-manifest /secure/foldcrack/he_locked_test.json \
+  --model-id facebook/dinov2-small \
+  --revision ed25f3a31f01632728cabb09d1542f84ab7b0056 \
+  --cache-dir models/hf_home/hub --device mps \
+  --patch-size-um 112 --stride-um 56 \
+  --output-json artifacts/real_he_dinov2/report.json
+```
+
+The runner requires positive `acquired_real` plus approved-provenance declarations
+and explicit adjudicated all-zero fold and crack masks for every reviewed-clean
+fit/calibration case—absence of a mask never means negative. It rejects synthetic
+provenance and cross-split patient/block/slide/run/source/file/content overlap,
+chooses the threshold only on calibration, evaluates the locked test at native
+resolution, preserves failures as abstentions, and serializes only anonymous
+keys. Its generic anomaly output is compared only with the
+`artifact_union` reference, never presented as a fold/crack subtype classifier.
+This command is deliberately limited to pre-extracted ROI/downsampled rasters;
+native streaming WSI integration still requires an approved pyramid reader and
+disk-backed tiled score output.
 
 Use a separate clean reference bank and calibration per modality. Generic
 DINOv2 is treated as H&E/RGB-only unless a governed semantic projection for
@@ -145,6 +208,10 @@ override model-weight terms.
   evidence plan, illustrative gates, and immediate team asks
 - [`docs/AI-SPEC.md`](docs/AI-SPEC.md): architecture, risks, model ladder, and
   guardrails
+- [`docs/FOUNDATION_FEASIBILITY.md`](docs/FOUNDATION_FEASIBILITY.md): pinned
+  DINOv2/MPS/LoRA execution result and its evidence boundary
+- [`docs/PUBLIC_BENCHMARK_AUDIT.md`](docs/PUBLIC_BENCHMARK_AUDIT.md): verified
+  public methods, real datasets, label coverage, and license/access gaps
 - [`docs/ANNOTATION_GUIDE.md`](docs/ANNOTATION_GUIDE.md): operational fold,
   tear/crack, confounder, severity, and adjudication definitions
 - [`docs/EVALUATION.md`](docs/EVALUATION.md): locked cohorts, metrics,

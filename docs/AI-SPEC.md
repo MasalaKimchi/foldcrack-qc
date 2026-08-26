@@ -131,6 +131,27 @@ card, license text/version, access date, intended corporate use, approval owner,
 and any upstream-data restrictions. If approval is absent, the asset cannot enter
 the corporate benchmark; use a permissive baseline or internally trained weights.
 
+### Implemented foundation feasibility boundary
+
+The repository now contains an offline-first frozen DINOv2 adapter, spatial-token
+clean-reference kNN scorer, and an auditable CPU/MPS smoke command. The executed
+reference was `facebook/dinov2-small` at immutable revision
+`ed25f3a31f01632728cabb09d1542f84ab7b0056`; the cached
+`model.safetensors` SHA-256 was
+`ae1e99fcefd534ed978cdeb8326f08030c96e28b7a81ffcbc98a857c84d14be1`.
+On Apple MPS, frozen global and 16-by-16 spatial embeddings were finite and
+closely matched CPU, and one BF16 rank-4 LoRA step updated the query/value
+projections in transformer blocks 8–11.
+
+This establishes only that the pinned model and a small PEFT configuration fit
+and execute on the available Mac. It does not establish artifact sensitivity,
+localization, calibration, superiority, or modality generalization. Generic
+clean-reference anomaly maps have only `artifact_union` semantics. Fold versus
+crack claims require subtype labels and a semantic supervised head. COMET and
+CosMx require governed channel projections or modality-native encoders; silently
+taking the first three channels is prohibited. The complete measured execution
+record and limitations are in [`FOUNDATION_FEASIBILITY.md`](FOUNDATION_FEASIBILITY.md).
+
 ## 5. Evaluation strategy
 
 [`EVALUATION.md`](EVALUATION.md) is the normative protocol. The locked reference

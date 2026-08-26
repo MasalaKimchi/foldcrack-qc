@@ -8,8 +8,9 @@ without requiring a GPU or a supervised training set.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Protocol, Sequence, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -26,7 +27,6 @@ from .features import (
     rgb_to_optical_density,
     tissue_mask,
 )
-
 
 FloatArray = NDArray[np.float64]
 BoolArray = NDArray[np.bool_]
@@ -203,11 +203,10 @@ def _resolve_component_areas(
     max_area_um2: float | None,
     spacing: tuple[float, float] | None,
 ) -> tuple[int, int | None]:
-    if min_area_um2 is not None or max_area_um2 is not None:
-        if spacing is None:
-            raise ValueError(
-                "pixel_size_um is required when a physical component area is supplied"
-            )
+    if (min_area_um2 is not None or max_area_um2 is not None) and spacing is None:
+        raise ValueError(
+            "pixel_size_um is required when a physical component area is supplied"
+        )
     pixel_area = None if spacing is None else spacing[0] * spacing[1]
     if min_area_um2 is not None:
         value = float(min_area_um2)
@@ -694,7 +693,7 @@ class CleanReferenceAnomalyDetector:
 
     def fit(
         self, features: FeatureTable | ArrayLike
-    ) -> "CleanReferenceAnomalyDetector":
+    ) -> CleanReferenceAnomalyDetector:
         matrix = self._as_matrix(features)
         if matrix.shape[0] < 3:
             raise ValueError("At least three clean-reference samples are required")
@@ -895,7 +894,7 @@ class HybridQCDetector:
         self.decision_threshold = float(decision_threshold)
         self.anomaly_decision_threshold = float(anomaly_decision_threshold)
 
-    def fit(self, reference: FeatureTable | ArrayLike) -> "HybridQCDetector":
+    def fit(self, reference: FeatureTable | ArrayLike) -> HybridQCDetector:
         self.anomaly_detector.fit(reference)
         return self
 
@@ -1009,6 +1008,10 @@ class FrozenDINOv2Encoder:
     offline/corporate path.  Setting ``allow_download=True`` loads the requested
     official DINOv2 model through torch hub.  The default never accesses the
     network and fails with an actionable message if no model was supplied.
+
+    New benchmark code should prefer :class:`foldcrack_qc.foundation.DINOv2FeatureExtractor`,
+    which preserves both CLS and spatial patch tokens.  This legacy wrapper
+    returns only a global embedding.
     """
 
     def __init__(
@@ -1065,18 +1068,18 @@ class FrozenDINOv2Encoder:
             raise ValueError("patches must have shape (N,H,W,C) or (H,W,C)")
         # Accept channels-first batches only when the second dimension is an
         # unmistakable channel count.
-        if array.shape[-1] not in (1, 3, 4) and array.shape[1] in (1, 3, 4):
+        if array.shape[-1] not in (1, 3) and array.shape[1] in (1, 3):
             array = np.moveaxis(array, 1, -1)
-        if array.shape[-1] not in (1, 3, 4):
+        if array.shape[-1] not in (1, 3):
             raise ValueError(
-                "FrozenDINOv2Encoder accepts only 1, 3, or 4 image channels; "
+                "FrozenDINOv2Encoder accepts only 1 or 3 image channels; "
                 "multiplex inputs require an explicit semantic RGB projection "
-                "before encoding"
+                "before encoding, and four-channel arrays are not assumed to be RGBA"
             )
         if array.shape[-1] == 1:
             array = np.repeat(array, 3, axis=-1)
         normalized = np.stack(
-            [_channels_last(patch, -1)[..., :3] for patch in array], axis=0
+            [_channels_last(patch, -1) for patch in array], axis=0
         )
         # Keep input validation independent of the optional torch dependency so
         # unsafe multiplex truncation fails before any model/device work.
@@ -1097,9 +1100,23 @@ class FrozenDINOv2Encoder:
         tensor = (tensor - mean) / std
         with torch.inference_mode():
             output = self.model(tensor)
+        if hasattr(output, "last_hidden_state"):
+            hidden = output.last_hidden_state
+            if not torch.is_tensor(hidden) or hidden.ndim != 3:
+                raise TypeError(
+                    "DINOv2 last_hidden_state must be a batch-by-token-by-feature tensor"
+                )
+            output = hidden[:, 0, :]
         if isinstance(output, dict):
             if "x_norm_clstoken" in output:
                 output = output["x_norm_clstoken"]
+            elif "last_hidden_state" in output:
+                hidden = output["last_hidden_state"]
+                if not torch.is_tensor(hidden) or hidden.ndim != 3:
+                    raise TypeError(
+                        "DINOv2 last_hidden_state must be a batch-by-token-by-feature tensor"
+                    )
+                output = hidden[:, 0, :]
             else:
                 tensor_values = [
                     value for value in output.values() if torch.is_tensor(value)
@@ -1113,6 +1130,12 @@ class FrozenDINOv2Encoder:
             output = output[0]
         if not torch.is_tensor(output):
             raise TypeError("DINOv2 model must return a tensor, tuple, or dictionary")
+        if output.ndim == 3:
+            output = output[:, 0, :]
+        if output.ndim != 2:
+            raise ValueError(
+                "DINOv2 global output must have shape (batch, embedding_dim)"
+            )
         output = output.reshape(output.shape[0], -1)
         return output.detach().cpu().numpy().astype(np.float64, copy=False)
 

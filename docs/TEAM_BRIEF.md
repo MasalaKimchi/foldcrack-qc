@@ -22,9 +22,15 @@ as a prerequisite and not as a substitute for reference labels.
 - Physical-scale geometry, semantic channel roles, missing-channel abstention,
   WSI tile halos/stitching, localization metrics, cluster bootstrap reports,
   strict manifests, split-leakage checks, and operational gates are executable.
-- The verified full smoke run used 36 unique synthetic images and produced 252
-  prediction/evaluation rows across 21 comparable groups in 32.50 seconds.
-- All 12 engineering gates and all 92 automated tests passed.
+- A pinned DINOv2-small model has now run offline on Apple MPS: frozen global
+  and spatial features closely matched CPU, and a BF16 rank-4 LoRA update
+  completed within local memory. This is hardware feasibility, not efficacy.
+- A machine-readable real-benchmark contract now blocks scientific reporting
+  when realized annotated cohorts, method assets, license approval, or valid
+  comparisons are absent.
+- The latest verified full smoke run used 36 unique synthetic images and produced
+  252 prediction/evaluation rows across 21 comparable groups in 27.34 seconds.
+- All 12 engineering gates and all 158 automated tests plus 7 subtests passed.
 
 This establishes **software feasibility only**. It does not establish sensitivity,
 specificity, generalization, or workflow benefit on Merck data. Synthetic method
@@ -100,8 +106,9 @@ silently converted into `PASS`.
 3. Complete the reviewer calibration set and measure inter-reviewer agreement.
 4. Run the existing baselines unchanged, build a failure-mode gallery, and size
    the locked cohorts from observed prevalence and uncertainty.
-5. Decide whether a frozen foundation-model comparator adds enough value to
-   justify weight licensing, dependency, and governance work.
+5. Run the implemented frozen DINOv2 anomaly comparator on the adjudicated H&E
+   pilot, then decide from the locked development evidence whether LoRA or a
+   supervised localization head justifies added governance and annotation cost.
 
 ## Go/no-go interpretation
 

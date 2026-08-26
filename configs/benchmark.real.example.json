@@ -1,0 +1,937 @@
+{
+  "schema_version": "1.0",
+  "benchmark_id": "foldcrack-real-multimodal-v1",
+  "status": "planned_not_scientifically_reportable",
+  "ontology": {
+    "version": "pending-stakeholder-definition",
+    "crack_definition": "pending: tissue_tear vs glass_crack vs acquisition_seam",
+    "stakeholder_approved": false,
+    "approval_reference": "pending"
+  },
+  "governance_approvals": {
+    "data_use": {"status": "pending", "reference": "pending", "evidence_sha256": null},
+    "privacy": {"status": "pending", "reference": "pending", "evidence_sha256": null},
+    "method_assets": {"status": "pending", "reference": "pending", "evidence_sha256": null},
+    "scientific_owner": {"status": "pending", "reference": "pending", "evidence_sha256": null}
+  },
+  "cohort_evidence_attestations": {
+    "fit": {"strict_manifest_validation_passed": false, "manifest_sha256": null, "validation_report_sha256": null, "record_count": 0},
+    "calibration": {"strict_manifest_validation_passed": false, "manifest_sha256": null, "validation_report_sha256": null, "record_count": 0},
+    "test": {"strict_manifest_validation_passed": false, "manifest_sha256": null, "validation_report_sha256": null, "record_count": 0}
+  },
+  "scientific_acceptance": {
+    "require_real_data": true,
+    "require_artifact_annotations": true,
+    "require_ignore_masks": true,
+    "allow_synthetic_for_scientific_acceptance": false,
+    "require_regime_stratification": true,
+    "accepted_annotation_statuses": [
+      "adjudicated"
+    ],
+    "note": "Synthetic data may be used for software tests only and must never enter fit, calibration, test, efficacy, or acceptance estimates."
+  },
+  "split_policy": {
+    "cohort_roles": [
+      "fit",
+      "calibration",
+      "test"
+    ],
+    "unit_keys": [
+      "patient_id",
+      "block_id",
+      "slide_id",
+      "run_id",
+      "content_id"
+    ],
+    "rules": [
+      "No value for any unit key may occur in more than one cohort role.",
+      "Thresholds and post-processing are locked on calibration before test inference.",
+      "Patch extraction never changes the slide-level split assignment."
+    ]
+  },
+  "cohorts": {
+    "fit": {
+      "role": "fit",
+      "cohort_id": "real-fit-v1",
+      "manifest_path": "data/manifests/real_fit.jsonl",
+      "data_origin": "real",
+      "annotation_status": "adjudicated",
+      "annotated_artifacts": [
+        "fold",
+        "crack"
+      ],
+      "ignore_masks": true
+    },
+    "calibration": {
+      "role": "calibration",
+      "cohort_id": "real-calibration-v1",
+      "manifest_path": "data/manifests/real_calibration.jsonl",
+      "data_origin": "real",
+      "annotation_status": "adjudicated",
+      "annotated_artifacts": [
+        "fold",
+        "crack"
+      ],
+      "ignore_masks": true
+    },
+    "test": {
+      "role": "test",
+      "cohort_id": "real-locked-test-v1",
+      "manifest_path": "data/manifests/real_locked_test.jsonl",
+      "data_origin": "real",
+      "annotation_status": "adjudicated",
+      "annotated_artifacts": [
+        "fold",
+        "crack"
+      ],
+      "ignore_masks": true
+    }
+  },
+  "modalities": {
+    "he": {
+      "id": "he",
+      "input_variants": [
+        {
+          "id": "he.rgb_native",
+          "channel_selection": "semantic_role",
+          "semantic_channels": [
+            "brightfield_red",
+            "brightfield_green",
+            "brightfield_blue"
+          ],
+          "normalization": "locked_scanner_aware_native_range"
+        },
+        {
+          "id": "he.optical_density",
+          "channel_selection": "semantic_role",
+          "semantic_channels": [
+            "brightfield_red",
+            "brightfield_green",
+            "brightfield_blue"
+          ],
+          "normalization": "locked_optical_density_transform"
+        }
+      ]
+    },
+    "comet": {
+      "id": "comet",
+      "input_variants": [
+        {
+          "id": "comet.dapi_only",
+          "channel_selection": "semantic_role",
+          "semantic_channels": [
+            "nuclear"
+          ],
+          "normalization": "locked_run_level_percentiles"
+        },
+        {
+          "id": "comet.structural_rgb",
+          "channel_selection": "semantic_role",
+          "semantic_channels": [
+            "nuclear",
+            "membrane",
+            "cytoplasm"
+          ],
+          "normalization": "locked_run_level_percentiles"
+        },
+        {
+          "id": "comet.all_structural",
+          "channel_selection": "semantic_role",
+          "semantic_channels": [
+            "nuclear",
+            "membrane",
+            "cytoplasm",
+            "autofluorescence"
+          ],
+          "normalization": "locked_per_role_run_level_percentiles"
+        }
+      ]
+    },
+    "cosmx": {
+      "id": "cosmx",
+      "input_variants": [
+        {
+          "id": "cosmx.dapi_only",
+          "channel_selection": "semantic_role",
+          "semantic_channels": [
+            "nuclear"
+          ],
+          "normalization": "locked_run_level_percentiles"
+        },
+        {
+          "id": "cosmx.morphology_rgb",
+          "channel_selection": "semantic_role",
+          "semantic_channels": [
+            "nuclear",
+            "membrane",
+            "cytoplasm"
+          ],
+          "normalization": "locked_run_level_percentiles"
+        },
+        {
+          "id": "cosmx.all_morphology",
+          "channel_selection": "semantic_role",
+          "semantic_channels": [
+            "nuclear",
+            "membrane",
+            "cytoplasm",
+            "morphology"
+          ],
+          "normalization": "locked_per_role_run_level_percentiles"
+        }
+      ]
+    }
+  },
+  "regimes": [
+    {
+      "id": "native_zero_shot",
+      "label_use": "none_from_benchmark_cohorts",
+      "required_cohorts": [
+        "test"
+      ]
+    },
+    {
+      "id": "calibrated",
+      "label_use": "threshold_and_postprocessing_only",
+      "required_cohorts": [
+        "calibration",
+        "test"
+      ]
+    },
+    {
+      "id": "clean_reference_anomaly",
+      "label_use": "reviewed_clean_fit_bank_and_disjoint_clean_calibration",
+      "required_cohorts": [
+        "fit",
+        "calibration",
+        "test"
+      ]
+    },
+    {
+      "id": "shallow_adaptation",
+      "label_use": "linear_or_shallow_head",
+      "required_cohorts": [
+        "fit",
+        "calibration",
+        "test"
+      ]
+    },
+    {
+      "id": "lora",
+      "label_use": "parameter_efficient_low_rank_adaptation",
+      "required_cohorts": [
+        "fit",
+        "calibration",
+        "test"
+      ]
+    },
+    {
+      "id": "full_finetune",
+      "label_use": "all_trainable_parameters",
+      "required_cohorts": [
+        "fit",
+        "calibration",
+        "test"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "merck_local_baselines",
+      "kind": "internally_authored_code",
+      "availability_status": "available",
+      "license_status": "approved",
+      "commercial_use_approved": true
+    },
+    {
+      "id": "histoqc_public_code",
+      "kind": "public_code",
+      "availability_status": "available",
+      "license_status": "pending",
+      "commercial_use_approved": false
+    },
+    {
+      "id": "grandqc_public_assets",
+      "kind": "public_code_weights_and_data",
+      "availability_status": "restricted",
+      "license_status": "restricted",
+      "commercial_use_approved": false
+    },
+    {
+      "id": "qualifai_public_assets",
+      "kind": "public_code_weights_and_data",
+      "availability_status": "planned",
+      "license_status": "unknown",
+      "commercial_use_approved": false
+    },
+    {
+      "id": "dinov2_apache_weights",
+      "kind": "public_foundation_weights",
+      "availability_status": "available",
+      "license_status": "pending",
+      "commercial_use_approved": false,
+      "note": "The public DINOv2 repository declares Apache-2.0; this example does not fabricate internal Merck governance approval."
+    },
+    {
+      "id": "merck_trainable_segmentation_code",
+      "kind": "internally_authored_code",
+      "availability_status": "available",
+      "license_status": "approved",
+      "commercial_use_approved": true
+    },
+    {
+      "id": "diffusionqc_internal_assets",
+      "kind": "internal_code_and_weights",
+      "availability_status": "unavailable",
+      "license_status": "pending",
+      "commercial_use_approved": false
+    }
+  ],
+  "methods": [
+    {
+      "id": "classical_custom",
+      "display_name": "Modality-aware classical QC",
+      "family": "classical",
+      "enabled": true,
+      "required_for_acceptance": false,
+      "availability_status": "ready",
+      "resource_ids": [
+        "merck_local_baselines"
+      ],
+      "modalities": [
+        "he",
+        "comet",
+        "cosmx"
+      ],
+      "input_variants": [
+        "he.rgb_native",
+        "he.optical_density",
+        "comet.dapi_only",
+        "comet.structural_rgb",
+        "comet.all_structural",
+        "cosmx.dapi_only",
+        "cosmx.morphology_rgb",
+        "cosmx.all_morphology"
+      ],
+      "regimes": [
+        "native_zero_shot",
+        "calibrated"
+      ],
+      "capabilities": [
+        {"artifact": "fold", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "fold", "task": "localization", "output_type": "pixel_mask"},
+        {"artifact": "fold", "task": "patch_classification", "output_type": "patch_score"},
+        {"artifact": "crack", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "crack", "task": "localization", "output_type": "pixel_mask"},
+        {"artifact": "crack", "task": "patch_classification", "output_type": "patch_score"},
+        {"artifact": "artifact_union", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "artifact_union", "task": "localization", "output_type": "pixel_mask"},
+        {"artifact": "artifact_union", "task": "patch_classification", "output_type": "patch_score"}
+      ]
+    },
+    {
+      "id": "histoqc",
+      "display_name": "HistoQC configured modules",
+      "family": "published_classical_qc",
+      "enabled": false,
+      "required_for_acceptance": false,
+      "availability_status": "gated",
+      "resource_ids": [
+        "histoqc_public_code"
+      ],
+      "modalities": [
+        "he"
+      ],
+      "input_variants": [
+        "he.rgb_native"
+      ],
+      "regimes": [
+        "native_zero_shot",
+        "calibrated"
+      ],
+      "capabilities": [
+        {"artifact": "artifact_union", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "artifact_union", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "grandqc",
+      "display_name": "GrandQC released model",
+      "family": "published_segmentation",
+      "enabled": false,
+      "required_for_acceptance": false,
+      "availability_status": "gated",
+      "resource_ids": [
+        "grandqc_public_assets"
+      ],
+      "modalities": [
+        "he"
+      ],
+      "input_variants": [
+        "he.rgb_native"
+      ],
+      "regimes": [
+        "native_zero_shot",
+        "calibrated"
+      ],
+      "capabilities": [
+        {"artifact": "fold", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "fold", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "qualifai",
+      "display_name": "QUALIFAI released model",
+      "family": "published_multiplex_qc",
+      "enabled": false,
+      "required_for_acceptance": false,
+      "availability_status": "gated",
+      "resource_ids": [
+        "qualifai_public_assets"
+      ],
+      "modalities": [
+        "comet"
+      ],
+      "input_variants": [
+        "comet.structural_rgb",
+        "comet.all_structural"
+      ],
+      "regimes": [
+        "native_zero_shot",
+        "calibrated"
+      ],
+      "capabilities": [
+        {"artifact": "fold", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "fold", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "patchcore_dinov2",
+      "display_name": "PatchCore on frozen DINOv2",
+      "family": "deep_anomaly",
+      "enabled": true,
+      "required_for_acceptance": false,
+      "availability_status": "planned",
+      "resource_ids": [
+        "dinov2_apache_weights",
+        "merck_local_baselines"
+      ],
+      "modalities": ["he", "comet", "cosmx"],
+      "input_variants": ["he.rgb_native", "comet.structural_rgb", "cosmx.morphology_rgb"],
+      "regimes": ["clean_reference_anomaly"],
+      "capabilities": [
+        {"artifact": "artifact_union", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "artifact_union", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "padim_dinov2",
+      "display_name": "PaDiM on frozen DINOv2",
+      "family": "deep_anomaly",
+      "enabled": true,
+      "required_for_acceptance": false,
+      "availability_status": "planned",
+      "resource_ids": ["dinov2_apache_weights", "merck_local_baselines"],
+      "modalities": ["he", "comet", "cosmx"],
+      "input_variants": ["he.rgb_native", "comet.structural_rgb", "cosmx.morphology_rgb"],
+      "regimes": ["clean_reference_anomaly"],
+      "capabilities": [
+        {"artifact": "artifact_union", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "artifact_union", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "dinov2_linear_probe",
+      "display_name": "Frozen DINOv2 linear probe",
+      "family": "foundation_shallow_adaptation",
+      "enabled": true,
+      "required_for_acceptance": false,
+      "availability_status": "planned",
+      "resource_ids": ["dinov2_apache_weights", "merck_trainable_segmentation_code"],
+      "modalities": ["he", "comet", "cosmx"],
+      "input_variants": ["he.rgb_native", "comet.structural_rgb", "cosmx.morphology_rgb"],
+      "regimes": ["shallow_adaptation"],
+      "capabilities": [
+        {"artifact": "fold", "task": "patch_classification", "output_type": "patch_score"},
+        {"artifact": "crack", "task": "patch_classification", "output_type": "patch_score"}
+      ]
+    },
+    {
+      "id": "dinov2_decoder",
+      "display_name": "Frozen DINOv2 plus segmentation decoder",
+      "family": "foundation_shallow_adaptation",
+      "enabled": true,
+      "required_for_acceptance": false,
+      "availability_status": "planned",
+      "resource_ids": ["dinov2_apache_weights", "merck_trainable_segmentation_code"],
+      "modalities": ["he", "comet", "cosmx"],
+      "input_variants": ["he.rgb_native", "comet.structural_rgb", "cosmx.morphology_rgb"],
+      "regimes": ["shallow_adaptation"],
+      "capabilities": [
+        {"artifact": "fold", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "fold", "task": "localization", "output_type": "pixel_mask"},
+        {"artifact": "crack", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "crack", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "dinov2_lora",
+      "display_name": "DINOv2 PEFT/LoRA plus segmentation decoder",
+      "family": "foundation_parameter_efficient_adaptation",
+      "enabled": true,
+      "required_for_acceptance": false,
+      "availability_status": "planned",
+      "resource_ids": ["dinov2_apache_weights", "merck_trainable_segmentation_code"],
+      "modalities": ["he", "comet", "cosmx"],
+      "input_variants": ["he.rgb_native", "comet.structural_rgb", "cosmx.morphology_rgb"],
+      "regimes": ["lora"],
+      "capabilities": [
+        {"artifact": "fold", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "fold", "task": "localization", "output_type": "pixel_mask"},
+        {"artifact": "crack", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "crack", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "unet_supervised",
+      "display_name": "Supervised U-Net",
+      "family": "supervised_segmentation",
+      "enabled": true,
+      "required_for_acceptance": false,
+      "availability_status": "planned",
+      "resource_ids": ["merck_trainable_segmentation_code"],
+      "modalities": ["he", "comet", "cosmx"],
+      "input_variants": ["he.rgb_native", "comet.all_structural", "cosmx.all_morphology"],
+      "regimes": ["full_finetune"],
+      "capabilities": [
+        {"artifact": "fold", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "fold", "task": "localization", "output_type": "pixel_mask"},
+        {"artifact": "crack", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "crack", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "segformer_supervised",
+      "display_name": "Supervised SegFormer",
+      "family": "supervised_segmentation",
+      "enabled": true,
+      "required_for_acceptance": false,
+      "availability_status": "planned",
+      "resource_ids": ["merck_trainable_segmentation_code"],
+      "modalities": ["he", "comet", "cosmx"],
+      "input_variants": ["he.rgb_native", "comet.all_structural", "cosmx.all_morphology"],
+      "regimes": ["full_finetune"],
+      "capabilities": [
+        {"artifact": "fold", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "fold", "task": "localization", "output_type": "pixel_mask"},
+        {"artifact": "crack", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "crack", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    },
+    {
+      "id": "diffusionqc",
+      "display_name": "DiffusionQC internal/reproduced implementation",
+      "family": "diffusion_foundation_anomaly",
+      "enabled": false,
+      "required_for_acceptance": false,
+      "availability_status": "unavailable",
+      "resource_ids": ["diffusionqc_internal_assets"],
+      "modalities": ["he"],
+      "input_variants": ["he.rgb_native"],
+      "regimes": ["clean_reference_anomaly", "lora"],
+      "capabilities": [
+        {"artifact": "artifact_union", "task": "presence", "output_type": "slide_score"},
+        {"artifact": "artifact_union", "task": "localization", "output_type": "pixel_mask"}
+      ]
+    }
+  ],
+  "metrics": {
+    "fold": {
+      "presence": {
+        "comparison_output_type": "slide_score",
+        "score_semantics": "calibrated_probability",
+        "metric_ids": [
+          "auprc",
+          "auroc",
+          "sensitivity_at_fixed_false_positive_rate",
+          "specificity",
+          "brier_score",
+          "expected_calibration_error"
+        ]
+      },
+      "localization": {
+        "comparison_output_type": "pixel_mask",
+        "surface_tolerance_um": 8.0,
+        "metric_ids": [
+          "dice",
+          "iou",
+          "surface_dice",
+          "instance_sensitivity",
+          "fold_burden_absolute_error",
+          "valid_tissue_overmask_rate"
+        ]
+      },
+      "patch_classification": {
+        "comparison_output_type": "patch_score",
+        "metric_ids": [
+          "auprc",
+          "balanced_accuracy",
+          "macro_f1"
+        ]
+      }
+    },
+    "crack": {
+      "presence": {
+        "comparison_output_type": "slide_score",
+        "score_semantics": "calibrated_probability",
+        "metric_ids": [
+          "auprc",
+          "auroc",
+          "sensitivity_at_fixed_false_positive_rate",
+          "specificity",
+          "brier_score",
+          "expected_calibration_error"
+        ]
+      },
+      "localization": {
+        "comparison_output_type": "pixel_mask",
+        "centerline_tolerance_um": 8.0,
+        "metric_ids": [
+          "cldice",
+          "centerline_f1_tolerance",
+          "instance_sensitivity",
+          "false_components_per_square_centimeter",
+          "fragmentation_error",
+          "pixel_dice_diagnostic",
+          "valid_tissue_overmask_rate"
+        ]
+      },
+      "patch_classification": {
+        "comparison_output_type": "patch_score",
+        "metric_ids": [
+          "auprc",
+          "balanced_accuracy",
+          "macro_f1"
+        ]
+      }
+    },
+    "artifact_union": {
+      "presence": {
+        "comparison_output_type": "slide_score",
+        "score_semantics": "calibrated_probability",
+        "metric_ids": [
+          "auprc",
+          "auroc",
+          "sensitivity_at_fixed_false_positive_rate",
+          "specificity",
+          "brier_score",
+          "expected_calibration_error"
+        ]
+      },
+      "localization": {
+        "comparison_output_type": "pixel_mask",
+        "surface_tolerance_um": 8.0,
+        "metric_ids": [
+          "dice",
+          "iou",
+          "surface_dice",
+          "instance_sensitivity",
+          "valid_tissue_overmask_rate"
+        ]
+      },
+      "patch_classification": {
+        "comparison_output_type": "patch_score",
+        "metric_ids": [
+          "auprc",
+          "balanced_accuracy",
+          "macro_f1"
+        ]
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "id": "he_fold_localization",
+      "modality": "he",
+      "artifact": "fold",
+      "task": "localization",
+      "regime": "full_finetune",
+      "input_variant": "he.rgb_native",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["dice", "iou", "surface_dice", "instance_sensitivity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "comet_fold_localization",
+      "modality": "comet",
+      "artifact": "fold",
+      "task": "localization",
+      "regime": "full_finetune",
+      "input_variant": "comet.all_structural",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["dice", "iou", "surface_dice", "instance_sensitivity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "cosmx_fold_localization",
+      "modality": "cosmx",
+      "artifact": "fold",
+      "task": "localization",
+      "regime": "full_finetune",
+      "input_variant": "cosmx.all_morphology",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["dice", "iou", "surface_dice", "instance_sensitivity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "he_crack_localization",
+      "modality": "he",
+      "artifact": "crack",
+      "task": "localization",
+      "regime": "full_finetune",
+      "input_variant": "he.rgb_native",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["cldice", "centerline_f1_tolerance", "instance_sensitivity", "fragmentation_error"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "comet_crack_localization",
+      "modality": "comet",
+      "artifact": "crack",
+      "task": "localization",
+      "regime": "full_finetune",
+      "input_variant": "comet.all_structural",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["cldice", "centerline_f1_tolerance", "instance_sensitivity", "fragmentation_error"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "cosmx_crack_localization",
+      "modality": "cosmx",
+      "artifact": "crack",
+      "task": "localization",
+      "regime": "full_finetune",
+      "input_variant": "cosmx.all_morphology",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["cldice", "centerline_f1_tolerance", "instance_sensitivity", "fragmentation_error"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "he_fold_patch_classification",
+      "modality": "he",
+      "artifact": "fold",
+      "task": "patch_classification",
+      "regime": "shallow_adaptation",
+      "input_variant": "he.rgb_native",
+      "comparison_output_type": "patch_score",
+      "stratify_by_regime": true,
+      "method_ids": ["dinov2_linear_probe"],
+      "metric_ids": ["auprc", "balanced_accuracy", "macro_f1"],
+      "required_for_acceptance": false,
+      "minimum_eligible_methods": 1
+    },
+    {
+      "id": "he_artifact_union_anomaly_localization",
+      "modality": "he",
+      "artifact": "artifact_union",
+      "task": "localization",
+      "regime": "clean_reference_anomaly",
+      "input_variant": "he.rgb_native",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["patchcore_dinov2", "padim_dinov2"],
+      "metric_ids": ["dice", "iou", "surface_dice", "instance_sensitivity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "comet_artifact_union_anomaly_localization",
+      "modality": "comet",
+      "artifact": "artifact_union",
+      "task": "localization",
+      "regime": "clean_reference_anomaly",
+      "input_variant": "comet.structural_rgb",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["patchcore_dinov2", "padim_dinov2"],
+      "metric_ids": ["dice", "iou", "surface_dice", "instance_sensitivity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "cosmx_artifact_union_anomaly_localization",
+      "modality": "cosmx",
+      "artifact": "artifact_union",
+      "task": "localization",
+      "regime": "clean_reference_anomaly",
+      "input_variant": "cosmx.morphology_rgb",
+      "comparison_output_type": "pixel_mask",
+      "stratify_by_regime": true,
+      "method_ids": ["patchcore_dinov2", "padim_dinov2"],
+      "metric_ids": ["dice", "iou", "surface_dice", "instance_sensitivity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "he_fold_presence",
+      "modality": "he",
+      "artifact": "fold",
+      "task": "presence",
+      "regime": "full_finetune",
+      "input_variant": "he.rgb_native",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "comet_fold_presence",
+      "modality": "comet",
+      "artifact": "fold",
+      "task": "presence",
+      "regime": "full_finetune",
+      "input_variant": "comet.all_structural",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "cosmx_fold_presence",
+      "modality": "cosmx",
+      "artifact": "fold",
+      "task": "presence",
+      "regime": "full_finetune",
+      "input_variant": "cosmx.all_morphology",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "he_crack_presence",
+      "modality": "he",
+      "artifact": "crack",
+      "task": "presence",
+      "regime": "full_finetune",
+      "input_variant": "he.rgb_native",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "comet_crack_presence",
+      "modality": "comet",
+      "artifact": "crack",
+      "task": "presence",
+      "regime": "full_finetune",
+      "input_variant": "comet.all_structural",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "cosmx_crack_presence",
+      "modality": "cosmx",
+      "artifact": "crack",
+      "task": "presence",
+      "regime": "full_finetune",
+      "input_variant": "cosmx.all_morphology",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["unet_supervised", "segformer_supervised"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "he_artifact_union_presence",
+      "modality": "he",
+      "artifact": "artifact_union",
+      "task": "presence",
+      "regime": "clean_reference_anomaly",
+      "input_variant": "he.rgb_native",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["patchcore_dinov2", "padim_dinov2"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "comet_artifact_union_presence",
+      "modality": "comet",
+      "artifact": "artifact_union",
+      "task": "presence",
+      "regime": "clean_reference_anomaly",
+      "input_variant": "comet.structural_rgb",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["patchcore_dinov2", "padim_dinov2"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    },
+    {
+      "id": "cosmx_artifact_union_presence",
+      "modality": "cosmx",
+      "artifact": "artifact_union",
+      "task": "presence",
+      "regime": "clean_reference_anomaly",
+      "input_variant": "cosmx.morphology_rgb",
+      "comparison_output_type": "slide_score",
+      "stratify_by_regime": true,
+      "method_ids": ["patchcore_dinov2", "padim_dinov2"],
+      "metric_ids": ["auprc", "auroc", "sensitivity_at_fixed_false_positive_rate", "specificity"],
+      "required_for_acceptance": true,
+      "minimum_eligible_methods": 2
+    }
+  ],
+  "reporting": {
+    "stratify_by": [
+      "modality",
+      "artifact",
+      "task",
+      "regime",
+      "input_variant",
+      "site",
+      "scanner_or_instrument",
+      "tissue_type",
+      "severity"
+    ],
+    "confidence_intervals": "cluster_bootstrap_at_highest_available_patient_or_block_unit",
+    "forbid_pooled_primary_score_across_modalities": true,
+    "forbid_ranking_patch_classifiers_by_pixel_metrics": true,
+    "require_runtime_memory_failure_and_abstention_reporting": true
+  }
+}

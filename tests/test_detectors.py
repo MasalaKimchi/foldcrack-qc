@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import builtins
 import unittest
 from unittest import mock
-import builtins
 
 import numpy as np
 
@@ -258,8 +258,8 @@ class CleanReferenceTests(unittest.TestCase):
         )
         self.assertGreater(float(detector.predict(anomalous).mean()), 0.95)
         self.assertLess(float(detector.predict(nominal).mean()), 0.15)
-        self.assertTrue(np.all((detector.calibrated_scores(anomalous) >= 0.0)))
-        self.assertTrue(np.all((detector.calibrated_scores(anomalous) <= 1.0)))
+        self.assertTrue(np.all(detector.calibrated_scores(anomalous) >= 0.0))
+        self.assertTrue(np.all(detector.calibrated_scores(anomalous) <= 1.0))
 
     def test_constant_and_missing_clean_features_are_stable(self) -> None:
         clean = np.column_stack((np.ones(20), np.linspace(0.0, 1.0, 20)))
@@ -413,7 +413,7 @@ class OptionalEncoderTests(unittest.TestCase):
         # Bypass dependency-bearing initialization: channel-safety validation
         # must happen before torch/model access.
         encoder = object.__new__(FrozenDINOv2Encoder)
-        multiplex = np.zeros((2, 16, 16, 5), dtype=np.float32)
+        multiplex = np.zeros((2, 16, 16, 4), dtype=np.float32)
         with self.assertRaisesRegex(ValueError, "explicit semantic RGB projection"):
             encoder.encode(multiplex)
 
@@ -425,9 +425,11 @@ class OptionalEncoderTests(unittest.TestCase):
                 raise ImportError("simulated missing torch")
             return real_import(name, *args, **kwargs)
 
-        with mock.patch("builtins.__import__", side_effect=reject_torch):
-            with self.assertRaisesRegex(ImportError, "requires PyTorch"):
-                FrozenDINOv2Encoder()
+        with (
+            mock.patch("builtins.__import__", side_effect=reject_torch),
+            self.assertRaisesRegex(ImportError, "requires PyTorch"),
+        ):
+            FrozenDINOv2Encoder()
 
 
 if __name__ == "__main__":

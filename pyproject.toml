@@ -16,11 +16,19 @@ dependencies = [
 
 [project.optional-dependencies]
 wsi = ["tifffile>=2024.8", "zarr>=2.18"]
-foundation = ["torch>=2.4", "torchvision>=0.19", "timm>=1.0"]
+foundation = [
+  "torch>=2.4",
+  "torchvision>=0.19",
+  "timm>=1.0",
+  "transformers>=4.55",
+  "safetensors>=0.5",
+  "huggingface-hub>=0.34",
+]
+adaptation = ["peft>=0.17", "accelerate>=1.0"]
 dev = ["pytest>=8", "coverage>=7", "ruff>=0.8"]
 
 [project.scripts]
-foldcrack-qc = "foldcrack_qc.cli:main"
+foldcrack-qc = "foldcrack_qc.cli:entrypoint"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
