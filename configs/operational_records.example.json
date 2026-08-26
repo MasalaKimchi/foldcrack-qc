@@ -1,0 +1,32 @@
+{
+  "example_only": true,
+  "records": [
+    {
+      "modality": "he",
+      "decision": "REVIEW",
+      "reference_actionable_artifact": true,
+      "reference_severe": true,
+      "technical_abstention": false,
+      "high_confidence_mask_precision": 0.97,
+      "valid_tissue_overmask_fraction": 0.002
+    },
+    {
+      "modality": "comet",
+      "decision": "PASS",
+      "reference_actionable_artifact": false,
+      "reference_severe": false,
+      "technical_abstention": false,
+      "high_confidence_mask_precision": 0.96,
+      "valid_tissue_overmask_fraction": 0.003
+    },
+    {
+      "modality": "cosmx",
+      "decision": "FAIL",
+      "reference_actionable_artifact": true,
+      "reference_severe": true,
+      "technical_abstention": false,
+      "high_confidence_mask_precision": 0.98,
+      "valid_tissue_overmask_fraction": 0.001
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "modality": "comet",
+  "primary_view": ["dapi", "autofluorescence_tritc", "autofluorescence_cy5"],
+  "optional_features": ["dapi_cycle_stability", "registration_residual", "saturation_fraction"],
+  "notes": "Resolve channels from OME metadata. Biological marker channels are optional, not mandatory inputs."
+}
+

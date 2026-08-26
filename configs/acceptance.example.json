@@ -1,0 +1,18 @@
+{
+  "status": "illustrative_not_approved",
+  "required_modalities": ["he", "comet", "cosmx"],
+  "severe_artifact_sensitivity_lcb": 0.95,
+  "auto_pass_npv": 0.99,
+  "high_confidence_mask_precision_lcb": 0.95,
+  "valid_tissue_overmask_rate_max": 0.005,
+  "review_referral_rate_max": 0.25,
+  "minimum_severe_positive_samples": 60,
+  "minimum_auto_pass_samples": 100,
+  "minimum_mask_evaluated_samples": 30,
+  "minimum_prevalence_samples": 100,
+  "requirements": [
+    "Thresholds are chosen on development data and locked before test evaluation.",
+    "Every criterion is reported separately for H&E, COMET, and CosMx.",
+    "Missing metadata, missing required channels, or OOD inputs force REVIEW and never auto-pass."
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "modality": "he",
+  "primary_view": ["red", "green", "blue"],
+  "derived_views": ["hematoxylin_od", "eosin_od", "total_od", "saturation"],
+  "notes": "Preserve raw RGB; do not apply aggressive stain normalization before QC."
+}
+

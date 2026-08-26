@@ -1,0 +1,7 @@
+{
+  "modality": "cosmx",
+  "primary_view": ["nuclear", "broad_membrane_or_tissue", "morphology_union_or_z_spread"],
+  "auxiliary_only": ["transcript_density", "vendor_cell_mask", "cell_type"],
+  "notes": "Resolve morphology markers semantically from experiment metadata; never hard-code channel indices."
+}
+

@@ -1,0 +1,44 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+build/
+dist/
+*.egg-info/
+
+# Generated feasibility outputs and local data must not be committed.
+artifacts/
+data/**
+!data/README.md
+models/
+
+# Whole-slide, multiplex, spatial, array, and medical-imaging payloads are
+# ignored wherever they are staged. Keep only opaque schema examples in Git.
+*.svs
+*.ndpi
+*.mrxs
+*.scn
+*.bif
+*.isyntax
+*.vms
+*.vmu
+*.qptiff
+*.ome.tif
+*.ome.tiff
+*.tif
+*.tiff
+*.czi
+*.lif
+*.vsi
+*.dcm
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.h5ad
+*.zarr/

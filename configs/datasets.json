@@ -1,0 +1,58 @@
+[
+  {
+    "id": "grandqc_test",
+    "name": "GrandQC expert test patches",
+    "url": "https://zenodo.org/records/14039591",
+    "modalities": ["he"],
+    "labels": ["fold", "other_artifacts"],
+    "annotation": "pixel_masks",
+    "license_status": "noncommercial_restricted",
+    "commercial_use": false,
+    "notes": "Strong H&E external benchmark; no dedicated crack/tear class. Merck use requires Legal/licensor clearance."
+  },
+  {
+    "id": "qualifai_comet",
+    "name": "QUALIFAI models and Lunaphore dataset",
+    "url": "https://zenodo.org/records/12699470",
+    "modalities": ["comet"],
+    "labels": ["fold", "out_of_focus", "air_bubble", "external_artifact", "antibody_aggregate"],
+    "annotation": "model_and_dataset_release",
+    "license_status": "verify_record_version_and_model_terms",
+    "commercial_use": null,
+    "notes": "Direct COMET comparator but no crack class and a small published COMET source cohort."
+  },
+  {
+    "id": "histoartifacts",
+    "name": "HistoArtifacts",
+    "url": "https://zenodo.org/records/10809442",
+    "modalities": ["he"],
+    "labels": ["clean", "fold", "blur", "air_bubble", "blood", "damaged_tissue"],
+    "annotation": "patch_labels",
+    "license_status": "not_clearly_declared",
+    "commercial_use": null,
+    "notes": "Useful for patch classification only; not a pixel-localization benchmark."
+  },
+  {
+    "id": "foucart_artifacts",
+    "name": "Foucart artifact segmentation data",
+    "url": "https://zenodo.org/records/3773097",
+    "modalities": ["he", "ihc"],
+    "labels": ["tear_and_fold", "ink", "blur", "knife_damage"],
+    "annotation": "sparse_masks_and_patches",
+    "license_status": "not_clearly_declared",
+    "commercial_use": null,
+    "notes": "Small and incompletely annotated; tear and fold are conflated."
+  },
+  {
+    "id": "cosmx_public",
+    "name": "Official CosMx public datasets",
+    "url": "https://brukerspatialbiology.com/products/cosmx-spatial-molecular-imager/ffpe-dataset/",
+    "modalities": ["cosmx"],
+    "labels": [],
+    "annotation": "morphology_and_spatial_outputs",
+    "license_status": "verify_dataset_specific_terms",
+    "commercial_use": null,
+    "notes": "Useful for parser and nominal-domain testing, not fold/crack efficacy evaluation."
+  }
+]
+
