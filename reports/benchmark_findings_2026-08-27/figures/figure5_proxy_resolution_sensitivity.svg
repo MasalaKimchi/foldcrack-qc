@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="700" height="395" preserveAspectRatio="xMinYMin meet" viewBox="0 0 700 395" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>Multiplex proxy resolution sensitivity</title>
+	<desc>Signed change in COMET and CosMx perturbation-response Dice between 256-pixel and 896-pixel analyses.</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="700" height="395"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-395)" style="clip-path: url(#clip)">
+		<g transform="">
+			<text x="16" y="374" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,748) scale(1,-1)">Multiplex proxy response changes with analysis resolution</text>
+			<text x="16" y="359" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,718) scale(1,-1)">Change in group-macro perturbation Dice: 896-pixel analysis minus matched 256-pixel analysis</text>
+			<text x="16" y="326" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,652) scale(1,-1)">A</text>
+			<text x="36" y="326" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,652) scale(1,-1)">COMET</text>
+			<path d="M 153,86 L 153,308 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="147.40025" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">-0.4</text>
+			<path d="M 198,86 L 198,308 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="192.40025" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">-0.2</text>
+			<path d="M 243,86 L 243,308 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1;"/>
+			<text x="236.5845" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">+0.0</text>
+			<path d="M 288,86 L 288,308 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="281.5845" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">+0.2</text>
+			<path d="M 333,86 L 333,308 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="326.5845" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">+0.4</text>
+			<text x="101.8118" y="287.2666666666667" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,574) scale(1,-1)">Classical · fold</text>
+			<path d="M 243,289.666667 L 234.600868,289.666667 Z" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<circle cx="234.60086807625245" cy="289.6666666666667" r="4" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(48%,51%,56%); fill-rule: evenodd;"/>
+			<text x="239.60086807625245" y="294.6666666666667" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,589) scale(1,-1)">-0.037</text>
+			<text x="96.60589999999999" y="250.6" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,501) scale(1,-1)">Classical · crack</text>
+			<path d="M 243,253 L 223.001763,253 Z" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<rect x="219.0017628233756" y="249.0" width="8.0" height="8.0" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="228.0017628233756" y="258.0" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,516) scale(1,-1)">-0.089</text>
+			<text x="64.94839999999999" y="213.93333333333334" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,427) scale(1,-1)">Nominal-ref. anomaly · fold</text>
+			<path d="M 243,216.333333 L 254.914406,216.333333 Z" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<circle cx="254.91440585759398" cy="216.33333333333334" r="4" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(76%,54%,0%); fill-rule: evenodd;"/>
+			<text x="259.914405857594" y="213.93333333333334" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,427) scale(1,-1)">+0.053</text>
+			<text x="59.74250000000001" y="177.26666666666668" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,354) scale(1,-1)">Nominal-ref. anomaly · crack</text>
+			<path d="M 243,179.666667 L 256.088859,179.666667 Z" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<rect x="252.08885934826185" y="175.66666666666669" width="8.0" height="8.0" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="261.08885934826185" y="177.26666666666668" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,354) scale(1,-1)">+0.058</text>
+			<text x="109.2555" y="140.6" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,281) scale(1,-1)">Hybrid · fold</text>
+			<path d="M 243,143 L 278.375665,143 Z" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<circle cx="278.37566540087465" cy="143.0" r="4" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<text x="283.37566540087465" y="140.6" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,281) scale(1,-1)">+0.157</text>
+			<text x="104.0496" y="103.93333333333334" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,207) scale(1,-1)">Hybrid · crack</text>
+			<path d="M 243,106.333333 L 282.792784,106.333333 Z" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<rect x="278.7927841201349" y="102.33333333333334" width="8.0" height="8.0" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="287.7927841201349" y="103.93333333333334" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,207) scale(1,-1)">+0.177</text>
+			<text x="360" y="326" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,652) scale(1,-1)">B</text>
+			<text x="380" y="326" style="font-family: Helvetica-Bold; font-size: 9px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,652) scale(1,-1)">CosMx</text>
+			<path d="M 497,86 L 497,308 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="491.40025" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">-0.4</text>
+			<path d="M 542,86 L 542,308 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="536.40025" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">-0.2</text>
+			<path d="M 587,86 L 587,308 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1;"/>
+			<text x="580.5845" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">+0.0</text>
+			<path d="M 632,86 L 632,308 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="625.5845" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">+0.2</text>
+			<path d="M 677,86 L 677,308 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="670.5845" y="73" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">+0.4</text>
+			<text x="445.8118" y="287.2666666666667" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,574) scale(1,-1)">Classical · fold</text>
+			<path d="M 587,289.666667 L 570.709394,289.666667 Z" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<circle cx="570.7093943249696" cy="289.6666666666667" r="4" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(48%,51%,56%); fill-rule: evenodd;"/>
+			<text x="575.7093943249696" y="294.6666666666667" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,589) scale(1,-1)">-0.072</text>
+			<text x="440.6059" y="250.6" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,501) scale(1,-1)">Classical · crack</text>
+			<path d="M 587,253 L 512.233665,253 Z" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<rect x="508.2336649278461" y="249.0" width="8.0" height="8.0" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="517.2336649278461" y="258.0" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,516) scale(1,-1)">-0.332</text>
+			<text x="408.9484" y="213.93333333333334" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,427) scale(1,-1)">Nominal-ref. anomaly · fold</text>
+			<path d="M 587,216.333333 L 614.80342,216.333333 Z" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<circle cx="614.803420046491" cy="216.33333333333334" r="4" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(76%,54%,0%); fill-rule: evenodd;"/>
+			<text x="619.803420046491" y="213.93333333333334" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,427) scale(1,-1)">+0.124</text>
+			<text x="403.7425" y="177.26666666666668" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,354) scale(1,-1)">Nominal-ref. anomaly · crack</text>
+			<path d="M 587,179.666667 L 597.067219,179.666667 Z" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<rect x="593.0672189550087" y="175.66666666666669" width="8.0" height="8.0" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="602.0672189550087" y="177.26666666666668" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,354) scale(1,-1)">+0.045</text>
+			<text x="453.2555" y="140.6" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,281) scale(1,-1)">Hybrid · fold</text>
+			<path d="M 587,143 L 618.945643,143 Z" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<circle cx="618.945643017169" cy="143.0" r="4" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<text x="623.945643017169" y="140.6" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,281) scale(1,-1)">+0.142</text>
+			<text x="448.0496" y="103.93333333333334" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,207) scale(1,-1)">Hybrid · crack</text>
+			<path d="M 587,106.333333 L 541.929335,106.333333 Z" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<rect x="537.9293349445787" y="102.33333333333334" width="8.0" height="8.0" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="546.9293349445787" y="111.33333333333334" style="font-family: Helvetica; font-size: 6.2px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,222) scale(1,-1)">-0.200</text>
+			<circle cx="190" cy="47" r="4" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(48%,51%,56%); fill-rule: evenodd;"/>
+			<text x="199" y="44.5" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,89) scale(1,-1)">fold</text>
+			<rect x="246" y="43" width="8" height="8" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.4; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="259" y="44.5" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,89) scale(1,-1)">crack</text>
+			<text x="553.8375" y="44.5" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,89) scale(1,-1)">Largest |shift|: 0.332 (CosMx Classical crack)</text>
+			<text x="16" y="18" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,36) scale(1,-1)">Sensitivity analysis only; no interval is estimated for the paired resolution difference, and neither resolution is natural-artifact ground truth.</text>
+		</g>
+	</g>
+</svg>

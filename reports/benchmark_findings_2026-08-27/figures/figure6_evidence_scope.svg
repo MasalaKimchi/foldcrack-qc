@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="700" height="365" preserveAspectRatio="xMinYMin meet" viewBox="0 0 700 365" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>Evidence boundary and next validation gate</title>
+	<desc>Matrix distinguishing demonstrated execution, exploratory H&amp;E evidence, proxy-only evidence, and required internal and prospective validation.</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="700" height="365"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-365)" style="clip-path: url(#clip)">
+		<g transform="">
+			<text x="16" y="344" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,688) scale(1,-1)">Evidence boundary and the shortest path to a defensible internal benchmark</text>
+			<text x="16" y="329" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,658) scale(1,-1)">A shared software platform is feasible; efficacy evidence must remain modality- and artifact-specific</text>
+			<text x="212.2195" y="310" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,620) scale(1,-1)">Software</text>
+			<text x="210.662" y="300" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,600) scale(1,-1)">execution</text>
+			<text x="312.223" y="310" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,620) scale(1,-1)">H&amp;E fold</text>
+			<text x="307.939" y="300" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,600) scale(1,-1)">localization</text>
+			<text x="409.8815" y="310" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,620) scale(1,-1)">Crack/tear</text>
+			<text x="407.939" y="300" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,600) scale(1,-1)">localization</text>
+			<text x="500.358" y="310" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,620) scale(1,-1)">Natural COMET/</text>
+			<text x="500.939" y="300" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,600) scale(1,-1)">CosMx artifacts</text>
+			<text x="607.5505" y="310" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,620) scale(1,-1)">Operational</text>
+			<text x="616.885" y="300" style="font-family: Helvetica-Bold; font-size: 7.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,600) scale(1,-1)">safety</text>
+			<text x="75.55919999999999" y="259.5" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,519) scale(1,-1)">Synthetic engineering smoke</text>
+			<rect x="177" y="241" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(86%,91%,96%); fill-rule: evenodd;"/>
+			<text x="204.1418" y="259.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,519) scale(1,-1)">Demonstrated</text>
+			<rect x="277" y="241" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="309.2384" y="259.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,519) scale(1,-1)">Not efficacy</text>
+			<rect x="377" y="241" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="409.2384" y="259.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,519) scale(1,-1)">Not efficacy</text>
+			<rect x="477" y="241" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="509.2384" y="259.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,519) scale(1,-1)">Not efficacy</text>
+			<rect x="577" y="241" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="605.648" y="259.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,519) scale(1,-1)">Not measured</text>
+			<text x="95.172" y="217.5" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,435) scale(1,-1)">Public H&amp;E locked test</text>
+			<rect x="177" y="199" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(86%,91%,96%); fill-rule: evenodd;"/>
+			<text x="204.1418" y="217.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,435) scale(1,-1)">Demonstrated</text>
+			<rect x="277" y="199" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(95%,90%,74%); fill-rule: evenodd;"/>
+			<text x="308.1062" y="217.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,435) scale(1,-1)">Exploratory</text>
+			<rect x="377" y="199" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="412.8288" y="217.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,435) scale(1,-1)">No labels</text>
+			<rect x="477" y="199" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="507.722" y="217.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,435) scale(1,-1)">Out of scope</text>
+			<rect x="577" y="199" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="605.648" y="217.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,435) scale(1,-1)">Not measured</text>
+			<text x="98.38319999999999" y="175.5" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,351) scale(1,-1)">Public multiplex proxy</text>
+			<rect x="177" y="157" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(86%,91%,96%); fill-rule: evenodd;"/>
+			<text x="204.1418" y="175.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,351) scale(1,-1)">Demonstrated</text>
+			<rect x="277" y="157" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="307.722" y="175.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,351) scale(1,-1)">Out of scope</text>
+			<rect x="377" y="157" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(95%,90%,74%); fill-rule: evenodd;"/>
+			<text x="409.6158" y="175.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,351) scale(1,-1)">Proxy only</text>
+			<rect x="477" y="157" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(95%,90%,74%); fill-rule: evenodd;"/>
+			<text x="509.6158" y="175.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,351) scale(1,-1)">Proxy only</text>
+			<rect x="577" y="157" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(90%,91%,93%); fill-rule: evenodd;"/>
+			<text x="605.648" y="175.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,351) scale(1,-1)">Not measured</text>
+			<text x="68.74799999999999" y="133.5" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,267) scale(1,-1)">Internal adjudicated locked test</text>
+			<rect x="177" y="115" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="204.3288" y="133.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,267) scale(1,-1)">Required next</text>
+			<rect x="277" y="115" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="304.3288" y="133.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,267) scale(1,-1)">Required next</text>
+			<rect x="377" y="115" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="404.3288" y="133.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,267) scale(1,-1)">Required next</text>
+			<rect x="477" y="115" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="504.3288" y="133.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,267) scale(1,-1)">Required next</text>
+			<rect x="577" y="115" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="604.3288" y="133.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,267) scale(1,-1)">Required next</text>
+			<text x="79.1664" y="91.5" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,183) scale(1,-1)">Prospective silent validation</text>
+			<rect x="177" y="73" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="212.2644" y="91.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,183) scale(1,-1)">Required</text>
+			<rect x="277" y="73" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="315.6644" y="91.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,183) scale(1,-1)">Monitor</text>
+			<rect x="377" y="73" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="415.6644" y="91.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,183) scale(1,-1)">Monitor</text>
+			<rect x="477" y="73" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="515.6644" y="91.5" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,183) scale(1,-1)">Monitor</text>
+			<rect x="577" y="73" width="99" height="41" style="stroke: rgb(100%,100%,100%); stroke-linecap: butt; stroke-width: 0.8; fill: rgb(96%,87%,82%); fill-rule: evenodd;"/>
+			<text x="612.2644" y="91.5" style="font-family: Helvetica-Bold; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,183) scale(1,-1)">Required</text>
+			<text x="16" y="29" style="font-family: Helvetica-Bold; font-size: 7.1px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,58) scale(1,-1)">Next decision gate: dual-reviewer ontology pilot → group-disjoint development/calibration → untouched internal test → prospective workflow validation.</text>
+			<text x="16" y="17" style="font-family: Helvetica; font-size: 6.6px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,34) scale(1,-1)">A pooled three-modality score must not compensate for failure in any required modality, artifact subtype, or acquisition stratum.</text>
+		</g>
+	</g>
+</svg>

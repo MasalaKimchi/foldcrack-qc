@@ -1,0 +1,80 @@
+[
+  {
+    "artifact": "Crack perturbation",
+    "artifact_key": "crack",
+    "ci_high": 0.7079567706077691,
+    "ci_low": 0.37301843146411906,
+    "dice": 0.5672992091459619,
+    "method": "Classical",
+    "method_key": "classical",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5,
+    "n_test_rows": 15
+  },
+  {
+    "artifact": "Fold perturbation",
+    "artifact_key": "fold",
+    "ci_high": 0.5733898530640607,
+    "ci_low": 0.41195363747961783,
+    "dice": 0.5001157505811523,
+    "method": "Classical",
+    "method_key": "classical",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5,
+    "n_test_rows": 15
+  },
+  {
+    "artifact": "Crack perturbation",
+    "artifact_key": "crack",
+    "ci_high": 0.09784570790138225,
+    "ci_low": 0.028611035894761033,
+    "dice": 0.06456247741986017,
+    "method": "Nominal-reference anomaly",
+    "method_key": "clean_reference_anomaly",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5,
+    "n_test_rows": 15
+  },
+  {
+    "artifact": "Fold perturbation",
+    "artifact_key": "fold",
+    "ci_high": 0.23386299843043806,
+    "ci_low": 0.03604071112781661,
+    "dice": 0.13495185477912736,
+    "method": "Nominal-reference anomaly",
+    "method_key": "clean_reference_anomaly",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5,
+    "n_test_rows": 15
+  },
+  {
+    "artifact": "Crack perturbation",
+    "artifact_key": "crack",
+    "ci_high": 0.7394177076870376,
+    "ci_low": 0.3353913344080526,
+    "dice": 0.5674622708025095,
+    "method": "Hybrid",
+    "method_key": "hybrid",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5,
+    "n_test_rows": 15
+  },
+  {
+    "artifact": "Fold perturbation",
+    "artifact_key": "fold",
+    "ci_high": 0.4859095213336112,
+    "ci_low": 0.27895855440884987,
+    "dice": 0.3822310439902747,
+    "method": "Hybrid",
+    "method_key": "hybrid",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5,
+    "n_test_rows": 15
+  }
+]

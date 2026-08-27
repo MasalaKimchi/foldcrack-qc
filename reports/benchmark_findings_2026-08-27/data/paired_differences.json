@@ -1,0 +1,56 @@
+[
+  {
+    "ci_excludes_zero": true,
+    "ci_high": 0.0842316032594091,
+    "ci_low": 0.05312992398581019,
+    "contrast": "Hibou-B linear probe − DINOv2-small linear probe",
+    "contrast_key": "hibou_linear_minus_dinov2_linear",
+    "point_difference": 0.06797402726836999,
+    "short_contrast": "Hibou linear − DINOv2 linear"
+  },
+  {
+    "ci_excludes_zero": true,
+    "ci_high": 0.08317269287326896,
+    "ci_low": 0.06186204975226722,
+    "contrast": "DINOv2-small linear probe − SigLIP2 Base linear probe",
+    "contrast_key": "dinov2_linear_minus_siglip2_linear",
+    "point_difference": 0.07271614181947805,
+    "short_contrast": "DINOv2 linear − SigLIP2 linear"
+  },
+  {
+    "ci_excludes_zero": true,
+    "ci_high": 0.11566854734332438,
+    "ci_low": 0.045191185730058515,
+    "contrast": "SigLIP2 Base linear probe − Classical fold candidate",
+    "contrast_key": "siglip2_linear_minus_classical",
+    "point_difference": 0.08043876175588077,
+    "short_contrast": "SigLIP2 linear − Classical"
+  },
+  {
+    "ci_excludes_zero": true,
+    "ci_high": 0.15878987847334422,
+    "ci_low": 0.05235906589118685,
+    "contrast": "Classical fold candidate − DINOv2-small PatchKNN",
+    "contrast_key": "classical_minus_dinov2_patchknn",
+    "point_difference": 0.10518675201310562,
+    "short_contrast": "Classical − DINOv2 PatchKNN"
+  },
+  {
+    "ci_excludes_zero": true,
+    "ci_high": 0.17352846755623258,
+    "ci_low": 0.08605056909008804,
+    "contrast": "Classical fold candidate − Hibou-B PatchKNN",
+    "contrast_key": "classical_minus_hibou_patchknn",
+    "point_difference": 0.1270929036354364,
+    "short_contrast": "Classical − Hibou PatchKNN"
+  },
+  {
+    "ci_excludes_zero": false,
+    "ci_high": 0.05427174028701049,
+    "ci_low": -0.010370148217606442,
+    "contrast": "DINOv2-small PatchKNN − Hibou-B PatchKNN",
+    "contrast_key": "dinov2_patchknn_minus_hibou_patchknn",
+    "point_difference": 0.021906151622330783,
+    "short_contrast": "DINOv2 PatchKNN − Hibou PatchKNN"
+  }
+]

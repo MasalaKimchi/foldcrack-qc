@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="700" height="445" preserveAspectRatio="xMinYMin meet" viewBox="0 0 700 445" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>COMET and CosMx controlled-perturbation proxy evidence</title>
+	<desc>Fold and crack perturbation Dice plus untouched real-field alert burden for classical, nominal-reference anomaly, and hybrid branches.</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="700" height="445"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-445)" style="clip-path: url(#clip)">
+		<g transform="">
+			<text x="16" y="424" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,848) scale(1,-1)">Real-background COMET and CosMx experiments remain proxy evidence</text>
+			<text x="16" y="409" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,818) scale(1,-1)">Synthetic fold/crack perturbations were inserted into held-out real fields; natural artifacts were not labeled</text>
+			<text x="16" y="377" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,754) scale(1,-1)">A</text>
+			<text x="36" y="377" style="font-family: Helvetica-Bold; font-size: 8.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,754) scale(1,-1)">COMET: controlled perturbation Dice</text>
+			<path d="M 50,242 L 341,242 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="36.243" y="239.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,479) scale(1,-1)">0.0</text>
+			<path d="M 50,272 L 341,272 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="36.243" y="269.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,539) scale(1,-1)">0.2</text>
+			<path d="M 50,302 L 341,302 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="36.243" y="299.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,599) scale(1,-1)">0.4</text>
+			<path d="M 50,332 L 341,332 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="36.243" y="329.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,659) scale(1,-1)">0.6</text>
+			<path d="M 50,362 L 341,362 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="36.243" y="359.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,719) scale(1,-1)">0.8</text>
+			<text x="92.8" y="229" style="font-family: Helvetica; font-size: 6.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,458) scale(1,-1)">Classical</text>
+			<rect x="84.72" y="242" width="19.0" height="75.01736258717284" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(48%,51%,56%); fill-rule: evenodd;"/>
+			<path d="M 94.22,303.793046 L 94.22,328.008478 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 91.72,303.793046 L 96.72,303.793046 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 91.72,328.008478 L 96.72,328.008478 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="88.5766" y="321.01736258717284" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,642) scale(1,-1)">0.50</text>
+			<rect x="108.28" y="242" width="19.0" height="85.0948813718943" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 117.78,297.952765 L 117.78,348.193516 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 115.28,297.952765 L 120.28,297.952765 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 115.28,348.193516 L 120.28,348.193516 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="112.1366" y="331.0948813718943" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,662) scale(1,-1)">0.57</text>
+			<text x="164.64339999999999" y="229" style="font-family: Helvetica; font-size: 6.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,458) scale(1,-1)">Nominal-ref. anomaly</text>
+			<rect x="174.72" y="242" width="19.0" height="20.242778216869112" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(76%,54%,0%); fill-rule: evenodd;"/>
+			<path d="M 184.22,247.406107 L 184.22,277.07945 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 181.72,247.406107 L 186.72,247.406107 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 181.72,277.07945 L 186.72,277.07945 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="178.57659999999998" y="266.2427782168691" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,532) scale(1,-1)">0.13</text>
+			<rect x="198.28" y="242" width="19.0" height="9.684371612979021" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 207.78,246.291655 L 207.78,256.676856 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 205.28,246.291655 L 210.28,246.291655 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 205.28,256.676856 L 210.28,256.676856 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="202.1366" y="255.68437161297902" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,511) scale(1,-1)">0.06</text>
+			<text x="276.4663" y="229" style="font-family: Helvetica; font-size: 6.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,458) scale(1,-1)">Hybrid</text>
+			<rect x="264.72" y="242" width="19.0" height="57.33465659854119" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<path d="M 274.22,283.843783 L 274.22,314.886428 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 271.72,283.843783 L 276.72,283.843783 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 271.72,314.886428 L 276.72,314.886428 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="268.57660000000004" y="303.3346565985412" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,606) scale(1,-1)">0.38</text>
+			<rect x="288.28" y="242" width="19.0" height="85.11934062037642" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 297.78,292.3087 L 297.78,352.912656 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 295.28,292.3087 L 300.28,292.3087 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 295.28,352.912656 L 300.28,352.912656 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="292.1366" y="331.1193406203764" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,662) scale(1,-1)">0.57</text>
+			<path d="M 50,242 L 341,242 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="360" y="377" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,754) scale(1,-1)">B</text>
+			<text x="380" y="377" style="font-family: Helvetica-Bold; font-size: 8.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,754) scale(1,-1)">CosMx: controlled perturbation Dice</text>
+			<path d="M 394,242 L 685,242 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="380.243" y="239.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,479) scale(1,-1)">0.0</text>
+			<path d="M 394,272 L 685,272 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="380.243" y="269.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,539) scale(1,-1)">0.2</text>
+			<path d="M 394,302 L 685,302 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="380.243" y="299.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,599) scale(1,-1)">0.4</text>
+			<path d="M 394,332 L 685,332 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="380.243" y="329.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,659) scale(1,-1)">0.6</text>
+			<path d="M 394,362 L 685,362 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="380.243" y="359.5" style="font-family: Helvetica; font-size: 6.3px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,719) scale(1,-1)">0.8</text>
+			<text x="436.8" y="229" style="font-family: Helvetica; font-size: 6.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,458) scale(1,-1)">Classical</text>
+			<rect x="428.72" y="242" width="19.0" height="58.955755924220625" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(48%,51%,56%); fill-rule: evenodd;"/>
+			<path d="M 438.22,279.847371 L 438.22,332.398823 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 435.72,279.847371 L 440.72,279.847371 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 435.72,332.398823 L 440.72,332.398823 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="432.57660000000004" y="304.9557559242206" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,609) scale(1,-1)">0.39</text>
+			<rect x="452.28" y="242" width="19.0" height="35.295612885778496" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 461.78,253.848406 L 461.78,307.705747 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 459.28,253.848406 L 464.28,253.848406 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 459.28,307.705747 L 464.28,307.705747 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="456.1366" y="281.2956128857785" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,562) scale(1,-1)">0.24</text>
+			<text x="508.6434" y="229" style="font-family: Helvetica; font-size: 6.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,458) scale(1,-1)">Nominal-ref. anomaly</text>
+			<rect x="518.72" y="242" width="19.0" height="28.877179172025762" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(76%,54%,0%); fill-rule: evenodd;"/>
+			<path d="M 528.22,249.492963 L 528.22,297.330151 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 525.72,249.492963 L 530.72,249.492963 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 525.72,297.330151 L 530.72,297.330151 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="522.5766" y="274.87717917202576" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,549) scale(1,-1)">0.19</text>
+			<rect x="542.28" y="242" width="19.0" height="11.188368962452586" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 551.78,247.243429 L 551.78,261.420894 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 549.28,247.243429 L 554.28,247.243429 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 549.28,261.420894 L 554.28,261.420894 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="546.1365999999999" y="257.1883689624526" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,514) scale(1,-1)">0.07</text>
+			<text x="620.4663" y="229" style="font-family: Helvetica; font-size: 6.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,458) scale(1,-1)">Hybrid</text>
+			<rect x="608.72" y="242" width="19.0" height="56.40479151026068" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<path d="M 618.22,278.337026 L 618.22,327.423498 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 615.72,278.337026 L 620.72,278.337026 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 615.72,327.423498 L 620.72,327.423498 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="612.5766" y="302.4047915102607" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,604) scale(1,-1)">0.38</text>
+			<rect x="632.28" y="242" width="19.0" height="35.07231102329905" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 641.78,252.044248 L 641.78,302.100374 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 639.28,252.044248 L 644.28,252.044248 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<path d="M 639.28,302.100374 L 644.28,302.100374 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="636.1365999999999" y="281.07231102329905" style="font-family: Helvetica; font-size: 5.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,562) scale(1,-1)">0.23</text>
+			<path d="M 394,242 L 685,242 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="16" y="195" style="font-family: Helvetica-Bold; font-size: 10px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,390) scale(1,-1)">C</text>
+			<text x="36" y="195" style="font-family: Helvetica-Bold; font-size: 8.6px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,390) scale(1,-1)">Untouched real-field alert burden (not a false-positive rate)</text>
+			<path d="M 51,62 L 685,62 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="36.751999999999995" y="59.5" style="font-family: Helvetica; font-size: 6.4px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,119) scale(1,-1)">0%</text>
+			<path d="M 51,78.428571 L 685,78.428571 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="33.1936" y="75.92857142857143" style="font-family: Helvetica; font-size: 6.4px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,151) scale(1,-1)">10%</text>
+			<path d="M 51,94.857143 L 685,94.857143 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="33.1936" y="92.35714285714286" style="font-family: Helvetica; font-size: 6.4px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,184) scale(1,-1)">20%</text>
+			<path d="M 51,111.285714 L 685,111.285714 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="33.1936" y="108.78571428571428" style="font-family: Helvetica; font-size: 6.4px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,217) scale(1,-1)">30%</text>
+			<path d="M 51,127.714286 L 685,127.714286 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="33.1936" y="125.21428571428571" style="font-family: Helvetica; font-size: 6.4px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,250) scale(1,-1)">40%</text>
+			<path d="M 51,144.142857 L 685,144.142857 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="33.1936" y="141.64285714285714" style="font-family: Helvetica; font-size: 6.4px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,283) scale(1,-1)">50%</text>
+			<path d="M 51,160.571429 L 685,160.571429 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="33.1936" y="158.07142857142856" style="font-family: Helvetica; font-size: 6.4px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,316) scale(1,-1)">60%</text>
+			<path d="M 51,177 L 685,177 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="33.1936" y="174.5" style="font-family: Helvetica; font-size: 6.4px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,349) scale(1,-1)">70%</text>
+			<text x="151.9" y="49" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,98) scale(1,-1)">Classical</text>
+			<path d="M 151.5,63.114148 L 151.5,65.471153 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 148.5,63.114148 L 154.5,63.114148 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 148.5,65.471153 L 154.5,65.471153 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="151.5" cy="64.19830547520097" r="4.0" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.6; fill: rgb(48%,51%,56%); fill-rule: evenodd;"/>
+			<text x="144.663" y="70.19830547520097" style="font-family: Helvetica; font-size: 6.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,140) scale(1,-1)">1.3%</text>
+			<path d="M 179.5,62.194772 L 179.5,76.26163 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 176.5,62.194772 L 182.5,62.194772 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 176.5,76.26163 L 182.5,76.26163 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="179.5 71.50071, 184 67.00071, 179.5 62.50071, 175 67.00071" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.5; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="172.663" y="73.00070537333139" style="font-family: Helvetica; font-size: 6.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,146) scale(1,-1)">3.0%</text>
+			<text x="336.1932" y="49" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,98) scale(1,-1)">Nominal-ref. anomaly</text>
+			<path d="M 354.5,62.801431 L 354.5,64.994819 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 351.5,62.801431 L 357.5,62.801431 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 351.5,64.994819 L 357.5,64.994819 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="354.5" cy="63.89453622827387" r="4.0" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.6; fill: rgb(76%,54%,0%); fill-rule: evenodd;"/>
+			<text x="347.663" y="69.89453622827386" style="font-family: Helvetica; font-size: 6.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,139) scale(1,-1)">1.2%</text>
+			<path d="M 382.5,62 L 382.5,132.251002 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 379.5,62 L 385.5,62 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 379.5,132.251002 L 385.5,132.251002 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="382.5 90.04722, 387 85.54722, 382.5 81.04722, 378 85.54722" style="stroke: rgb(76%,54%,0%); stroke-linecap: butt; stroke-width: 1.5; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="373.995" y="91.54722241552759" style="font-family: Helvetica; font-size: 6.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,183) scale(1,-1)">14.3%</text>
+			<text x="561.6774" y="49" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,98) scale(1,-1)">Hybrid</text>
+			<path d="M 557.5,63.121963 L 557.5,65.554186 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 554.5,63.121963 L 560.5,63.121963 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 554.5,65.554186 L 560.5,65.554186 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="557.5" cy="64.23975752921908" r="4.0" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.6; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<text x="550.663" y="70.23975752921908" style="font-family: Helvetica; font-size: 6.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,140) scale(1,-1)">1.4%</text>
+			<path d="M 585.5,62.130237 L 585.5,156.646211 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 582.5,62.130237 L 588.5,62.130237 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 582.5,156.646211 L 588.5,156.646211 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<polygon points="585.5 98.46288, 590 93.96288, 585.5 89.46288, 581 93.96288" style="stroke: rgb(18%,41%,72%); stroke-linecap: butt; stroke-width: 1.5; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="576.995" y="99.96287946841095" style="font-family: Helvetica; font-size: 6.0px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,199) scale(1,-1)">19.5%</text>
+			<path d="M 51,62 L 685,62 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<rect x="18" y="210" width="12" height="8" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1; fill: rgb(48%,51%,56%); fill-rule: evenodd;"/>
+			<text x="34" y="210" style="font-family: Helvetica; font-size: 6.1px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,420) scale(1,-1)">A–B: filled = fold</text>
+			<rect x="132" y="210" width="12" height="8" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="148" y="210" style="font-family: Helvetica; font-size: 6.1px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,420) scale(1,-1)">outline = crack</text>
+			<circle cx="471" cy="214" r="4" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.6; fill: rgb(48%,51%,56%); fill-rule: evenodd;"/>
+			<text x="480" y="210" style="font-family: Helvetica; font-size: 6.1px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,420) scale(1,-1)">C: COMET</text>
+			<polygon points="536 218.5, 540.5 214, 536 209.5, 531.5 214" style="stroke: rgb(48%,51%,56%); stroke-linecap: butt; stroke-width: 1.5; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="546" y="210" style="font-family: Helvetica; font-size: 6.1px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,420) scale(1,-1)">C: CosMx</text>
+			<text x="16" y="18" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,36) scale(1,-1)">Whiskers: descriptive 95% group-bootstrap intervals. COMET n=5 provisional field groups; CosMx n=4 provisional slide/run groups; higher-level independence unverified.</text>
+		</g>
+	</g>
+</svg>

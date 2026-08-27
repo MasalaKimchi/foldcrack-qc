@@ -1,0 +1,74 @@
+[
+  {
+    "access": "BSD-3-Clause-Clear",
+    "current_evidence": "Not run in this repository",
+    "decision": "Add as an open operational QC baseline; define an output-to-fold mapping before localization scoring",
+    "domain": "H&E WSI QC",
+    "model_or_method": "HistoQC",
+    "priority": 1
+  },
+  {
+    "access": "Non-commercial / CC BY-NC-SA; legal review required",
+    "current_evidence": "Not run; public manual test masks exist",
+    "decision": "Strong public comparator after written clearance",
+    "domain": "H&E multiclass artifact segmentation",
+    "model_or_method": "GrandQC",
+    "priority": 2
+  },
+  {
+    "access": "Obtain Merck internal assets and exact split",
+    "current_evidence": "Paper only; no official public code/checkpoint found",
+    "decision": "Internal reproduction is preferable to reimplementation",
+    "domain": "H&E artifact-union anomaly mapping",
+    "model_or_method": "DiffusionQC",
+    "priority": 3
+  },
+  {
+    "access": "Apache-2.0",
+    "current_evidence": "Frozen PatchKNN and mask-supervised linear probe completed",
+    "decision": "Retain as current pathology-specific H&E comparator",
+    "domain": "Pathology tile encoder",
+    "model_or_method": "Hibou-B",
+    "priority": 4
+  },
+  {
+    "access": "Apache-2.0",
+    "current_evidence": "Frozen heads plus MPS/LoRA engineering smoke completed",
+    "decision": "Retain as stable, permissive generic control",
+    "domain": "Generic RGB encoder",
+    "model_or_method": "DINOv2-small",
+    "priority": 5
+  },
+  {
+    "access": "Meta custom license acceptance; institutional review",
+    "current_evidence": "Not run",
+    "decision": "Run same frozen heads after approval; newer is not evidence of superiority",
+    "domain": "Newer generic dense vision encoder",
+    "model_or_method": "DINOv3",
+    "priority": 6
+  },
+  {
+    "access": "Gated CC BY-NC-ND; commercial permission required",
+    "current_evidence": "Not run",
+    "decision": "Defer until license and 681M-model resource case are justified",
+    "domain": "Large H&E/IHC pathology encoder",
+    "model_or_method": "UNI2-h",
+    "priority": 7
+  },
+  {
+    "access": "Gated CC BY-NC-ND; commercial permission required",
+    "current_evidence": "Not run; no official CONCH v2 located",
+    "decision": "Use exact model ID; defer until legal and semantic-use case are clear",
+    "domain": "Pathology vision-language encoder",
+    "model_or_method": "CONCHv1.5",
+    "priority": 8
+  },
+  {
+    "access": "Gated CC BY-NC-ND; commercial/derivative permission required",
+    "current_evidence": "Not run; no fold/crack localization head",
+    "decision": "Most aligned reviewed frozen COMET candidate after written approval and labels",
+    "domain": "Marker-aware multiplex spatial-proteomics encoder",
+    "model_or_method": "KRONOS2",
+    "priority": 9
+  }
+]

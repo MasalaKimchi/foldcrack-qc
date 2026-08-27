@@ -1,0 +1,34 @@
+[
+  {
+    "evidence": "Synthetic engineering smoke",
+    "input": "36 generated images / 3 modality contracts",
+    "invalid_claim": "Real-data efficacy or method ranking",
+    "reference": "Generator masks",
+    "status": "Engineering only",
+    "valid_claim": "Software execution, geometry, metric and failure-path checks"
+  },
+  {
+    "evidence": "Public H&E locked test",
+    "input": "424 microscope fields from 55 supplied source-slide groups",
+    "invalid_claim": "Crack, WSI, Merck, COMET, CosMx or clinical performance",
+    "reference": "245 manual fold masks; 179 clean fields",
+    "status": "Exploratory real-label evidence",
+    "valid_claim": "Cohort-conditional H&E fold localization/presence"
+  },
+  {
+    "evidence": "Public COMET/CosMx proxy",
+    "input": "5 COMET DAPI fields; 6 CosMx morphology FOVs / 4 groups",
+    "invalid_claim": "Natural-artifact Dice, ROC, sensitivity, specificity or FPR",
+    "reference": "Controlled synthetic perturbations on real backgrounds",
+    "status": "Non-reportable proxy",
+    "valid_claim": "Perturbation recovery and untouched alert burden"
+  },
+  {
+    "evidence": "DINOv2/SigLIP2 MPS + LoRA smoke",
+    "input": "Two deterministic 224×224 engineering patches",
+    "invalid_claim": "LoRA efficacy or generalization",
+    "reference": "CPU/MPS numerical agreement and one optimizer step",
+    "status": "Engineering only",
+    "valid_claim": "Local execution and narrow PEFT feasibility"
+  }
+]

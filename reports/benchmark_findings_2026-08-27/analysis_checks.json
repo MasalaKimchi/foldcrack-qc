@@ -1,0 +1,240 @@
+{
+  "claim_status": "internal feasibility; share with caveats",
+  "extracted_not_independently_recomputed": [
+    "all bootstrap confidence intervals",
+    "AUROC, average precision, sensitivity and specificity",
+    "per-organ metrics",
+    "paired-comparison point estimates and intervals",
+    "multiplex proxy Dice and alert-burden source metrics",
+    "foundation-smoke timing and parity metrics",
+    "external literature and license assertions"
+  ],
+  "figure_files": {
+    "Figure 1 — H&E locked test": {
+      "pdf": "figures/figure1_he_locked_test.pdf",
+      "png": "figures/figure1_he_locked_test.png",
+      "svg": "figures/figure1_he_locked_test.svg"
+    },
+    "Figure 2 — organ heterogeneity": {
+      "pdf": "figures/figure2_he_organ_heatmap.pdf",
+      "png": "figures/figure2_he_organ_heatmap.png",
+      "svg": "figures/figure2_he_organ_heatmap.svg"
+    },
+    "Figure 3 — paired differences": {
+      "pdf": "figures/figure3_he_paired_differences.pdf",
+      "png": "figures/figure3_he_paired_differences.png",
+      "svg": "figures/figure3_he_paired_differences.svg"
+    },
+    "Figure 4 — multiplex proxy": {
+      "pdf": "figures/figure4_multiplex_proxy.pdf",
+      "png": "figures/figure4_multiplex_proxy.png",
+      "svg": "figures/figure4_multiplex_proxy.svg"
+    },
+    "Figure 5 — proxy resolution sensitivity": {
+      "pdf": "figures/figure5_proxy_resolution_sensitivity.pdf",
+      "png": "figures/figure5_proxy_resolution_sensitivity.png",
+      "svg": "figures/figure5_proxy_resolution_sensitivity.svg"
+    },
+    "Figure 6 — evidence scope": {
+      "pdf": "figures/figure6_evidence_scope.pdf",
+      "png": "figures/figure6_evidence_scope.png",
+      "svg": "figures/figure6_evidence_scope.svg"
+    },
+    "Figure 7 — qualitative H&E audit": {
+      "pdf": "figures/figure7_he_qualitative.pdf",
+      "png": "figures/figure7_he_qualitative.png",
+      "svg": "figures/figure7_he_qualitative.svg"
+    }
+  },
+  "he_recomputation_and_cohort_audit": {
+    "assignment_manifest_sha256": "f4bd0267ca4c46e51748ea54c790ea98550af21d24955d9b26bef6f3d16b46a1",
+    "cohort_identity_equal_across_all_methods": true,
+    "duplicate_image_sha256_count": 0,
+    "full_split_manifest_equal_across_all_methods": true,
+    "metric_spot_checks": [
+      {
+        "clean_fp_fraction_recomputed": 0.10731480310350397,
+        "clean_fp_fraction_reported": 0.10731480310350397,
+        "macro_dice_recomputed": 0.44582319350166993,
+        "macro_dice_reported": 0.44582319350167,
+        "method": "classical",
+        "micro_dice_recomputed": 0.38289244800060324,
+        "micro_dice_reported": 0.38289244800060324,
+        "n_clean_fields": 179,
+        "n_positive_fields": 245
+      },
+      {
+        "clean_fp_fraction_recomputed": 0.017887810821488746,
+        "clean_fp_fraction_reported": 0.017887810821488746,
+        "macro_dice_recomputed": 0.3406364414885643,
+        "macro_dice_reported": 0.3406364414885642,
+        "method": "dinov2_patchknn",
+        "micro_dice_recomputed": 0.43379436279492317,
+        "micro_dice_reported": 0.43379436279492317,
+        "n_clean_fields": 179,
+        "n_positive_fields": 245
+      },
+      {
+        "clean_fp_fraction_recomputed": 0.0009828965047378355,
+        "clean_fp_fraction_reported": 0.0009828965047378355,
+        "macro_dice_recomputed": 0.5989780970770288,
+        "macro_dice_reported": 0.5989780970770289,
+        "method": "dinov2_linear",
+        "micro_dice_recomputed": 0.7698236317454605,
+        "micro_dice_reported": 0.7698236317454605,
+        "n_clean_fields": 179,
+        "n_positive_fields": 245
+      },
+      {
+        "clean_fp_fraction_recomputed": 0.072817734955947,
+        "clean_fp_fraction_reported": 0.072817734955947,
+        "macro_dice_recomputed": 0.208032807867111,
+        "macro_dice_reported": 0.208032807867111,
+        "method": "siglip2_patchknn",
+        "micro_dice_recomputed": 0.224349337185237,
+        "micro_dice_reported": 0.224349337185237,
+        "n_clean_fields": 179,
+        "n_positive_fields": 245
+      },
+      {
+        "clean_fp_fraction_recomputed": 0.002985147154765072,
+        "clean_fp_fraction_reported": 0.002985147154765072,
+        "macro_dice_recomputed": 0.5262619552575507,
+        "macro_dice_reported": 0.5262619552575507,
+        "method": "siglip2_linear",
+        "micro_dice_recomputed": 0.6793344237778073,
+        "micro_dice_reported": 0.6793344237778073,
+        "n_clean_fields": 179,
+        "n_positive_fields": 245
+      },
+      {
+        "clean_fp_fraction_recomputed": 0.012206530220328355,
+        "clean_fp_fraction_reported": 0.012206530220328355,
+        "macro_dice_recomputed": 0.31873028986623353,
+        "macro_dice_reported": 0.31873028986623353,
+        "method": "hibou_patchknn",
+        "micro_dice_recomputed": 0.41769681888993454,
+        "micro_dice_reported": 0.41769681888993454,
+        "n_clean_fields": 179,
+        "n_positive_fields": 245
+      },
+      {
+        "clean_fp_fraction_recomputed": 0.0004654380083038802,
+        "clean_fp_fraction_reported": 0.0004654380083038802,
+        "macro_dice_recomputed": 0.6669521243453987,
+        "macro_dice_reported": 0.6669521243453986,
+        "method": "hibou_linear",
+        "micro_dice_recomputed": 0.8267510800428302,
+        "micro_dice_reported": 0.8267510800428302,
+        "n_clean_fields": 179,
+        "n_positive_fields": 245
+      }
+    ],
+    "n_clean_fields": 179,
+    "n_clean_source_slides": 27,
+    "n_dataset_images": 2127,
+    "n_positive_fields": 245,
+    "n_positive_source_slides": 28,
+    "n_source_slides": 55,
+    "n_test_fields": 424,
+    "n_unique_image_sha256": 2127,
+    "split_overlap_audit": {
+      "calibration_test_overlap": 0,
+      "fit_calibration_overlap": 0,
+      "fit_test_overlap": 0,
+      "group_unit": "source_slide_id",
+      "passed": true
+    }
+  },
+  "independently_recomputed": [
+    "positive-field macro Dice from per-field TP/FP/FN",
+    "all-field micro Dice from pooled per-field TP/FP/FN",
+    "clean-field predicted-area fraction from per-field FP and valid pixels",
+    "exact H&E split-manifest/cohort identity across all seven methods",
+    "duplicate image SHA-256 count across all H&E split manifests",
+    "matched 896-minus-256 multiplex proxy point differences",
+    "exact regenerated counts and presence calls, plus image scores within recorded tolerances, for seven algorithmically selected qualitative fields"
+  ],
+  "input_availability": "hashed inputs are local and gitignored; publish a frozen evidence bundle or governed object-store/DVC release for external reproduction",
+  "input_hashes": {
+    "artifacts/foundation_smoke/foundation_smoke.json": "1e00a80513770222fc7323fc5c4ec211662160c7cc15bdaa9897d348a296189f",
+    "artifacts/foundation_smoke/siglip2_base_mps_lora.json": "046f27977e35aeee794fb500df3516d38bf0d213313233d12953c06fe555f8a8",
+    "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json": "a96edf1a02878d98d7ffd6f6d5a2acd3bc482a5a8a10956ebc7a18679579da5c",
+    "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json": "a506e3e2bc53732b9470c9c6b528bb35d095bf44af85070394fecd7c8a0e4004",
+    "artifacts/public_fold/classical_hardened_v1_2.json": "a23d1836cbda7e4a1835068d485c03463d178a084dcfe55266fc2183f96bcd19",
+    "artifacts/public_fold/dinov2_hardened_v1_2.json": "5846a4edf7b7f8a882c5d211d37934bc0e3f15c18ab906cde5951e98f6b47fbd",
+    "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json": "9772cc30afa63c62befbc447fc8228fbc3937765a018de76ea58a28f5d021ac2",
+    "artifacts/public_fold/hibou_hardened_v1_2.json": "43d46447c7bcfd971691c97a3a99d10d8a78dddf4486e269f2f5ed8f1173301d",
+    "artifacts/public_fold/siglip2_hardened_v1_2.json": "4a8cbd2f45a3023a6c1313daf16be05913256b1381d5f83023bd9120e93b2596",
+    "reports/benchmark_findings_2026-08-27/qualitative_cache/case1_Brain_Fold_-20260410140426972_f43adca74814.png": "f43adca748149a777264db5a061f747cbbbdbae55fb6f67abdd7129b2a0805b7",
+    "reports/benchmark_findings_2026-08-27/qualitative_cache/case2_Kidney__Fold_-20260409155008912_19c6e416eb54.png": "19c6e416eb54f484b3370e2ce2170e60e6202b84fe9a23bee1f8f52c45565a73",
+    "reports/benchmark_findings_2026-08-27/qualitative_cache/case3_Liver__Fold_-20260406110823972_c707cacc6327.png": "c707cacc632747cbe7917a6cf414f1873638bc27c0752ea0adc89ab09cfa0f74",
+    "reports/benchmark_findings_2026-08-27/qualitative_cache/case4_Small_Intestine_Fold_-20260413150334899_be5b63afe2f5.png": "be5b63afe2f55a902ef31b896486652c15dc595b54e2939db7a432358ceda408",
+    "reports/benchmark_findings_2026-08-27/qualitative_cache/case5_Testis__Fold_-20260406101118662_bc52f9b19b17.png": "bc52f9b19b178b8ce7889950775b44995a23f5cc510e3c62cbcc38d9991fc6d2",
+    "reports/benchmark_findings_2026-08-27/qualitative_cache/case6_Brain_Clean-20260423152633332_1d20edb52790.png": "1d20edb52790688bd52a9fd7074d76a0c3dde78e6031600e9559d7186fd2f579",
+    "reports/benchmark_findings_2026-08-27/qualitative_cache/case7_Kidney_Clean-20260420151005412_9e5cacdfce6b.png": "9e5cacdfce6b734dc5aebad0b56a4270283e20c77b7e7fa5c18f9e7ae79e16ce",
+    "reports/benchmark_findings_2026-08-27/qualitative_checks.json": "9737b77b3bf981aa9f2fa81b2ae4e52d7c580663c3d6a1d050f8ef4111b928e5"
+  },
+  "multiplex_proxy_audit": {
+    "all_groups_tested_exactly_once": true,
+    "comet_fields": 5,
+    "comet_provisional_groups": 5,
+    "cosmx_fields": 6,
+    "cosmx_provisional_groups": 4,
+    "higher_level_independence_declared": false,
+    "mandatory_language": "Activity on unmodified real fields is alert burden, never a false-positive rate. Spike-in metrics are generator-conditional proxy evidence.",
+    "report_eligible": false,
+    "scientific_validation_passed": false
+  },
+  "numeric_generation_checks_passed": true,
+  "paired_audit": {
+    "estimand": "positive_field_macro_mean_dice",
+    "n_locked_test_fields": 424,
+    "n_positive_localization_fields": 245,
+    "n_positive_source_slide_groups": 28,
+    "p_values_computed": false,
+    "resamples": 10000,
+    "seed": 20260826,
+    "status": "complete_exploratory_descriptive_paired_comparison",
+    "superiority_claim_made": false
+  },
+  "qualitative_audit": {
+    "all_outcomes_match_frozen_artifacts": true,
+    "calibration_rerun": false,
+    "encoder_frozen": true,
+    "n_cases": 7,
+    "selection_rule": "Algorithmically selected without manual image review during this audit: SHA-256-minimum fold-positive locked-test field within each organ, plus the SHA-256-minimum presence FP and FN separately for each compared method; union deduplicated. Whole 896×504 px analysis fields isotropically resized from 3840×2160; no manual crops.",
+    "shallow_readout_refit_required": true,
+    "status": "passed",
+    "training_identity_check": {
+      "final_loss": 0.10894264993440102,
+      "final_loss_match": true,
+      "iterations": 88,
+      "optimizer_status_iterations_match": true,
+      "patchknn_fit_skipped_as_unused": true,
+      "token_counts_match": true
+    }
+  },
+  "report_build_environment": {
+    "determinism_scope": "byte-identical when audited inputs, generator, and recorded build toolchain are unchanged",
+    "generator_sha256": "737f13f861ed75295d3033457ab6f79f724748e35943080a716a63ce7852cadc",
+    "poppler_pdftoppm_version": "pdftoppm version 26.05.0",
+    "python_version": "3.12.13",
+    "reportlab_version": "4.4.9"
+  },
+  "report_date": "2026-08-27",
+  "resolution_sensitivity_audit": {
+    "largest_absolute_delta": 0.33229482254290615,
+    "largest_shift_delta_896_minus_256": -0.33229482254290615,
+    "largest_shift_label": "CosMx Classical crack",
+    "n_matched_comparisons": 12
+  },
+  "scientific_boundaries": {
+    "comprehensive_sota_comparison": false,
+    "natural_comet_efficacy": false,
+    "natural_cosmx_efficacy": false,
+    "natural_crack_efficacy": false,
+    "real_label_efficacy": "H&E fold only",
+    "wsi_efficacy": false
+  }
+}

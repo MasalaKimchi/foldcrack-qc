@@ -1,0 +1,24 @@
+[
+  {
+    "cpu_seconds_two_patches": 0.0377832500016666,
+    "engineering_passed": true,
+    "lora_rank": 4,
+    "max_abs_cpu_mps_error": 0.0001786947250366211,
+    "model": "DINOv2-small",
+    "mps_seconds_two_patches": 0.01671816700400086,
+    "mps_speedup": 2.2600115187642644,
+    "scientific_validation_passed": false,
+    "trainable_fraction": 0.0011304013846499905
+  },
+  {
+    "cpu_seconds_two_patches": 0.12349670799449086,
+    "engineering_passed": true,
+    "lora_rank": 4,
+    "max_abs_cpu_mps_error": 0.0011463165283203125,
+    "model": "SigLIP2 Base",
+    "mps_seconds_two_patches": 0.03236487500544172,
+    "mps_speedup": 3.8157634773416103,
+    "scientific_validation_passed": false,
+    "trainable_fraction": 0.0005371653228207996
+  }
+]

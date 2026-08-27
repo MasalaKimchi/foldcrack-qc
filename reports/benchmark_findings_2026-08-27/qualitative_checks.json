@@ -1,0 +1,508 @@
+{
+  "all_outcomes_match_frozen_artifacts": true,
+  "cases": [
+    {
+      "classical": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.891060773447312e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 35,
+          "fp": 35596,
+          "n_valid": 451584,
+          "tn": 414614,
+          "tp": 1339
+        },
+        "observed_image_score": 0.9455303867236561,
+        "pixel_dice": 0.06990524419849121,
+        "presence_category": "FN",
+        "stored_image_score": 0.9455303867236561
+      },
+      "display_order": 1,
+      "field_key": "Brain_Fold_-20260410140426972.jpg",
+      "hibou_linear": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.7870893399029792e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 301,
+          "fp": 1022,
+          "n_valid": 451584,
+          "tn": 449188,
+          "tp": 1073
+        },
+        "observed_image_score": 0.8935446699514896,
+        "pixel_dice": 0.6186220812914385,
+        "presence_category": "FN",
+        "stored_image_score": 0.8935446699514896
+      },
+      "image_sha256": "018b73942980c7982f89e27a59b8be0cdef9b71417dc320bde0a4c83e7cb07c9",
+      "label": 1,
+      "mask_sha256": "63a849ca8baa562d9bb1461ab7294d14079f92ba4251b91361f83920099f985b",
+      "organ": "Brain",
+      "overlay_path": "qualitative_cache/case1_Brain_Fold_-20260410140426972_f43adca74814.png",
+      "overlay_sha256": "f43adca748149a777264db5a061f747cbbbdbae55fb6f67abdd7129b2a0805b7",
+      "source_slide_id": "Brain_Fold_S001"
+    },
+    {
+      "classical": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.9861906281481474e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 11138,
+          "fp": 17753,
+          "n_valid": 451584,
+          "tn": 402565,
+          "tp": 20128
+        },
+        "observed_image_score": 0.9930953140740737,
+        "pixel_dice": 0.582179993347506,
+        "presence_category": "TP",
+        "stored_image_score": 0.9930953140740737
+      },
+      "display_order": 2,
+      "field_key": "Kidney__Fold_-20260409155008912.jpg",
+      "hibou_linear": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.9999883245065603e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 1487,
+          "fp": 4464,
+          "n_valid": 451584,
+          "tn": 415854,
+          "tp": 29779
+        },
+        "observed_image_score": 0.9999941622532803,
+        "pixel_dice": 0.9091575203407165,
+        "presence_category": "TP",
+        "stored_image_score": 0.9999941622532803
+      },
+      "image_sha256": "02347ae9cb88bcef9cb9c8c9050325832f6b428ba9f292009a8537c425ab1295",
+      "label": 1,
+      "mask_sha256": "ecbcd6a9c8aaf8f79c14057e8d1efa53a65f5bf800f3b9f8e7e773a4a0093a2c",
+      "organ": "Kidney",
+      "overlay_path": "qualitative_cache/case2_Kidney__Fold_-20260409155008912_19c6e416eb54.png",
+      "overlay_sha256": "19c6e416eb54f484b3370e2ce2170e60e6202b84fe9a23bee1f8f52c45565a73",
+      "source_slide_id": "Kidney_Fold_S016"
+    },
+    {
+      "classical": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.9691856026948857e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 2717,
+          "fp": 26938,
+          "n_valid": 451584,
+          "tn": 407614,
+          "tp": 14315
+        },
+        "observed_image_score": 0.984592801347443,
+        "pixel_dice": 0.4912070000857854,
+        "presence_category": "TP",
+        "stored_image_score": 0.984592801347443
+      },
+      "display_order": 3,
+      "field_key": "Liver__Fold_-20260406110823972.jpg",
+      "hibou_linear": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.999983199646426e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 720,
+          "fp": 4597,
+          "n_valid": 451584,
+          "tn": 429955,
+          "tp": 16312
+        },
+        "observed_image_score": 0.999991599823213,
+        "pixel_dice": 0.8598613636962652,
+        "presence_category": "TP",
+        "stored_image_score": 0.999991599823213
+      },
+      "image_sha256": "0116c5346876426f2464d2f447db9fad800c596b4d968a9a24b26addc13f4476",
+      "label": 1,
+      "mask_sha256": "57c99e940975f7698e21b820140ce29f1f6024c6e4fb39b2add083b97ca1a9dd",
+      "organ": "Liver",
+      "overlay_path": "qualitative_cache/case3_Liver__Fold_-20260406110823972_c707cacc6327.png",
+      "overlay_sha256": "c707cacc632747cbe7917a6cf414f1873638bc27c0752ea0adc89ab09cfa0f74",
+      "source_slide_id": "Liver_Fold_S023"
+    },
+    {
+      "classical": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.8812559643111281e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 6088,
+          "fp": 21934,
+          "n_valid": 451584,
+          "tn": 363861,
+          "tp": 59701
+        },
+        "observed_image_score": 0.9406279821555641,
+        "pixel_dice": 0.8099224006945952,
+        "presence_category": "FN",
+        "stored_image_score": 0.9406279821555641
+      },
+      "display_order": 4,
+      "field_key": "Small_Intestine_Fold_-20260413150334899.jpg",
+      "hibou_linear": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.999997390025149e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 1733,
+          "fp": 32839,
+          "n_valid": 451584,
+          "tn": 352956,
+          "tp": 64056
+        },
+        "observed_image_score": 0.9999986950125744,
+        "pixel_dice": 0.7874898576381205,
+        "presence_category": "TP",
+        "stored_image_score": 0.9999986950125744
+      },
+      "image_sha256": "038e7716bc553b5a73aea69a0711ab366e85b0f8abb9a8a50815ebf5dc585485",
+      "label": 1,
+      "mask_sha256": "173791a8c38139bd54fd4d8789ed5075ae79929741694d0e8faae69cbb7d60ba",
+      "organ": "Small_Intestine",
+      "overlay_path": "qualitative_cache/case4_Small_Intestine_Fold_-20260413150334899_be5b63afe2f5.png",
+      "overlay_sha256": "be5b63afe2f55a902ef31b896486652c15dc595b54e2939db7a432358ceda408",
+      "source_slide_id": "Small_Intestine_Fold_S015"
+    },
+    {
+      "classical": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.91575261485619e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 24735,
+          "fp": 8704,
+          "n_valid": 451584,
+          "tn": 376635,
+          "tp": 41510
+        },
+        "observed_image_score": 0.957876307428095,
+        "pixel_dice": 0.7128689066538438,
+        "presence_category": "FN",
+        "stored_image_score": 0.957876307428095
+      },
+      "display_order": 5,
+      "field_key": "Testis__Fold_-20260406101118662.jpg",
+      "hibou_linear": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.9999706180005953e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 1469,
+          "fp": 17122,
+          "n_valid": 451584,
+          "tn": 368217,
+          "tp": 64776
+        },
+        "observed_image_score": 0.9999853090002977,
+        "pixel_dice": 0.8745063890970212,
+        "presence_category": "TP",
+        "stored_image_score": 0.9999853090002977
+      },
+      "image_sha256": "00ed48504b700060742242d5ef1777cf0425dd8484e84cb52a3deeecc3ea5b4c",
+      "label": 1,
+      "mask_sha256": "4275b0ccadba555d2de09c1b8d8e35a72050eefa038bf7f7a09276f2a44e5d2b",
+      "organ": "Testis",
+      "overlay_path": "qualitative_cache/case5_Testis__Fold_-20260406101118662_bc52f9b19b17.png",
+      "overlay_sha256": "bc52f9b19b178b8ce7889950775b44995a23f5cc510e3c62cbcc38d9991fc6d2",
+      "source_slide_id": "Testis_Fold_S001"
+    },
+    {
+      "classical": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.9477202111008055e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 0,
+          "fp": 32202,
+          "n_valid": 451584,
+          "tn": 419382,
+          "tp": 0
+        },
+        "observed_image_score": 0.9738601055504028,
+        "pixel_dice": null,
+        "presence_category": "FP",
+        "stored_image_score": 0.9738601055504028
+      },
+      "display_order": 6,
+      "field_key": "Brain_Clean-20260423152633332.jpg",
+      "hibou_linear": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.0966053405459976e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 0,
+          "fp": 343,
+          "n_valid": 451584,
+          "tn": 451241,
+          "tp": 0
+        },
+        "observed_image_score": 0.5483026702729988,
+        "pixel_dice": null,
+        "presence_category": "TN",
+        "stored_image_score": 0.5483026702729988
+      },
+      "image_sha256": "29d690e4bf832ad7361e091f09d235329c3d4156a25260f5ef1c73278028afb7",
+      "label": 0,
+      "mask_sha256": null,
+      "organ": "Brain",
+      "overlay_path": "qualitative_cache/case6_Brain_Clean-20260423152633332_1d20edb52790.png",
+      "overlay_sha256": "1d20edb52790688bd52a9fd7074d76a0c3dde78e6031600e9559d7186fd2f579",
+      "source_slide_id": "Brain_Clean_S007"
+    },
+    {
+      "classical": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.9105944221717603e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 0,
+          "fp": 52601,
+          "n_valid": 451584,
+          "tn": 398983,
+          "tp": 0
+        },
+        "observed_image_score": 0.9552972110858802,
+        "pixel_dice": null,
+        "presence_category": "TN",
+        "stored_image_score": 0.9552972110858802
+      },
+      "display_order": 7,
+      "field_key": "Kidney_Clean-20260420151005412.jpg",
+      "hibou_linear": {
+        "counts_match": true,
+        "image_prediction_match": true,
+        "image_score_absolute_difference": 0.0,
+        "image_score_absolute_tolerance": 1.9548751452007054e-06,
+        "image_score_within_tolerance": true,
+        "observed_counts": {
+          "fn": 0,
+          "fp": 8799,
+          "n_valid": 451584,
+          "tn": 442785,
+          "tp": 0
+        },
+        "observed_image_score": 0.9774375726003528,
+        "pixel_dice": null,
+        "presence_category": "FP",
+        "stored_image_score": 0.9774375726003528
+      },
+      "image_sha256": "29e9362b8374d04e4a9f89774223ce4a8c387fedb56ad60641bae52516152040",
+      "label": 0,
+      "mask_sha256": null,
+      "organ": "Kidney",
+      "overlay_path": "qualitative_cache/case7_Kidney_Clean-20260420151005412_9e5cacdfce6b.png",
+      "overlay_sha256": "9e5cacdfce6b734dc5aebad0b56a4270283e20c77b7e7fa5c18f9e7ae79e16ce",
+      "source_slide_id": "Kidney_Clean_S025"
+    }
+  ],
+  "configuration": {
+    "classical_sha256": "ad90e797ef5d101116ee7636dce752dae9a682cb7fe6aee4b3c83d77af1afcbd",
+    "hibou_sha256": "37369fd7b63115b4327f7113f1a1171baf7a6acbc864fa21d5cb28d2dbf9b74c",
+    "outcome_relevant_compatibility_checked": true
+  },
+  "dataset": {
+    "assignment_manifest_sha256": "f4bd0267ca4c46e51748ea54c790ea98550af21d24955d9b26bef6f3d16b46a1",
+    "release_identity_sha256": "1b115af5f949add92bebd7a3d7149cbacc17835e324a53d54512fbd4e11d69d7",
+    "root": "data/public/histology_tissue_fold_v1"
+  },
+  "execution_override": {
+    "foundation_methods": [
+      "foundation_linear_probe"
+    ],
+    "outcome_relevant_settings_unchanged": true,
+    "patchknn_fit_skipped_as_unused": true
+  },
+  "input_hashes": {
+    "artifacts/public_fold/classical_hardened_v1_2.json": "a23d1836cbda7e4a1835068d485c03463d178a084dcfe55266fc2183f96bcd19",
+    "artifacts/public_fold/hibou_hardened_v1_2.json": "43d46447c7bcfd971691c97a3a99d10d8a78dddf4486e269f2f5ed8f1173301d"
+  },
+  "model": {
+    "calibration_rerun": false,
+    "device": "mps",
+    "encoder_frozen": true,
+    "id": "HistAI/Hibou-B",
+    "shallow_readout_refit_required": true,
+    "source_commit": "c453bbe4dab0fec6f7df343b09ea87048629c58d",
+    "weights_sha256": "9d3e5ebc4e1ffaf6d7a0b672273e4fbef109cdd03df73c52920d6e886f2327e1"
+  },
+  "n_cases": 7,
+  "overlay_encoding": {
+    "classical": {
+      "color_rgb": [
+        213,
+        94,
+        0
+      ],
+      "dash_on_off_px": [
+        6,
+        4
+      ],
+      "line_style": "dashed",
+      "line_width_px": 2,
+      "opacity": 0.72
+    },
+    "hibou_linear": {
+      "color_rgb": [
+        148,
+        0,
+        211
+      ],
+      "dash_on_off_px": [
+        1,
+        3
+      ],
+      "line_style": "dotted",
+      "line_width_px": 2,
+      "opacity": 0.88
+    },
+    "reference": {
+      "color_rgb": [
+        0,
+        121,
+        107
+      ],
+      "draw_order": "last",
+      "line_style": "solid",
+      "line_width_px": 3,
+      "white_halo_width_px": 7
+    }
+  },
+  "overlay_generation_provenance": {
+    "environment": {
+      "dependencies": {
+        "numpy": "2.5.2",
+        "opencv": "5.0.0",
+        "scipy": "1.18.1",
+        "torch": "2.13.0"
+      },
+      "device": "mps",
+      "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+      "python_version": "3.13.2"
+    },
+    "frozen_run_provenance": {
+      "identity_sha256": "3cb825bccc9bb5e9850a5beee5a744fb7907a5f8f1f6d3192316ea1b8c2bef88",
+      "provided": true,
+      "schema_version": "public-fold-run-provenance-1.1",
+      "valid": true,
+      "validated_before_scoring": true,
+      "validation_errors": [],
+      "value": {
+        "capture": {
+          "approval_scope": "reproducibility_structure_not_corporate_model_governance",
+          "captured_before_scoring": true,
+          "validation_status": "structurally_validated",
+          "validator_id": "foldcrack-qc-cli-preflight-v1.1"
+        },
+        "code": {
+          "commit": "985efe730c5f78888df5b49eb165d740ecc2873a",
+          "dirty_diff_capture": "git_diff_HEAD_plus_untracked_runtime_sources",
+          "dirty_diff_sha256": "55462e0c0f5257eba0d7904f92bddafb88394d679fe2af635a78c057d8710a5f",
+          "identity_type": "git",
+          "untracked_runtime_sources": [
+            "src/foldcrack_qc/multiplex_proxy_benchmark.py",
+            "src/foldcrack_qc/public_fold_benchmark.py",
+            "src/foldcrack_qc/siglip2_smoke.py"
+          ]
+        },
+        "environment": {
+          "dependencies": {
+            "huggingface_hub": "1.28.0",
+            "numpy": "2.5.2",
+            "opencv": "5.0.0",
+            "scipy": "1.18.1",
+            "torch": "2.13.0",
+            "transformers": "5.15.1"
+          },
+          "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+          "python_version": "3.13.2"
+        },
+        "execution": {
+          "device": "mps",
+          "precision": "float32"
+        },
+        "method_model": {
+          "benchmark_configuration_sha256": "37369fd7b63115b4327f7113f1a1171baf7a6acbc864fa21d5cb28d2dbf9b74c",
+          "frozen_evaluation": true,
+          "implementation_id": "foldcrack_qc.public_fold_benchmark:v1.2",
+          "loader_identity": "audited_checkout_build_plus_strict_weights_only_state_load",
+          "model_config_sha256": "1e0f6f062b170bf362a136c6ec50365ed3ae29e3b8713cd81e14c8e9fc74144f",
+          "model_id": "HistAI/Hibou-B",
+          "selected_methods": [
+            "foundation_patchknn",
+            "foundation_linear_probe"
+          ],
+          "transductive_updates": false,
+          "weights_not_applicable": false,
+          "weights_sha256": "9d3e5ebc4e1ffaf6d7a0b672273e4fbef109cdd03df73c52920d6e886f2327e1"
+        },
+        "schema_version": "public-fold-run-provenance-1.1"
+      }
+    },
+    "repository_commit": "3dae5136a23ea9f683fe9bee7cecb83854ba4cb9",
+    "runtime_source_sha256": {
+      "src/foldcrack_qc/public_fold_benchmark.py": "2cdf84035f3be5333bfa3f0ae80b03d0034cee47b2feeed450a1f3499f7b1b42",
+      "src/foldcrack_qc/public_fold_providers.py": "d765dc28e7b640b8c5259864206d6071f84e0d6d1a4724dfc141d596ef5ed5ab"
+    },
+    "script_sha256": "593eab373b55aaecfbed04bad86ec3bce5d7a8ad243d83f1434de7a6016ed7cf",
+    "tracked_runtime_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tracked_runtime_dirty": false
+  },
+  "report_date": "2026-08-27",
+  "schema_version": "he-qualitative-audit-1.1",
+  "selection_rule": "Algorithmically selected without manual image review during this audit: SHA-256-minimum fold-positive locked-test field within each organ, plus the SHA-256-minimum presence FP and FN separately for each compared method; union deduplicated. Whole 896×504 px analysis fields isotropically resized from 3840×2160; no manual crops.",
+  "status": "passed",
+  "thresholds": {
+    "classical": {
+      "pixel": 0.3104760864431879,
+      "presence": 0.9708915179601574
+    },
+    "hibou_linear": {
+      "pixel": 0.9012322682144503,
+      "presence": 0.9361988066177941
+    }
+  },
+  "training_identity_check": {
+    "final_loss": 0.10894264993440102,
+    "final_loss_match": true,
+    "iterations": 88,
+    "optimizer_status_iterations_match": true,
+    "patchknn_fit_skipped_as_unused": true,
+    "token_counts_match": true
+  }
+}

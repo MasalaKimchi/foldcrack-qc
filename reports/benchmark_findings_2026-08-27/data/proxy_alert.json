@@ -1,0 +1,80 @@
+[
+  {
+    "alert_burden": 0.01338098984904933,
+    "alert_burden_percent": 1.338098984904933,
+    "ci_high": 0.02112875987149835,
+    "ci_high_percent": 2.112875987149835,
+    "ci_low": 0.006781770318948961,
+    "ci_low_percent": 0.6781770318948961,
+    "method": "Classical",
+    "method_key": "classical",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5
+  },
+  {
+    "alert_burden": 0.011531959650362692,
+    "alert_burden_percent": 1.1531959650362693,
+    "ci_high": 0.018229333342346624,
+    "ci_high_percent": 1.8229333342346623,
+    "ci_low": 0.004878276088111401,
+    "ci_low_percent": 0.48782760881114007,
+    "method": "Nominal-reference anomaly",
+    "method_key": "clean_reference_anomaly",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5
+  },
+  {
+    "alert_burden": 0.013633306699594403,
+    "alert_burden_percent": 1.3633306699594403,
+    "ci_high": 0.021634177172016274,
+    "ci_high_percent": 2.1634177172016273,
+    "ci_low": 0.006829342110051322,
+    "ci_low_percent": 0.6829342110051322,
+    "method": "Hybrid",
+    "method_key": "hybrid",
+    "modality": "COMET",
+    "modality_key": "comet",
+    "n_groups": 5
+  },
+  {
+    "alert_burden": 0.030439076185495392,
+    "alert_burden_percent": 3.043907618549539,
+    "ci_high": 0.08680992425089147,
+    "ci_high_percent": 8.680992425089148,
+    "ci_low": 0.001185567172063549,
+    "ci_low_percent": 0.1185567172063549,
+    "method": "Classical",
+    "method_key": "classical",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4
+  },
+  {
+    "alert_burden": 0.1433309190510375,
+    "alert_burden_percent": 14.333091905103752,
+    "ci_high": 0.4276147959183674,
+    "ci_high_percent": 42.76147959183674,
+    "ci_low": 0.0,
+    "ci_low_percent": 0.0,
+    "method": "Nominal-reference anomaly",
+    "method_key": "clean_reference_anomaly",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4
+  },
+  {
+    "alert_burden": 0.19455665763380575,
+    "alert_burden_percent": 19.455665763380576,
+    "ci_high": 0.5761073716289181,
+    "ci_high_percent": 57.61073716289181,
+    "ci_low": 0.0007927486787546363,
+    "ci_low_percent": 0.07927486787546363,
+    "method": "Hybrid",
+    "method_key": "hybrid",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4
+  }
+]

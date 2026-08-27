@@ -1,0 +1,3218 @@
+{
+  "manifest": {
+    "blocks": [
+      {
+        "body": "# Fold and Crack Artifact QC Across H&E, COMET, and CosMx",
+        "id": "title",
+        "type": "markdown"
+      },
+      {
+        "body": "## Technical summary\n\n**Overall assessment: share internally with explicit caveats; ready for an adjudicated pilot, not for deployment or a three-modality efficacy claim.** The strongest current real-label result is Hibou-B with a mask-supervised linear token probe on a bounded public H&E fold-only cohort. On this fixed cohort and configuration, the three PatchKNN heads had lower observed localization Dice than the three mask-supervised linear probes; this does not establish a universal requirement for labels or invalidate anomaly detection. COMET and CosMx have only real-background synthetic-perturbation evidence: those results diagnose representation and scale sensitivity but cannot estimate natural-artifact Dice, ROC, sensitivity, specificity, or false-positive rate. No public COMET/CosMx natural fold/crack masks were located in the source audit completed 2026-08-27 [20–23].\n\nThe practical recommendation is a **shared QC software/evaluation platform with modality-specific input construction, reference banks, calibration and acceptance**. Freeze labels, group splits and operating rules before an internal test; use HistoQC as an operational QC baseline after defining an output-to-ontology mapping, evaluate GrandQC only after legal clearance, and seek Merck's DiffusionQC implementation and split metadata; use KRONOS2 only after written commercial/derivative permission and an explicit marker/MPP contract.",
+        "id": "technical_summary",
+        "type": "markdown"
+      },
+      {
+        "cardIds": [
+          "best_he_dice",
+          "paired_delta",
+          "he_test_fields",
+          "multiplex_labels"
+        ],
+        "id": "headline_metrics",
+        "type": "metric-strip"
+      },
+      {
+        "body": "## Mask-supervised frozen pathology features have the highest observed H&E point estimates\n\nHibou-B linear achieved **0.667 positive-field macro Dice (95% CI 0.603–0.730)**, **0.827 all-field micro Dice**, **0.985 presence AUROC**, and **0.047% clean-field predicted area**. DINOv2-small linear followed at 0.599 macro Dice; SigLIP2 Base linear reached 0.526; the classical detector reached 0.446. The three one-class PatchKNN heads ranged from 0.208 to 0.341.\n\nThis supports a representation-plus-light-supervision path for H&E fold localization on this cohort. It does **not** show that Hibou-B is universally superior: linear probes use fit-set pixel masks, while PatchKNN uses clean fit tokens and calibration masks. Same-head encoder contrasts are more scientifically interpretable than cross-head rankings.",
+        "id": "he_finding",
+        "sourceId": "he_benchmark",
+        "type": "markdown"
+      },
+      {
+        "chartId": "he_macro_dice",
+        "id": "he_chart",
+        "layout": "full",
+        "type": "chart"
+      },
+      {
+        "body": "The ranked chart shows the point-estimate separation; consult the table for interval width and clean alert burden. The standalone vector Figure 1 additionally displays macro-Dice intervals, AUROC and clean-field burden without conflating their scales.",
+        "id": "he_chart_interpretation",
+        "type": "markdown"
+      },
+      {
+        "id": "he_table_block",
+        "layout": "full",
+        "tableId": "he_method_table",
+        "type": "table"
+      },
+      {
+        "body": "## Organ-stratified H&E estimates identify a robustness question\n\nHibou-B linear ranged from **0.459 in brain** to **0.797 in testis**. Every method has a wide descriptive organ range, but several strata contain only three to nine positive supplied source-slide groups and no per-organ interval or heterogeneity test was computed. A single overall Dice therefore cannot establish robustness; the internal locked test must predeclare tissue, scanner, site and time strata and must not average away a failed required stratum.",
+        "id": "organ_finding",
+        "sourceId": "he_benchmark",
+        "type": "markdown"
+      },
+      {
+        "chartId": "he_organ_heatmap",
+        "id": "organ_chart",
+        "layout": "full",
+        "type": "chart"
+      },
+      {
+        "body": "Read each row for stability and each column for tissue-specific difficulty. These are descriptive point estimates without per-organ confidence intervals; apparent differences may reflect tissue, source-slide composition, annotation or acquisition.",
+        "id": "organ_chart_interpretation",
+        "type": "markdown"
+      },
+      {
+        "body": "## Paired contrasts strengthen the cohort-specific ranking but do not prove superiority\n\nUsing identical source-slide bootstrap draws, Hibou-B linear minus DINOv2 linear was **+0.068 (descriptive 95% interval +0.053 to +0.084)**. DINOv2 linear minus SigLIP2 linear was +0.073, while DINOv2 PatchKNN minus Hibou-B PatchKNN was +0.022 with an interval spanning zero. The paired artifact intentionally computes no p-values and applies no multiplicity adjustment; these intervals are exploratory uncertainty summaries conditional on the observed public cohort.",
+        "id": "paired_finding",
+        "sourceId": "he_benchmark",
+        "type": "markdown"
+      },
+      {
+        "chartId": "he_paired_differences",
+        "id": "paired_chart",
+        "layout": "full",
+        "type": "chart"
+      },
+      {
+        "body": "Positive bars favor the first method. The corresponding vector forest plot and exact table show whether each descriptive interval crosses zero; neither should be relabeled as a hypothesis test.",
+        "id": "paired_chart_interpretation",
+        "type": "markdown"
+      },
+      {
+        "id": "paired_table_block",
+        "layout": "full",
+        "tableId": "paired_table",
+        "type": "table"
+      },
+      {
+        "body": "## Hash-selected qualitative audit confirms outcome reproducibility\n\nSeven whole 896×504 px H&E analysis fields were algorithmically selected without manual image review during this audit: the SHA-256-minimum fold-positive field within each organ plus the SHA-256-minimum presence false-positive and false-negative separately for each compared method; the union was deduplicated. Because the hardened result artifacts did not retain spatial maps or shallow-probe parameters, the exact frozen Hibou-B encoder and fit split were used to refit only the deterministic shallow head; calibration was not rerun and locked thresholds were reused. All 14 regenerated method outcomes matched the stored pixel counts and presence calls; regenerated image scores were within the recorded numerical tolerances. Figure 7 is therefore an audited localization sanity check, not a performance sample or evidence of generalization.",
+        "id": "qualitative_finding",
+        "sourceId": "he_benchmark",
+        "type": "markdown"
+      },
+      {
+        "id": "qualitative_table_block",
+        "layout": "full",
+        "tableId": "he_qualitative_table",
+        "type": "table"
+      },
+      {
+        "body": "## The current multiplex experiment identifies a weak generic anomaly configuration\n\nFold and crack remain separate endpoints. Classical fold/crack response Dice was **0.500/0.567 on COMET** and **0.393/0.235 on CosMx**; the nominal-reference anomaly branch was 0.135/0.065 and 0.193/0.075; the hybrid was 0.382/0.567 and 0.376/0.234. The nominal reference fields were unannotated, not expert-confirmed clean. Recorded integrity checks identified no runtime or transformation failure, while 256-versus-896 sensitivity materially changed results. That pattern is consistent with a scientific mismatch in representation, channel projection, perturbation scale or threshold, although semantic implementation defects cannot be fully excluded.",
+        "id": "multiplex_finding",
+        "sourceId": "multiplex_proxy",
+        "type": "markdown"
+      },
+      {
+        "chartId": "proxy_comet",
+        "id": "proxy_comet_chart",
+        "layout": "full",
+        "type": "chart"
+      },
+      {
+        "body": "COMET uses DAPI-only public fields in this benchmark. Classical response is substantially stronger than the generic nominal-reference representation, but all values remain conditional on the inserted perturbation generator and provisional field grouping.",
+        "id": "proxy_comet_interpretation",
+        "type": "markdown"
+      },
+      {
+        "chartId": "proxy_cosmx",
+        "id": "proxy_cosmx_chart",
+        "layout": "full",
+        "type": "chart"
+      },
+      {
+        "body": "CosMx combines five morphology channels, yet the generic anomaly and hybrid branches create large background responses. This is evidence against shipping the current projection/reference-bank configuration, not evidence against all anomaly detection or marker-aware models.",
+        "id": "proxy_cosmx_interpretation",
+        "type": "markdown"
+      },
+      {
+        "chartId": "proxy_alert_burden",
+        "id": "proxy_alert_chart",
+        "layout": "full",
+        "type": "chart"
+      },
+      {
+        "body": "Untouched alert burden is low and similar across COMET branches but much larger and unstable for the CosMx anomaly/hybrid branches. Because the public fields were not adjudicated as artifact-free, alert burden must never be renamed false-positive rate.",
+        "id": "proxy_alert_interpretation",
+        "type": "markdown"
+      },
+      {
+        "id": "proxy_summary_block",
+        "layout": "full",
+        "tableId": "proxy_summary_table",
+        "type": "table"
+      },
+      {
+        "body": "## Multiplex conclusions are sensitive to analysis resolution\n\nThe matched 256-versus-896 experiment shifts individual proxy Dice values by as much as **0.332**. The largest change is CosMx classical crack response, which falls from 0.568 at 256 pixels to 0.235 at 896 pixels. This instability strengthens the case for physical MPP normalization and predeclared multiscale testing before any model or channel configuration is selected.",
+        "id": "proxy_resolution_finding",
+        "sourceId": "multiplex_proxy",
+        "type": "markdown"
+      },
+      {
+        "chartId": "proxy_resolution_sensitivity",
+        "id": "proxy_resolution_chart",
+        "layout": "full",
+        "type": "chart"
+      },
+      {
+        "body": "Positive values favor the 896-pixel analysis and negative values favor 256 pixels. These are paired configuration differences without uncertainty intervals; they diagnose engineering sensitivity, not natural-artifact accuracy.",
+        "id": "proxy_resolution_interpretation",
+        "type": "markdown"
+      },
+      {
+        "body": "## Scope, data and metric definitions\n\n**H&E cohort.** The Histology Tissue Fold Dataset contains 2,127 real 3,840 W × 2,160 H px teaching-slide microscope fields across brain, kidney, liver, small intestine and testis [1,2]. The frozen 60/20/20 supplied-source-slide split yields 424 locked-test fields from 55 groups. It supplies fold masks only; it is not WSI and has no crack class.\n\n**Multiplex cohort.** The proxy uses five public COMET DAPI fields [20,21] and six five-channel CosMx morphology FOVs from four provisional slide/run groups [22,23]. Neither audited multiplex release supplies independently usable natural fold/crack masks.\n\n**Primary H&E metric.** Positive-field macro Dice weights each valid positive field equally; all-field micro Dice pools pixels. Presence AUROC/AUPRC and clean-field predicted area answer different questions and are reported separately. For a thin crack/tear target, tolerant centerline F1, clDice and instance FROC should become primary geometric measures because width-sensitive Dice alone is inadequate.",
+        "id": "scope_definitions",
+        "type": "markdown"
+      },
+      {
+        "id": "evidence_table_block",
+        "layout": "full",
+        "tableId": "evidence_table",
+        "type": "table"
+      },
+      {
+        "body": "## Methodology and validation design\n\nAll H&E methods share the exact organ-by-class supplied-source-slide split, 896-pixel analysis bound, 224-pixel non-overlapping tiling and calibration-only threshold selection. The classical method uses color/texture/morphology cues. Frozen foundation encoders produce spatial tokens for either (1) clean-bank PatchKNN anomaly scoring or (2) a shallow pixel-mask-supervised linear probe. Bootstrap intervals resample source-slide groups within locked strata. The paired comparator reuses each cluster draw across methods.\n\nThe multiplex proxy performs leave-one-declared-source-group-out fitting/calibration/testing, inserts controlled perturbations only after role assignment, and evaluates paired incremental response. Groups recur in fit/calibration across folds, so folds are dependent; higher-level biological independence is unverified.",
+        "id": "methodology",
+        "sourceId": "evaluation_protocol",
+        "type": "markdown"
+      },
+      {
+        "body": "## Foundation-model feasibility is selective, not comprehensive\n\nDINOv2 remains a useful Apache-2.0 generic control even though DINOv3 is newer [7–9,29]. Hibou-B is the strongest currently runnable pathology-specific comparator [10,11]. The checkpoint names are **UNI2-h** and **CONCHv1.5** [14,16]; their cited papers describe the original UNI and CONCH lineages, not validation of these checkpoint versions [15,17]. No official CONCH v2 was located in the official source search completed 2026-08-27. KRONOS2 is the most aligned public marker-aware encoder among the reviewed COMET-like multiplex IF candidates [18], while [19] describes the earlier KRONOS lineage rather than KRONOS2 validation. It is not a ready artifact detector and is only partially applicable to CosMx morphology/protein channels—not decoded transcript coordinates or expression matrices.\n\nAt Merck, gated CC BY-NC-ND models must not be assumed usable for frozen inference or LoRA. Adaptation can create a derivative; obtain written institutional permission before downloading, feature extraction or PEFT.",
+        "id": "foundation_status",
+        "type": "markdown"
+      },
+      {
+        "id": "model_status_block",
+        "layout": "full",
+        "tableId": "model_status_table",
+        "type": "table"
+      },
+      {
+        "body": "## Apple MPS and narrow LoRA execution are technically feasible\n\nDINOv2-small and SigLIP2 Base produced finite dense features on MPS with near-identical CPU outputs, and each completed a rank-4 LoRA update. These are two-patch engineering smokes, not WSI throughput or efficacy studies. The shared runtime currently resolves `auto` to **MPS then CPU only**; it does not detect CUDA, so CUDA portability remains an implementation gap despite the MPS success.",
+        "id": "mps_finding",
+        "sourceId": "foundation_smoke",
+        "type": "markdown"
+      },
+      {
+        "id": "smoke_table_block",
+        "layout": "full",
+        "tableId": "smoke_table",
+        "type": "table"
+      },
+      {
+        "body": "## Public resources for the next benchmark\n\n| Resource | Best use | Critical limitation |\n| --- | --- | --- |\n| GrandQC manual test set [4,5] | Expert patch/crop-level artifact masks sampled from H&E WSIs | No distinct crack class; method assets are noncommercial [30] |\n| AIRAQc TCGA test [24] | Manually annotated real TCGA H&E WSIs | Verify release files and frozen split before use |\n| Histology Tissue Fold Dataset [1,2] | Current 1,228-mask fold benchmark | Teaching-slide fields, not WSI; fold only |\n| HistoArtifacts [25,26] | Fold/damaged-tissue patch labels | No dedicated pixel crack masks; reuse license needs confirmation |\n| Foucart WSI artifacts [27,28] | Partial Tear&Fold/knife-damage annotations | Incomplete labels make ordinary negative-pixel Dice invalid |\n| QUALIFAI COMET and public CosMx releases [20–23] | Compatibility, drift, and blinded annotation pilots | No natural fold/crack ground truth found |\n\nGrandQC model-generated TCGA masks are pseudo-labels and are not independent ground truth. No single labeled H&E–COMET–CosMx benchmark or mature, complete pixel-level histologic crack dataset was located in the source audit completed 2026-08-27.",
+        "id": "public_resources",
+        "type": "markdown"
+      },
+      {
+        "body": "## Limitations, uncertainty and robustness checks\n\n- **Domain limitation:** the only natural pixel ground truth is fold-only H&E microscope imagery; there is no current crack, human clinical WSI, internal Merck, natural COMET or natural CosMx accuracy estimate.\n- **Supervision mismatch:** classical, PatchKNN and linear-probe rows use different annotation regimes; compare encoders within the same head before attributing gains to the backbone.\n- **Small correlated strata:** the H&E test has 28 positive supplied-source-slide groups, with only 3–9 per organ. Multiplex has 5 and 4 provisional groups with unverified higher-level independence.\n- **Exploratory inference:** bootstrap intervals are descriptive and conditional on the fixed cohort/configuration. There are no p-values, multiplicity adjustment, noninferiority test or external validation.\n- **Adaptive reuse:** this public test has informed multiple result reviews; an untouched external confirmation set is required before further model selection or confirmatory claims.\n- **Method coverage:** HistoQC, GrandQC, DiffusionQC, DINOv3, UNI2-h, CONCHv1.5 and KRONOS2 were not executed; the current benchmark is not a comprehensive SOTA leaderboard.\n- **Qualitative reproduction boundary:** the hardened artifacts did not retain score maps or probe parameters, so Figure 7 required a deterministic shallow-head refit. Selected-field counts and calls matched and scores were within recorded tolerances, but future frozen releases should persist a hashed inference bundle and maps.\n- **Operational gap:** accuracy, review burden, auto-pass safety, technical abstention and downstream assay impact have not been prospectively measured.\n- **Reproduction boundary:** the upstream benchmark artifacts are local and gitignored; external reproduction requires a frozen evidence bundle or governed object-store/DVC release matching the recorded hashes.",
+        "id": "limitations",
+        "type": "markdown"
+      },
+      {
+        "body": "## Evaluation criteria for the internal locked benchmark\n\nUse separate production-prevalence, enriched challenge, external-generalization, degraded-input and downstream-impact cohorts. Split at the highest leakage unit (patient/block/slide/run), freeze ontology and thresholds before opening test predictions, bootstrap that independent unit, and report every required modality/stratum separately. For unlabeled deployment data, monitor score distributions, transform consistency, alert burden, missing channels and drift—but do not compute natural-artifact Dice or ROC until blinded references exist.",
+        "id": "acceptance_intro",
+        "sourceId": "evaluation_protocol",
+        "type": "markdown"
+      },
+      {
+        "id": "acceptance_block",
+        "layout": "full",
+        "tableId": "acceptance_table",
+        "type": "table"
+      },
+      {
+        "body": "## Recommended next steps\n\n1. **Lock the ontology and action.** Define fold, tissue tear, glass/coverslip crack, knife line and acquisition seam separately; map each to PASS/REVIEW/FAIL and remediation.\n2. **Create an adjudicated pilot.** Target at least 30 independent patient/slide/run groups per modality, enriched to at least 50 fold-positive, 50 crack-positive and 100 clean/hard-negative regions, with two reviewers and adjudication.\n3. **Run accessible controls.** Add HistoQC as an operational WSI-QC baseline only after defining its output-to-fold ontology/metric mapping; request legal clearance for GrandQC and verify the manual GrandQC/AIRAQc resources; obtain Merck's DiffusionQC implementation and reconcile its split.\n4. **Use matched heads for model selection.** Compare classical, DINOv2, Hibou-B and approved DINOv3 with the same frozen readouts; add a small decoder/LoRA only after a frozen model fails a predeclared real-label criterion.\n5. **Open a governed multiplex track.** Define marker vocabulary, MPP, channel-missingness and projection baselines; request KRONOS2 permission; retain the current anomaly branch as a documented negative result until a marker-aware representation and real labels are available.\n6. **Repair the runtime portability gap.** Add explicit CUDA selection/synchronization and parity tests before claiming automatic CUDA/MPS support.",
+        "id": "next_steps",
+        "type": "markdown"
+      },
+      {
+        "body": "## Further questions that can change the decision\n\n- What exactly counts as a crack in each acquisition workflow, and is a pixel mask actionable?\n- Which COMET/CosMx structural channels and MPP metadata are guaranteed at inference time?\n- What are expected production prevalence, acceptable review capacity and costs of false PASS versus false FAIL?\n- Which scanner, site, panel, tissue, species and time strata are required claims rather than exploratory cuts?\n- Can Legal approve GrandQC, DINOv3 and KRONOS2, and can Merck provide the internal DiffusionQC assets?",
+        "id": "further_questions",
+        "type": "markdown"
+      },
+      {
+        "body": "## References\n\n1. Koparir OF, Tarakçı Gençer B, Sengur A. *Histology Tissue Fold Dataset with Pixel-Level Annotations for Artificial Intelligence-Based Detection and Segmentation of Tissue Fold Artifacts in H&E-Stained Teaching Slides* [dataset]. Zenodo. 2026; version 1.0. [doi:10.5281/zenodo.21493260](https://doi.org/10.5281/zenodo.21493260).\n2. Koparir OF, Tarakci Gencer B, Sengur A. Deep learning-assisted quality control of histology teaching slides: detection and localization of tissue fold artifacts in H&E-stained images. *Bioengineering*. 2026;13(8):937. [doi:10.3390/bioengineering13080937](https://doi.org/10.3390/bioengineering13080937).\n3. Janowczyk A, Zuo R, Gilmore H, Feldman M, Madabhushi A. HistoQC: an open-source quality control tool for digital pathology slides. *JCO Clinical Cancer Informatics*. 2019;3:1–7. [doi:10.1200/CCI.18.00157](https://doi.org/10.1200/CCI.18.00157).\n4. Weng Z, Seper A, Pryalukhin A, et al. GrandQC: a comprehensive solution to quality control problem in digital pathology. *Nature Communications*. 2024;15:10685. [doi:10.1038/s41467-024-54769-y](https://doi.org/10.1038/s41467-024-54769-y).\n5. Tolkach Y. *Test Dataset from Weng Z. et al. Nat Communications 2024* [GrandQC manually annotated test dataset]. Zenodo. 2024. [doi:10.5281/zenodo.14039591](https://doi.org/10.5281/zenodo.14039591).\n6. Wang Z, Zhou Z, Wen Z, Kook JH, Wojcik JB, Kang J. DiffusionQC: artifact detection and quality control in histopathology images via diffusion model. In: *2026 IEEE 23rd International Symposium on Biomedical Imaging (ISBI)*. IEEE; 2026:1–5. [doi:10.1109/ISBI61048.2026.11515418](https://doi.org/10.1109/ISBI61048.2026.11515418).\n7. Oquab M, Darcet T, Moutakanni T, et al. DINOv2: learning robust visual features without supervision. *Transactions on Machine Learning Research*. 2024. [Official OpenReview record](https://openreview.net/forum?id=a68SUt6zFt).\n8. Siméoni O, Vo HV, Seitzer M, et al. DINOv3. arXiv [Preprint]. 2025; arXiv:2508.10104. [doi:10.48550/arXiv.2508.10104](https://doi.org/10.48550/arXiv.2508.10104).\n9. Meta AI. *Model Card for DINOv3* and *DINOv3 License* [model/software documentation]. 2025. [Model card](https://github.com/facebookresearch/dinov3/blob/main/MODEL_CARD.md); [custom license](https://github.com/facebookresearch/dinov3/blob/main/LICENSE.md). Accessed 2026-08-27.\n10. Nechaev D, Pchelnikov A, Ivanova E. Hibou: a family of foundational vision transformers for pathology. arXiv [Preprint]. 2024; arXiv:2406.05074. [doi:10.48550/arXiv.2406.05074](https://doi.org/10.48550/arXiv.2406.05074).\n11. HistAI. *Hibou-B (histai/hibou-b)* [pretrained model and model card]. Hugging Face; 2024. [Official model card](https://huggingface.co/histai/hibou-b). Accessed 2026-08-27.\n12. Tschannen M, Gritsenko A, Wang X, et al. SigLIP 2: multilingual vision-language encoders with improved semantic understanding, localization, and dense features. arXiv [Preprint]. 2025; arXiv:2502.14786. [doi:10.48550/arXiv.2502.14786](https://doi.org/10.48550/arXiv.2502.14786).\n13. Google. *SigLIP2 Base Patch16-224 (google/siglip2-base-patch16-224)* [pretrained model and model card]. Hugging Face; 2025. [Official model card](https://huggingface.co/google/siglip2-base-patch16-224). Accessed 2026-08-27.\n14. Mahmood Lab. *UNI2-h (MahmoodLab/UNI2-h)* [pretrained model and model card]. Hugging Face; 2025. [Official model card](https://huggingface.co/MahmoodLab/UNI2-h). Accessed 2026-08-27.\n15. Chen RJ, Ding T, Lu MY, Williamson DFK, et al. Towards a general-purpose foundation model for computational pathology. *Nature Medicine*. 2024;30:850–862. [doi:10.1038/s41591-024-02857-3](https://doi.org/10.1038/s41591-024-02857-3).\n16. Mahmood Lab. *CONCHv1.5 (MahmoodLab/conchv1_5)* [pretrained model and model card]. Hugging Face; 2024. [Official model card](https://huggingface.co/MahmoodLab/conchv1_5). Accessed 2026-08-27.\n17. Lu MY, Chen B, Williamson DFK, et al. A visual-language foundation model for computational pathology. *Nature Medicine*. 2024;30:863–874. [doi:10.1038/s41591-024-02856-4](https://doi.org/10.1038/s41591-024-02856-4).\n18. Mahmood Lab. *KRONOS2 (MahmoodLab/KRONOS2)* [pretrained model and model card]. Hugging Face; 2026. [Official model card](https://huggingface.co/MahmoodLab/KRONOS2). Accessed 2026-08-27.\n19. Shaban M, Chang Y, Qiu H, et al. A foundation model for spatial proteomics. arXiv [Preprint]. 2025; arXiv:2506.03373. [doi:10.48550/arXiv.2506.03373](https://doi.org/10.48550/arXiv.2506.03373).\n20. Andhari MD, Rinaldi G, Nazari P, et al. Quality control of immunofluorescence images using artificial intelligence. *Cell Reports Physical Science*. 2024;5(10):102220. [doi:10.1016/j.xcrp.2024.102220](https://doi.org/10.1016/j.xcrp.2024.102220).\n21. Andhari MD. *QualIFAI* [COMET/Lunaphore-related dataset and trained-model archive]. Zenodo. 2024; version v2. [doi:10.5281/zenodo.12699470](https://doi.org/10.5281/zenodo.12699470).\n22. Tsubosaka A, Ishikawa S. *CosMx Spatial transcriptome dataset of human gastric mucosa* [dataset]. Zenodo. 2023. [doi:10.5281/zenodo.8333281](https://doi.org/10.5281/zenodo.8333281).\n23. Van den Broek TJM; Princess Máxima Center. *Single-cell spatial analysis of pediatric high-grade glioma reveals a novel population of SPP1+/GPNMB+ myeloid cells with immunosuppressive and tumor-promoting capabilities* [CosMx dataset]. Zenodo. 2025. [Official record 16877090](https://zenodo.org/records/16877090). Accessed 2026-08-27.\n24. Gautam K, Raipuria G, Singhal N. AIRAQc: pre-analytical tool for accurate identification and quantification of artefacts in histopathology. In: *Medical Imaging with Deep Learning—Short Papers (MIDL 2025)*. 2025. [Official OpenReview record](https://openreview.net/forum?id=XNNsQqs1UP).\n25. Kanwal N. *HistoArtifacts* [dataset]. Zenodo. 2024; version v1. [doi:10.5281/zenodo.10809442](https://doi.org/10.5281/zenodo.10809442).\n26. Kanwal N, Khoraminia F, Kiraz U, et al. Equipping computational pathology systems with artifact processing pipelines: a showcase for computation and performance trade-offs. *BMC Medical Informatics and Decision Making*. 2024;24:288. [doi:10.1186/s12911-024-02676-z](https://doi.org/10.1186/s12911-024-02676-z).\n27. Foucart A. *Artefact segmentation in digital pathology whole-slide images* [dataset]. Zenodo. 2020; version v1. [doi:10.5281/zenodo.3773097](https://doi.org/10.5281/zenodo.3773097).\n28. Foucart A, Debeir O, Decaestecker C. Snow supervision in digital pathology: managing imperfect annotations for segmentation in deep learning. Research Square [Preprint]. 2020; version 1. [doi:10.21203/rs.3.rs-116512/v1](https://doi.org/10.21203/rs.3.rs-116512/v1).\n29. Meta AI. *DINOv2* [official repository, pretrained weights, and license]. [GitHub repository](https://github.com/facebookresearch/dinov2). Accessed 2026-08-27. Code and the standard DINOv2 weights are released under Apache License 2.0; separately listed domain-specific weights may use different terms.\n30. Weng Z, Seper A, Pryalukhin A, et al. *GrandQC* [official repository and license]. [GitHub repository](https://github.com/cpath-ukk/grandqc). Accessed 2026-08-27. CC BY-NC-SA 4.0.",
+        "id": "references",
+        "type": "markdown"
+      }
+    ],
+    "cards": [
+      {
+        "dataset": "summary",
+        "description": "Best current point estimate on the public H&E fold-only locked test; not a Merck or crack result.",
+        "id": "best_he_dice",
+        "metrics": [
+          {
+            "field": "best_macro_dice",
+            "format": "number",
+            "label": "Best H&E positive-field macro Dice"
+          }
+        ],
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/summary.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/summary.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark"
+      },
+      {
+        "dataset": "summary",
+        "description": "Hibou-B linear minus DINOv2-small linear on identical positive fields; descriptive paired interval only.",
+        "id": "paired_delta",
+        "metrics": [
+          {
+            "field": "hibou_vs_dinov2_delta",
+            "format": "number",
+            "label": "Hibou linear − DINOv2 linear",
+            "signed": true
+          }
+        ],
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/summary.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/summary.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark"
+      },
+      {
+        "dataset": "summary",
+        "description": "Locked real H&E test fields from 55 supplied source-slide groups.",
+        "id": "he_test_fields",
+        "metrics": [
+          {
+            "field": "locked_test_fields",
+            "format": "number",
+            "label": "Locked H&E test fields"
+          }
+        ],
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/summary.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/summary.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark"
+      },
+      {
+        "dataset": "summary",
+        "description": "Public COMET/CosMx fields with independently usable natural fold/crack masks in this benchmark.",
+        "id": "multiplex_labels",
+        "metrics": [
+          {
+            "field": "labeled_natural_multiplex_fields",
+            "format": "number",
+            "label": "Natural multiplex labels"
+          }
+        ],
+        "source": {
+          "id": "multiplex_proxy",
+          "label": "Real-background COMET/CosMx perturbation benchmark",
+          "path": "reports/benchmark_findings_2026-08-27/data/summary.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "leave-one-declared-source-group-out results",
+              "896-pixel primary sensitivity configuration",
+              "fold and crack perturbations reported separately"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Calibration-thresholded Dice compares paired incremental response with the inserted perturbation mask.",
+              "Untouched alert burden is the predicted-area fraction on unmodified real fields and is not a false-positive rate."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/summary.json')",
+            "tables_used": [
+              "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+              "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json"
+            ]
+          }
+        },
+        "sourceId": "multiplex_proxy"
+      }
+    ],
+    "charts": [
+      {
+        "comparisonContext": {
+          "denominator": "245 valid fold-positive fields",
+          "grain": "positive microscope field",
+          "unit": "Dice (0–1)"
+        },
+        "dataset": "he_methods",
+        "encodings": {
+          "tooltip": [
+            {
+              "field": "ci_low",
+              "label": "95% CI low",
+              "type": "quantitative"
+            },
+            {
+              "field": "ci_high",
+              "label": "95% CI high",
+              "type": "quantitative"
+            },
+            {
+              "field": "clean_fp_percent",
+              "label": "Clean FP area (%)",
+              "type": "quantitative"
+            }
+          ],
+          "x": {
+            "field": "method",
+            "label": "Method",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "macro_dice",
+            "format": "number",
+            "label": "Positive-field macro Dice",
+            "type": "quantitative"
+          }
+        },
+        "id": "he_macro_dice",
+        "intent": "comparison",
+        "layout": "full",
+        "question": "Which evaluated method has the strongest H&E fold-localization point estimate?",
+        "rationale": "A horizontal ranked bar is the clearest native report view for seven long method labels; the vector manuscript figure supplies interval marks.",
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/he_methods.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/he_methods.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark",
+        "subtitle": "Locked public H&E fold test; point estimates shown here, exact 95% intervals in the adjacent table",
+        "title": "Positive-field macro Dice by method",
+        "type": "horizontalBar"
+      },
+      {
+        "comparisonContext": {
+          "denominator": "42–57 positive fields per organ",
+          "grain": "organ × method",
+          "unit": "Dice (0–1)"
+        },
+        "dataset": "he_organs",
+        "encodings": {
+          "color": {
+            "field": "organ",
+            "label": "Organ",
+            "type": "nominal"
+          },
+          "x": {
+            "field": "method",
+            "label": "Method",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "macro_dice",
+            "label": "Positive-field macro Dice",
+            "type": "quantitative"
+          }
+        },
+        "id": "he_organ_heatmap",
+        "intent": "comparison",
+        "layout": "full",
+        "question": "How stable is each method across the five represented organs?",
+        "rationale": "Grouped bars keep the five organ estimates visible for each method in the native report; the vector manuscript figure provides the denser matrix view.",
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/he_organs.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/he_organs.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark",
+        "subtitle": "Point estimates reveal tissue-dependent variation that aggregate Dice obscures",
+        "title": "Positive-field macro Dice by method and organ",
+        "type": "bar"
+      },
+      {
+        "comparisonContext": {
+          "baseline": "zero difference",
+          "grain": "paired positive field with source-slide cluster resampling",
+          "unit": "Dice difference"
+        },
+        "dataset": "paired_differences",
+        "encodings": {
+          "tooltip": [
+            {
+              "field": "ci_low",
+              "label": "95% CI low",
+              "type": "quantitative"
+            },
+            {
+              "field": "ci_high",
+              "label": "95% CI high",
+              "type": "quantitative"
+            }
+          ],
+          "x": {
+            "field": "short_contrast",
+            "label": "Contrast",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "point_difference",
+            "format": "number",
+            "label": "Macro-Dice difference",
+            "type": "quantitative"
+          }
+        },
+        "id": "he_paired_differences",
+        "intent": "comparison",
+        "layout": "full",
+        "question": "What is the magnitude of selected within-cohort method differences?",
+        "rationale": "A zero-referenced horizontal difference chart preserves sign and accommodates long contrast labels.",
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/paired_differences.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/paired_differences.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark",
+        "subtitle": "Positive values favor the first named method; exact descriptive intervals are in the table",
+        "title": "Selected paired macro-Dice differences",
+        "type": "horizontalBar"
+      },
+      {
+        "comparisonContext": {
+          "denominator": "5 COMET public-field groups",
+          "grain": "provisional source-group macro mean",
+          "unit": "Dice (0–1)"
+        },
+        "dataset": "proxy_comet",
+        "encodings": {
+          "color": {
+            "field": "method",
+            "label": "Method",
+            "type": "nominal"
+          },
+          "x": {
+            "field": "artifact",
+            "label": "Inserted perturbation",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "dice",
+            "label": "Thresholded Dice",
+            "type": "quantitative"
+          }
+        },
+        "id": "proxy_comet",
+        "intent": "comparison",
+        "layout": "full",
+        "question": "How do the three branches respond to inserted fold and crack perturbations on COMET backgrounds?",
+        "rationale": "Grouped bars compare the two perturbation types across the same three methods without implying a natural-artifact test.",
+        "source": {
+          "id": "multiplex_proxy",
+          "label": "Real-background COMET/CosMx perturbation benchmark",
+          "path": "reports/benchmark_findings_2026-08-27/data/proxy_comet.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "leave-one-declared-source-group-out results",
+              "896-pixel primary sensitivity configuration",
+              "fold and crack perturbations reported separately"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Calibration-thresholded Dice compares paired incremental response with the inserted perturbation mask.",
+              "Untouched alert burden is the predicted-area fraction on unmodified real fields and is not a false-positive rate."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/proxy_comet.json')",
+            "tables_used": [
+              "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+              "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json"
+            ]
+          }
+        },
+        "sourceId": "multiplex_proxy",
+        "subtitle": "Five public DAPI fields; generator-conditional proxy only",
+        "title": "COMET controlled-perturbation Dice",
+        "type": "bar"
+      },
+      {
+        "comparisonContext": {
+          "denominator": "4 CosMx provisional slide/run groups",
+          "grain": "provisional source-group macro mean",
+          "unit": "Dice (0–1)"
+        },
+        "dataset": "proxy_cosmx",
+        "encodings": {
+          "color": {
+            "field": "method",
+            "label": "Method",
+            "type": "nominal"
+          },
+          "x": {
+            "field": "artifact",
+            "label": "Inserted perturbation",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "dice",
+            "label": "Thresholded Dice",
+            "type": "quantitative"
+          }
+        },
+        "id": "proxy_cosmx",
+        "intent": "comparison",
+        "layout": "full",
+        "question": "How do the three branches respond to inserted fold and crack perturbations on CosMx backgrounds?",
+        "rationale": "The same grouped-bar form as COMET enables a bounded modality comparison while keeping each modality separate.",
+        "source": {
+          "id": "multiplex_proxy",
+          "label": "Real-background COMET/CosMx perturbation benchmark",
+          "path": "reports/benchmark_findings_2026-08-27/data/proxy_cosmx.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "leave-one-declared-source-group-out results",
+              "896-pixel primary sensitivity configuration",
+              "fold and crack perturbations reported separately"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Calibration-thresholded Dice compares paired incremental response with the inserted perturbation mask.",
+              "Untouched alert burden is the predicted-area fraction on unmodified real fields and is not a false-positive rate."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/proxy_cosmx.json')",
+            "tables_used": [
+              "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+              "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json"
+            ]
+          }
+        },
+        "sourceId": "multiplex_proxy",
+        "subtitle": "Six morphology FOVs from four provisional slide/run groups; generator-conditional proxy only",
+        "title": "CosMx controlled-perturbation Dice",
+        "type": "bar"
+      },
+      {
+        "comparisonContext": {
+          "grain": "provisional source-group macro mean",
+          "normalization": "predicted pixels / unmodified field pixels",
+          "unit": "fraction of field area"
+        },
+        "dataset": "proxy_alert",
+        "encodings": {
+          "color": {
+            "field": "modality",
+            "label": "Modality",
+            "type": "nominal"
+          },
+          "x": {
+            "field": "method",
+            "label": "Method",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "alert_burden",
+            "format": "percent",
+            "label": "Alert burden",
+            "type": "quantitative"
+          }
+        },
+        "id": "proxy_alert_burden",
+        "intent": "comparison",
+        "layout": "full",
+        "question": "What review burden does each branch create on untouched public multiplex fields?",
+        "rationale": "Grouped bars expose modality differences and prevent the lower COMET burden from hiding the much larger CosMx anomaly/hybrid burden.",
+        "source": {
+          "id": "multiplex_proxy",
+          "label": "Real-background COMET/CosMx perturbation benchmark",
+          "path": "reports/benchmark_findings_2026-08-27/data/proxy_alert.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "leave-one-declared-source-group-out results",
+              "896-pixel primary sensitivity configuration",
+              "fold and crack perturbations reported separately"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Calibration-thresholded Dice compares paired incremental response with the inserted perturbation mask.",
+              "Untouched alert burden is the predicted-area fraction on unmodified real fields and is not a false-positive rate."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/proxy_alert.json')",
+            "tables_used": [
+              "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+              "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json"
+            ]
+          }
+        },
+        "sourceId": "multiplex_proxy",
+        "subtitle": "Predicted area on unmodified fields; this is not a false-positive rate",
+        "title": "Untouched real-field alert burden",
+        "type": "bar"
+      },
+      {
+        "comparisonContext": {
+          "baseline": "zero resolution shift",
+          "grain": "matched modality × method × perturbation",
+          "unit": "Dice difference"
+        },
+        "dataset": "proxy_resolution",
+        "encodings": {
+          "color": {
+            "field": "modality",
+            "label": "Modality",
+            "type": "nominal"
+          },
+          "tooltip": [
+            {
+              "field": "dice_256",
+              "label": "Dice at 256",
+              "type": "quantitative"
+            },
+            {
+              "field": "dice_896",
+              "label": "Dice at 896",
+              "type": "quantitative"
+            }
+          ],
+          "x": {
+            "field": "label",
+            "label": "Method and perturbation",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "delta_896_minus_256",
+            "format": "number",
+            "label": "Dice difference (896 − 256)",
+            "type": "quantitative"
+          }
+        },
+        "id": "proxy_resolution_sensitivity",
+        "intent": "comparison",
+        "layout": "full",
+        "question": "How much does matched perturbation-response Dice change with analysis resolution?",
+        "rationale": "A zero-referenced difference chart makes direction and magnitude visible without ranking the two modalities together.",
+        "source": {
+          "id": "multiplex_proxy",
+          "label": "Real-background COMET/CosMx perturbation benchmark",
+          "path": "reports/benchmark_findings_2026-08-27/data/proxy_resolution.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "leave-one-declared-source-group-out results",
+              "896-pixel primary sensitivity configuration",
+              "fold and crack perturbations reported separately"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Calibration-thresholded Dice compares paired incremental response with the inserted perturbation mask.",
+              "Untouched alert burden is the predicted-area fraction on unmodified real fields and is not a false-positive rate."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/proxy_resolution.json')",
+            "tables_used": [
+              "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+              "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json"
+            ]
+          }
+        },
+        "sourceId": "multiplex_proxy",
+        "subtitle": "Large signed changes show that current proxy conclusions depend on analysis resolution",
+        "title": "Multiplex proxy Dice shift from 256- to 896-pixel analysis",
+        "type": "horizontalBar"
+      }
+    ],
+    "description": "Technical feasibility benchmark, evidence audit and internal evaluation plan for fold/crack QC across H&E, COMET and CosMx.",
+    "generatedAt": "2026-08-27T09:30:00-04:00",
+    "sources": [
+      {
+        "id": "he_benchmark",
+        "label": "Hardened public H&E fold benchmark artifacts",
+        "path": "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json",
+        "query": {
+          "description": "Extracts and independently verifies locked-test outcomes from all report-eligible schema-v1.2 H&E artifacts.",
+          "engine": "local_json_audit",
+          "executed_at": "2026-08-27T09:30:00-04:00",
+          "filters": [
+            "locked_test role only",
+            "localization_reference_valid=true for positive-field overlap",
+            "empty positive masks excluded under the frozen benchmark policy"
+          ],
+          "language": "python",
+          "metric_definitions": [
+            "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+            "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+            "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+            "Intervals resample supplied source-slide groups within organ/class strata."
+          ],
+          "sql": "import json\nfrom pathlib import Path\npaths = ['artifacts/public_fold/classical_hardened_v1_2.json', 'artifacts/public_fold/dinov2_hardened_v1_2.json', 'artifacts/public_fold/siglip2_hardened_v1_2.json', 'artifacts/public_fold/hibou_hardened_v1_2.json', 'artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json']\nreports = {path: json.loads(Path(path).read_text(encoding='utf-8')) for path in paths}",
+          "tables_used": [
+            "artifacts/public_fold/classical_hardened_v1_2.json",
+            "artifacts/public_fold/dinov2_hardened_v1_2.json",
+            "artifacts/public_fold/siglip2_hardened_v1_2.json",
+            "artifacts/public_fold/hibou_hardened_v1_2.json",
+            "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+          ]
+        }
+      },
+      {
+        "id": "multiplex_proxy",
+        "label": "Real-background COMET/CosMx perturbation benchmark",
+        "path": "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+        "query": {
+          "description": "Extracts out-of-fold group-macro controlled-perturbation response and untouched real-field alert burden.",
+          "engine": "local_json_audit",
+          "executed_at": "2026-08-27T09:30:00-04:00",
+          "filters": [
+            "leave-one-declared-source-group-out results",
+            "896-pixel primary sensitivity configuration",
+            "fold and crack perturbations reported separately"
+          ],
+          "language": "python",
+          "metric_definitions": [
+            "Calibration-thresholded Dice compares paired incremental response with the inserted perturbation mask.",
+            "Untouched alert burden is the predicted-area fraction on unmodified real fields and is not a false-positive rate."
+          ],
+          "sql": "import json\nfrom pathlib import Path\npaths = ['artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json', 'artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json']\nproxies = {path: json.loads(Path(path).read_text(encoding='utf-8')) for path in paths}",
+          "tables_used": [
+            "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+            "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json"
+          ]
+        }
+      },
+      {
+        "id": "foundation_smoke",
+        "label": "Frozen-encoder Apple MPS and rank-4 LoRA engineering smokes",
+        "path": "artifacts/foundation_smoke/foundation_smoke.json",
+        "query": {
+          "description": "Reads CPU/MPS parity, timing, memory and one-step adapter outcomes from deterministic engineering smokes.",
+          "engine": "local_json_audit",
+          "executed_at": "2026-08-27T09:30:00-04:00",
+          "filters": [
+            "engineering smoke only; no efficacy interpretation"
+          ],
+          "language": "python",
+          "sql": "import json\nfrom pathlib import Path\npaths = ['artifacts/foundation_smoke/foundation_smoke.json', 'artifacts/foundation_smoke/siglip2_base_mps_lora.json']\nsmokes = {path: json.loads(Path(path).read_text(encoding='utf-8')) for path in paths}",
+          "tables_used": [
+            "artifacts/foundation_smoke/foundation_smoke.json",
+            "artifacts/foundation_smoke/siglip2_base_mps_lora.json"
+          ]
+        }
+      },
+      {
+        "id": "evaluation_protocol",
+        "label": "Locked evaluation protocol",
+        "path": "docs/EVALUATION.md",
+        "query": {
+          "description": "Reads the repository evaluation protocol used to formulate the proposed internal gates.",
+          "engine": "local_document",
+          "executed_at": "2026-08-27T09:30:00-04:00",
+          "language": "python",
+          "sql": "from pathlib import Path\nprotocol = Path('docs/EVALUATION.md').read_text(encoding='utf-8')",
+          "tables_used": [
+            "docs/EVALUATION.md"
+          ]
+        }
+      },
+      {
+        "id": "method_audit",
+        "label": "Public data and model audit",
+        "path": "docs/PUBLIC_BENCHMARK_AUDIT.md",
+        "query": {
+          "description": "Reads the repository audit used to classify method execution and evidence status.",
+          "engine": "local_document",
+          "executed_at": "2026-08-27T09:30:00-04:00",
+          "language": "python",
+          "sql": "from pathlib import Path\naudit = Path('docs/PUBLIC_BENCHMARK_AUDIT.md').read_text(encoding='utf-8')",
+          "tables_used": [
+            "docs/PUBLIC_BENCHMARK_AUDIT.md"
+          ]
+        }
+      },
+      {
+        "href": "https://zenodo.org/records/21493260",
+        "id": "histology_fold_dataset",
+        "label": "Histology Tissue Fold Dataset v1"
+      },
+      {
+        "href": "https://doi.org/10.1038/s41467-024-54769-y",
+        "id": "grandqc",
+        "label": "GrandQC manual test masks and primary paper"
+      },
+      {
+        "href": "https://doi.org/10.1200/CCI.18.00157",
+        "id": "histoqc",
+        "label": "HistoQC primary paper"
+      },
+      {
+        "href": "https://doi.org/10.1109/ISBI61048.2026.11515418",
+        "id": "diffusionqc",
+        "label": "DiffusionQC ISBI 2026 paper"
+      },
+      {
+        "href": "https://zenodo.org/records/12699470",
+        "id": "qualifai",
+        "label": "QUALIFAI public COMET release"
+      },
+      {
+        "href": "https://zenodo.org/records/8333281",
+        "id": "cosmx_gastric",
+        "label": "CosMx gastric public dataset"
+      },
+      {
+        "href": "https://zenodo.org/records/16877090",
+        "id": "cosmx_phgg",
+        "label": "CosMx pediatric high-grade glioma public dataset"
+      },
+      {
+        "href": "https://github.com/facebookresearch/dinov3",
+        "id": "dinov3",
+        "label": "Official DINOv3 repository and license"
+      },
+      {
+        "href": "https://github.com/facebookresearch/dinov2",
+        "id": "dinov2",
+        "label": "Official DINOv2 repository and license"
+      },
+      {
+        "href": "https://github.com/cpath-ukk/grandqc",
+        "id": "grandqc_repo",
+        "label": "Official GrandQC repository and noncommercial license"
+      },
+      {
+        "href": "https://huggingface.co/MahmoodLab/UNI2-h",
+        "id": "uni2h",
+        "label": "Official UNI2-h model card"
+      },
+      {
+        "href": "https://huggingface.co/MahmoodLab/conchv1_5",
+        "id": "conch15",
+        "label": "Official CONCHv1.5 model card"
+      },
+      {
+        "href": "https://huggingface.co/MahmoodLab/KRONOS2",
+        "id": "kronos2",
+        "label": "Official KRONOS2 model card"
+      }
+    ],
+    "surface": "report",
+    "tables": [
+      {
+        "columns": [
+          {
+            "field": "method",
+            "label": "Method",
+            "type": "text"
+          },
+          {
+            "field": "head",
+            "label": "Readout",
+            "type": "text"
+          },
+          {
+            "field": "macro_dice",
+            "format": "number",
+            "label": "Macro Dice"
+          },
+          {
+            "field": "ci_low",
+            "format": "number",
+            "label": "95% CI low"
+          },
+          {
+            "field": "ci_high",
+            "format": "number",
+            "label": "95% CI high"
+          },
+          {
+            "field": "micro_dice",
+            "format": "number",
+            "label": "Micro Dice"
+          },
+          {
+            "field": "micro_ci_low",
+            "format": "number",
+            "label": "Micro CI low"
+          },
+          {
+            "field": "micro_ci_high",
+            "format": "number",
+            "label": "Micro CI high"
+          },
+          {
+            "field": "presence_auroc",
+            "format": "number",
+            "label": "AUROC"
+          },
+          {
+            "field": "presence_auroc_ci_low",
+            "format": "number",
+            "label": "AUROC CI low"
+          },
+          {
+            "field": "presence_auroc_ci_high",
+            "format": "number",
+            "label": "AUROC CI high"
+          },
+          {
+            "field": "clean_fp_percent",
+            "format": "number",
+            "label": "Clean FP area",
+            "unit": "%"
+          },
+          {
+            "field": "clean_fp_ci_low_percent",
+            "format": "number",
+            "label": "Clean FP CI low",
+            "unit": "%"
+          },
+          {
+            "field": "clean_fp_ci_high_percent",
+            "format": "number",
+            "label": "Clean FP CI high",
+            "unit": "%"
+          }
+        ],
+        "dataset": "he_methods",
+        "defaultSort": {
+          "direction": "desc",
+          "field": "macro_dice"
+        },
+        "density": "dense",
+        "id": "he_method_table",
+        "layout": "full",
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/he_methods.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/he_methods.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark",
+        "subtitle": "Same 424-field locked test; macro-Dice CIs use 1,000 source-slide-cluster bootstrap resamples",
+        "title": "H&E method results with uncertainty and burden"
+      },
+      {
+        "columns": [
+          {
+            "field": "case",
+            "label": "Panel",
+            "type": "text"
+          },
+          {
+            "field": "organ",
+            "label": "Organ",
+            "type": "text"
+          },
+          {
+            "field": "reference",
+            "label": "Reference",
+            "type": "text"
+          },
+          {
+            "field": "classical_presence",
+            "label": "Classical presence",
+            "type": "text"
+          },
+          {
+            "field": "classical_pixel_dice",
+            "format": "number",
+            "label": "Classical pixel Dice"
+          },
+          {
+            "field": "hibou_presence",
+            "label": "Hibou presence",
+            "type": "text"
+          },
+          {
+            "field": "hibou_pixel_dice",
+            "format": "number",
+            "label": "Hibou pixel Dice"
+          }
+        ],
+        "dataset": "he_qualitative",
+        "defaultSort": {
+          "direction": "asc",
+          "field": "case"
+        },
+        "density": "dense",
+        "id": "he_qualitative_table",
+        "layout": "full",
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/he_qualitative.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/he_qualitative.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark",
+        "subtitle": "Algorithmically selected without manual review during this audit; counts and calls matched",
+        "title": "Hash-selected qualitative H&E audit cases"
+      },
+      {
+        "columns": [
+          {
+            "field": "contrast",
+            "label": "Contrast",
+            "type": "text"
+          },
+          {
+            "field": "point_difference",
+            "format": "number",
+            "label": "Difference",
+            "movement": true
+          },
+          {
+            "field": "ci_low",
+            "format": "number",
+            "label": "95% CI low"
+          },
+          {
+            "field": "ci_high",
+            "format": "number",
+            "label": "95% CI high"
+          }
+        ],
+        "dataset": "paired_differences",
+        "defaultSort": {
+          "direction": "desc",
+          "field": "point_difference"
+        },
+        "density": "dense",
+        "id": "paired_table",
+        "layout": "full",
+        "source": {
+          "id": "he_benchmark",
+          "label": "Hardened public H&E fold benchmark artifacts",
+          "path": "reports/benchmark_findings_2026-08-27/data/paired_differences.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "locked_test role only",
+              "localization_reference_valid=true for positive-field overlap",
+              "empty positive masks excluded under the frozen benchmark policy"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+              "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+              "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+              "Intervals resample supplied source-slide groups within organ/class strata."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/paired_differences.json')",
+            "tables_used": [
+              "artifacts/public_fold/classical_hardened_v1_2.json",
+              "artifacts/public_fold/dinov2_hardened_v1_2.json",
+              "artifacts/public_fold/siglip2_hardened_v1_2.json",
+              "artifacts/public_fold/hibou_hardened_v1_2.json",
+              "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+            ]
+          }
+        },
+        "sourceId": "he_benchmark",
+        "subtitle": "Positive values favor the first method; 10,000 paired source-slide-cluster resamples",
+        "title": "Selected paired descriptive differences"
+      },
+      {
+        "columns": [
+          {
+            "field": "modality",
+            "label": "Modality",
+            "type": "text"
+          },
+          {
+            "field": "method",
+            "label": "Method",
+            "type": "text"
+          },
+          {
+            "field": "fold_dice",
+            "format": "number",
+            "label": "Fold Dice"
+          },
+          {
+            "field": "fold_ci_low",
+            "format": "number",
+            "label": "Fold CI low"
+          },
+          {
+            "field": "fold_ci_high",
+            "format": "number",
+            "label": "Fold CI high"
+          },
+          {
+            "field": "crack_dice",
+            "format": "number",
+            "label": "Crack Dice"
+          },
+          {
+            "field": "crack_ci_low",
+            "format": "number",
+            "label": "Crack CI low"
+          },
+          {
+            "field": "crack_ci_high",
+            "format": "number",
+            "label": "Crack CI high"
+          },
+          {
+            "field": "untouched_alert_burden_percent",
+            "format": "number",
+            "label": "Alert burden",
+            "unit": "%"
+          },
+          {
+            "field": "alert_ci_low_percent",
+            "format": "number",
+            "label": "Alert CI low",
+            "unit": "%"
+          },
+          {
+            "field": "alert_ci_high_percent",
+            "format": "number",
+            "label": "Alert CI high",
+            "unit": "%"
+          },
+          {
+            "field": "interpretation",
+            "label": "Claim boundary",
+            "type": "text"
+          }
+        ],
+        "dataset": "proxy_summary",
+        "defaultSort": {
+          "direction": "asc",
+          "field": "modality"
+        },
+        "density": "dense",
+        "id": "proxy_summary_table",
+        "layout": "full",
+        "source": {
+          "id": "multiplex_proxy",
+          "label": "Real-background COMET/CosMx perturbation benchmark",
+          "path": "reports/benchmark_findings_2026-08-27/data/proxy_summary.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "leave-one-declared-source-group-out results",
+              "896-pixel primary sensitivity configuration",
+              "fold and crack perturbations reported separately"
+            ],
+            "language": "sql",
+            "metric_definitions": [
+              "Calibration-thresholded Dice compares paired incremental response with the inserted perturbation mask.",
+              "Untouched alert burden is the predicted-area fraction on unmodified real fields and is not a false-positive rate."
+            ],
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/proxy_summary.json')",
+            "tables_used": [
+              "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+              "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json"
+            ]
+          }
+        },
+        "sourceId": "multiplex_proxy",
+        "subtitle": "Fold and crack remain separate estimands; intervals use provisional source-group bootstrap resampling",
+        "title": "Multiplex proxy response by artifact and method"
+      },
+      {
+        "columns": [
+          {
+            "field": "evidence",
+            "label": "Evidence",
+            "type": "text"
+          },
+          {
+            "field": "input",
+            "label": "Input",
+            "type": "text"
+          },
+          {
+            "field": "reference",
+            "label": "Reference",
+            "type": "text"
+          },
+          {
+            "field": "valid_claim",
+            "label": "Permitted claim",
+            "type": "text"
+          },
+          {
+            "field": "invalid_claim",
+            "label": "Prohibited claim",
+            "type": "text"
+          },
+          {
+            "field": "status",
+            "label": "Status",
+            "type": "text"
+          }
+        ],
+        "dataset": "evidence_scope",
+        "defaultSort": {
+          "direction": "asc",
+          "field": "evidence"
+        },
+        "density": "dense",
+        "id": "evidence_table",
+        "layout": "full",
+        "source": {
+          "id": "evaluation_protocol",
+          "label": "Locked evaluation protocol",
+          "path": "reports/benchmark_findings_2026-08-27/data/evidence_scope.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "language": "sql",
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/evidence_scope.json')",
+            "tables_used": [
+              "docs/EVALUATION.md"
+            ]
+          }
+        },
+        "sourceId": "evaluation_protocol",
+        "subtitle": "Results are only comparable within the stated input, reference and evidence tier",
+        "title": "Evidence tiers and permitted claims"
+      },
+      {
+        "columns": [
+          {
+            "field": "priority",
+            "label": "Priority",
+            "type": "number"
+          },
+          {
+            "field": "model_or_method",
+            "label": "Model / method",
+            "type": "text"
+          },
+          {
+            "field": "domain",
+            "label": "Domain",
+            "type": "text"
+          },
+          {
+            "field": "current_evidence",
+            "label": "Current evidence",
+            "type": "text"
+          },
+          {
+            "field": "access",
+            "label": "Access / license",
+            "type": "text"
+          },
+          {
+            "field": "decision",
+            "label": "Recommended role",
+            "type": "text"
+          }
+        ],
+        "dataset": "model_status",
+        "defaultSort": {
+          "direction": "asc",
+          "field": "priority"
+        },
+        "density": "dense",
+        "id": "model_status_table",
+        "layout": "full",
+        "source": {
+          "id": "method_audit",
+          "label": "Public data and model audit",
+          "path": "reports/benchmark_findings_2026-08-27/data/model_status.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "language": "sql",
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/model_status.json')",
+            "tables_used": [
+              "docs/PUBLIC_BENCHMARK_AUDIT.md"
+            ]
+          }
+        },
+        "sourceId": "method_audit",
+        "subtitle": "Exact names, present execution status and corporate-access constraints",
+        "title": "Foundation and QC method readiness"
+      },
+      {
+        "columns": [
+          {
+            "field": "model",
+            "label": "Model",
+            "type": "text"
+          },
+          {
+            "field": "cpu_seconds_two_patches",
+            "format": "number",
+            "label": "CPU median",
+            "unit": "s"
+          },
+          {
+            "field": "mps_seconds_two_patches",
+            "format": "number",
+            "label": "MPS median",
+            "unit": "s"
+          },
+          {
+            "field": "mps_speedup",
+            "format": "number",
+            "label": "MPS speedup",
+            "unit": "×"
+          },
+          {
+            "field": "max_abs_cpu_mps_error",
+            "format": "number",
+            "label": "Max |CPU−MPS|"
+          },
+          {
+            "field": "trainable_fraction",
+            "format": "percent",
+            "label": "LoRA trainable fraction"
+          }
+        ],
+        "dataset": "smoke_results",
+        "defaultSort": {
+          "direction": "desc",
+          "field": "mps_speedup"
+        },
+        "density": "dense",
+        "id": "smoke_table",
+        "source": {
+          "id": "foundation_smoke",
+          "label": "Frozen-encoder Apple MPS and rank-4 LoRA engineering smokes",
+          "path": "reports/benchmark_findings_2026-08-27/data/smoke_results.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "filters": [
+              "engineering smoke only; no efficacy interpretation"
+            ],
+            "language": "sql",
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/smoke_results.json')",
+            "tables_used": [
+              "artifacts/foundation_smoke/foundation_smoke.json",
+              "artifacts/foundation_smoke/siglip2_base_mps_lora.json"
+            ]
+          }
+        },
+        "sourceId": "foundation_smoke",
+        "subtitle": "Two deterministic patches per model; runtime and PEFT execution only",
+        "title": "Apple MPS engineering feasibility"
+      },
+      {
+        "columns": [
+          {
+            "field": "priority",
+            "label": "Priority",
+            "type": "number"
+          },
+          {
+            "field": "criterion",
+            "label": "Criterion",
+            "type": "text"
+          },
+          {
+            "field": "proposed_gate",
+            "label": "Proposed gate",
+            "type": "text"
+          },
+          {
+            "field": "cohort",
+            "label": "Evidence cohort",
+            "type": "text"
+          }
+        ],
+        "dataset": "acceptance",
+        "defaultSort": {
+          "direction": "asc",
+          "field": "priority"
+        },
+        "density": "dense",
+        "id": "acceptance_table",
+        "layout": "full",
+        "source": {
+          "id": "evaluation_protocol",
+          "label": "Locked evaluation protocol",
+          "path": "reports/benchmark_findings_2026-08-27/data/acceptance.json",
+          "query": {
+            "description": "Reads the bounded, report-versioned dataset generated from the audited source artifacts. Raw upstream identities and metric definitions remain listed in tables_used and the source notes.",
+            "engine": "duckdb",
+            "executed_at": "2026-08-27T09:30:00-04:00",
+            "language": "sql",
+            "sql": "SELECT * FROM read_json_auto('reports/benchmark_findings_2026-08-27/data/acceptance.json')",
+            "tables_used": [
+              "docs/EVALUATION.md"
+            ]
+          }
+        },
+        "sourceId": "evaluation_protocol",
+        "subtitle": "Starting hypotheses for stakeholder approval and power analysis; not validated Merck requirements",
+        "title": "Proposed internal acceptance criteria"
+      }
+    ],
+    "title": "Fold and Crack Artifact QC Across H&E, COMET, and CosMx",
+    "version": 1
+  },
+  "package_info": {
+    "generator": "reports/benchmark_findings_2026-08-27/generate_report.py",
+    "reportDate": "2026-08-27"
+  },
+  "snapshot": {
+    "datasets": {
+      "acceptance": [
+        {
+          "cohort": "Enriched adjudicated challenge cohort",
+          "criterion": "Severe actionable artifact sensitivity",
+          "priority": 1,
+          "proposed_gate": "95% CI lower bound ≥ 0.95"
+        },
+        {
+          "cohort": "Production-prevalence cohort",
+          "criterion": "Safety of automatic PASS",
+          "priority": 2,
+          "proposed_gate": "95% CI lower bound for NPV ≥ 0.99"
+        },
+        {
+          "cohort": "Adjudicated mask subset",
+          "criterion": "High-confidence localization precision",
+          "priority": 3,
+          "proposed_gate": "95% CI lower bound ≥ 0.95"
+        },
+        {
+          "cohort": "Prevalence and hard-negative cohorts",
+          "criterion": "Valid-tissue overmask",
+          "priority": 4,
+          "proposed_gate": "Mean ≤ 0.5%"
+        },
+        {
+          "cohort": "Production-prevalence cohort",
+          "criterion": "Review referral rate",
+          "priority": 5,
+          "proposed_gate": "≤ 25%"
+        },
+        {
+          "cohort": "Degraded-input cohort",
+          "criterion": "Missing, invalid or OOD input",
+          "priority": 6,
+          "proposed_gate": "100% routes to REVIEW"
+        },
+        {
+          "cohort": "Paired downstream-impact cohort",
+          "criterion": "Downstream assay effect",
+          "priority": 7,
+          "proposed_gate": "Meets approved noninferiority margin"
+        }
+      ],
+      "evidence_scope": [
+        {
+          "evidence": "Synthetic engineering smoke",
+          "input": "36 generated images / 3 modality contracts",
+          "invalid_claim": "Real-data efficacy or method ranking",
+          "reference": "Generator masks",
+          "status": "Engineering only",
+          "valid_claim": "Software execution, geometry, metric and failure-path checks"
+        },
+        {
+          "evidence": "Public H&E locked test",
+          "input": "424 microscope fields from 55 supplied source-slide groups",
+          "invalid_claim": "Crack, WSI, Merck, COMET, CosMx or clinical performance",
+          "reference": "245 manual fold masks; 179 clean fields",
+          "status": "Exploratory real-label evidence",
+          "valid_claim": "Cohort-conditional H&E fold localization/presence"
+        },
+        {
+          "evidence": "Public COMET/CosMx proxy",
+          "input": "5 COMET DAPI fields; 6 CosMx morphology FOVs / 4 groups",
+          "invalid_claim": "Natural-artifact Dice, ROC, sensitivity, specificity or FPR",
+          "reference": "Controlled synthetic perturbations on real backgrounds",
+          "status": "Non-reportable proxy",
+          "valid_claim": "Perturbation recovery and untouched alert burden"
+        },
+        {
+          "evidence": "DINOv2/SigLIP2 MPS + LoRA smoke",
+          "input": "Two deterministic 224×224 engineering patches",
+          "invalid_claim": "LoRA efficacy or generalization",
+          "reference": "CPU/MPS numerical agreement and one optimizer step",
+          "status": "Engineering only",
+          "valid_claim": "Local execution and narrow PEFT feasibility"
+        }
+      ],
+      "he_methods": [
+        {
+          "ci_high": 0.5214546898427884,
+          "ci_low": 0.37467197061747376,
+          "ci_resamples": 1000,
+          "clean_fp_ci_high_percent": 11.425042526091632,
+          "clean_fp_ci_low_percent": 10.094452755768295,
+          "clean_fp_fraction": 0.10731480310350397,
+          "clean_fp_percent": 10.731480310350397,
+          "head": "Classical",
+          "macro_dice": 0.44582319350167,
+          "median_seconds_per_field": 0.1566672914996161,
+          "method": "Classical fold candidate",
+          "method_key": "classical",
+          "micro_ci_high": 0.44558566124686827,
+          "micro_ci_low": 0.317586157432934,
+          "micro_dice": 0.38289244800060324,
+          "n_clean_fields": 179,
+          "n_positive_fields": 245,
+          "n_test_fields": 424,
+          "presence_auprc": 0.8664343820653614,
+          "presence_auprc_ci_high": 0.9367519437234543,
+          "presence_auprc_ci_low": 0.7773550689900621,
+          "presence_auroc": 0.7919051419450461,
+          "presence_auroc_ci_high": 0.8881269270647073,
+          "presence_auroc_ci_low": 0.6919103645337986,
+          "presence_sensitivity": 0.6326530612244898,
+          "presence_specificity": 0.8547486033519553,
+          "supervision": "Calibration labels; hand-engineered color/texture/morphology"
+        },
+        {
+          "ci_high": 0.3888538975640157,
+          "ci_low": 0.285152168811009,
+          "ci_resamples": 1000,
+          "clean_fp_ci_high_percent": 2.4737645270728406,
+          "clean_fp_ci_low_percent": 1.2466147295475307,
+          "clean_fp_fraction": 0.017887810821488746,
+          "clean_fp_percent": 1.7887810821488745,
+          "head": "PatchKNN",
+          "macro_dice": 0.3406364414885642,
+          "median_seconds_per_field": 0.22280689550098032,
+          "method": "DINOv2-small PatchKNN",
+          "method_key": "dinov2_patchknn",
+          "micro_ci_high": 0.4966648025021403,
+          "micro_ci_low": 0.35168615818971155,
+          "micro_dice": 0.43379436279492317,
+          "n_clean_fields": 179,
+          "n_positive_fields": 245,
+          "n_test_fields": 424,
+          "presence_auprc": 0.897623671727531,
+          "presence_auprc_ci_high": 0.9412880834871172,
+          "presence_auprc_ci_low": 0.8351265074962727,
+          "presence_auroc": 0.8838672899327329,
+          "presence_auroc_ci_high": 0.9211725649350649,
+          "presence_auroc_ci_low": 0.8364497523864739,
+          "presence_sensitivity": 0.8163265306122449,
+          "presence_specificity": 0.7821229050279329,
+          "supervision": "Clean-token bank plus calibration labels"
+        },
+        {
+          "ci_high": 0.6678181390618924,
+          "ci_low": 0.5324661352530135,
+          "ci_resamples": 1000,
+          "clean_fp_ci_high_percent": 0.20892047751821347,
+          "clean_fp_ci_low_percent": 0.028976700488543925,
+          "clean_fp_fraction": 0.0009828965047378355,
+          "clean_fp_percent": 0.09828965047378356,
+          "head": "Linear probe",
+          "macro_dice": 0.5989780970770289,
+          "median_seconds_per_field": 0.22280689550098032,
+          "method": "DINOv2-small linear probe",
+          "method_key": "dinov2_linear",
+          "micro_ci_high": 0.8020053891504412,
+          "micro_ci_low": 0.7241388671332876,
+          "micro_dice": 0.7698236317454605,
+          "n_clean_fields": 179,
+          "n_positive_fields": 245,
+          "n_test_fields": 424,
+          "presence_auprc": 0.9864341450508534,
+          "presence_auprc_ci_high": 0.9945789988852994,
+          "presence_auprc_ci_low": 0.9741901502449941,
+          "presence_auroc": 0.9800022802417057,
+          "presence_auroc_ci_high": 0.9911173275239771,
+          "presence_auroc_ci_low": 0.9634443344715528,
+          "presence_sensitivity": 0.8244897959183674,
+          "presence_specificity": 0.9720670391061452,
+          "supervision": "Fit masks plus calibration labels"
+        },
+        {
+          "ci_high": 0.23647391700490605,
+          "ci_low": 0.17777162208629715,
+          "ci_resamples": 1000,
+          "clean_fp_ci_high_percent": 8.604513351832987,
+          "clean_fp_ci_low_percent": 5.8758241713316774,
+          "clean_fp_fraction": 0.072817734955947,
+          "clean_fp_percent": 7.2817734955947,
+          "head": "PatchKNN",
+          "macro_dice": 0.208032807867111,
+          "median_seconds_per_field": 0.3627425000013318,
+          "method": "SigLIP2 Base PatchKNN",
+          "method_key": "siglip2_patchknn",
+          "micro_ci_high": 0.25729946027081446,
+          "micro_ci_low": 0.17746919773986114,
+          "micro_dice": 0.224349337185237,
+          "n_clean_fields": 179,
+          "n_positive_fields": 245,
+          "n_test_fields": 424,
+          "presence_auprc": 0.8173390628926992,
+          "presence_auprc_ci_high": 0.8849927921969429,
+          "presence_auprc_ci_low": 0.7221321269676497,
+          "presence_auroc": 0.8025310682932391,
+          "presence_auroc_ci_high": 0.8563906076125698,
+          "presence_auroc_ci_low": 0.7404409442731309,
+          "presence_sensitivity": 0.7346938775510204,
+          "presence_specificity": 0.7206703910614525,
+          "supervision": "Clean-token bank plus calibration labels"
+        },
+        {
+          "ci_high": 0.590226024756626,
+          "ci_low": 0.461647722566153,
+          "ci_resamples": 1000,
+          "clean_fp_ci_high_percent": 0.5768487546548553,
+          "clean_fp_ci_low_percent": 0.12657140196455993,
+          "clean_fp_fraction": 0.002985147154765072,
+          "clean_fp_percent": 0.2985147154765072,
+          "head": "Linear probe",
+          "macro_dice": 0.5262619552575507,
+          "median_seconds_per_field": 0.3627425000013318,
+          "method": "SigLIP2 Base linear probe",
+          "method_key": "siglip2_linear",
+          "micro_ci_high": 0.7144638291869577,
+          "micro_ci_low": 0.6250675024433762,
+          "micro_dice": 0.6793344237778073,
+          "n_clean_fields": 179,
+          "n_positive_fields": 245,
+          "n_test_fields": 424,
+          "presence_auprc": 0.9760069245736962,
+          "presence_auprc_ci_high": 0.9925324741921051,
+          "presence_auprc_ci_low": 0.9509301032611246,
+          "presence_auroc": 0.964587846311709,
+          "presence_auroc_ci_high": 0.9875152917924624,
+          "presence_auroc_ci_low": 0.9328300145211491,
+          "presence_sensitivity": 0.8653061224489796,
+          "presence_specificity": 0.8994413407821229,
+          "supervision": "Fit masks plus calibration labels"
+        },
+        {
+          "ci_high": 0.36805052219040957,
+          "ci_low": 0.2643547242931268,
+          "ci_resamples": 1000,
+          "clean_fp_ci_high_percent": 1.768189103417369,
+          "clean_fp_ci_low_percent": 0.7171642191919596,
+          "clean_fp_fraction": 0.012206530220328355,
+          "clean_fp_percent": 1.2206530220328355,
+          "head": "PatchKNN",
+          "macro_dice": 0.31873028986623353,
+          "median_seconds_per_field": 0.3798046250012703,
+          "method": "Hibou-B PatchKNN",
+          "method_key": "hibou_patchknn",
+          "micro_ci_high": 0.45695344110226177,
+          "micro_ci_low": 0.36208638742234184,
+          "micro_dice": 0.41769681888993454,
+          "n_clean_fields": 179,
+          "n_positive_fields": 245,
+          "n_test_fields": 424,
+          "presence_auprc": 0.9539557146285604,
+          "presence_auprc_ci_high": 0.9887589655096308,
+          "presence_auprc_ci_low": 0.8977757023895234,
+          "presence_auroc": 0.9474176262683844,
+          "presence_auroc_ci_high": 0.9813317929240153,
+          "presence_auroc_ci_low": 0.9102819859674791,
+          "presence_sensitivity": 0.8816326530612245,
+          "presence_specificity": 0.9162011173184358,
+          "supervision": "Clean-token bank plus calibration labels"
+        },
+        {
+          "ci_high": 0.7295240571198328,
+          "ci_low": 0.6030365485365918,
+          "ci_resamples": 1000,
+          "clean_fp_ci_high_percent": 0.07582393485193972,
+          "clean_fp_ci_low_percent": 0.02611062779736883,
+          "clean_fp_fraction": 0.0004654380083038802,
+          "clean_fp_percent": 0.04654380083038802,
+          "head": "Linear probe",
+          "macro_dice": 0.6669521243453986,
+          "median_seconds_per_field": 0.3798046250012703,
+          "method": "Hibou-B linear probe",
+          "method_key": "hibou_linear",
+          "micro_ci_high": 0.8523378903119286,
+          "micro_ci_low": 0.7910111716835512,
+          "micro_dice": 0.8267510800428302,
+          "n_clean_fields": 179,
+          "n_positive_fields": 245,
+          "n_test_fields": 424,
+          "presence_auprc": 0.9898613591659562,
+          "presence_auprc_ci_high": 0.9960484314135697,
+          "presence_auprc_ci_low": 0.9808577605185467,
+          "presence_auroc": 0.9850644168281838,
+          "presence_auroc_ci_high": 0.9937782380351152,
+          "presence_auroc_ci_low": 0.9734872786717278,
+          "presence_sensitivity": 0.8530612244897959,
+          "presence_specificity": 0.9832402234636871,
+          "supervision": "Fit masks plus calibration labels"
+        }
+      ],
+      "he_organs": [
+        {
+          "clean_fp_percent": 7.470566654471867,
+          "head": "Classical",
+          "macro_dice": 0.2595201543612614,
+          "method": "Classical fold candidate",
+          "method_key": "classical",
+          "n_positive_fields": 44,
+          "organ": "Brain",
+          "organ_key": "Brain",
+          "presence_auroc": 0.38847780126849896
+        },
+        {
+          "clean_fp_percent": 11.097031043320106,
+          "head": "Classical",
+          "macro_dice": 0.5123153183309316,
+          "method": "Classical fold candidate",
+          "method_key": "classical",
+          "n_positive_fields": 57,
+          "organ": "Kidney",
+          "organ_key": "Kidney",
+          "presence_auroc": 0.9498050682261209
+        },
+        {
+          "clean_fp_percent": 12.338897048718477,
+          "head": "Classical",
+          "macro_dice": 0.4997444904944636,
+          "method": "Classical fold candidate",
+          "method_key": "classical",
+          "n_positive_fields": 54,
+          "organ": "Liver",
+          "organ_key": "Liver",
+          "presence_auroc": 0.9769921436588104
+        },
+        {
+          "clean_fp_percent": 13.058692661092214,
+          "head": "Classical",
+          "macro_dice": 0.39806215444574855,
+          "method": "Classical fold candidate",
+          "method_key": "classical",
+          "n_positive_fields": 42,
+          "organ": "Small intestine",
+          "organ_key": "Small_Intestine",
+          "presence_auroc": 0.803968253968254
+        },
+        {
+          "clean_fp_percent": 10.844948902984617,
+          "head": "Classical",
+          "macro_dice": 0.518771031202668,
+          "method": "Classical fold candidate",
+          "method_key": "classical",
+          "n_positive_fields": 48,
+          "organ": "Testis",
+          "organ_key": "Testis",
+          "presence_auroc": 0.7128378378378378
+        },
+        {
+          "clean_fp_percent": 0.7582508536360281,
+          "head": "PatchKNN",
+          "macro_dice": 0.20074476786073928,
+          "method": "DINOv2-small PatchKNN",
+          "method_key": "dinov2_patchknn",
+          "n_positive_fields": 44,
+          "organ": "Brain",
+          "organ_key": "Brain",
+          "presence_auroc": 0.919661733615222
+        },
+        {
+          "clean_fp_percent": 0.7337259267132779,
+          "head": "PatchKNN",
+          "macro_dice": 0.3420809510939126,
+          "method": "DINOv2-small PatchKNN",
+          "method_key": "dinov2_patchknn",
+          "n_positive_fields": 57,
+          "organ": "Kidney",
+          "organ_key": "Kidney",
+          "presence_auroc": 0.9117933723196882
+        },
+        {
+          "clean_fp_percent": 3.659482258812616,
+          "head": "PatchKNN",
+          "macro_dice": 0.3377847963951453,
+          "method": "DINOv2-small PatchKNN",
+          "method_key": "dinov2_patchknn",
+          "n_positive_fields": 54,
+          "organ": "Liver",
+          "organ_key": "Liver",
+          "presence_auroc": 0.7845117845117845
+        },
+        {
+          "clean_fp_percent": 4.046076329837491,
+          "head": "PatchKNN",
+          "macro_dice": 0.3408777972530587,
+          "method": "DINOv2-small PatchKNN",
+          "method_key": "dinov2_patchknn",
+          "n_positive_fields": 42,
+          "organ": "Small intestine",
+          "organ_key": "Small_Intestine",
+          "presence_auroc": 0.8833333333333333
+        },
+        {
+          "clean_fp_percent": 0.514261870288656,
+          "head": "PatchKNN",
+          "macro_dice": 0.4701520349272163,
+          "method": "DINOv2-small PatchKNN",
+          "method_key": "dinov2_patchknn",
+          "n_positive_fields": 48,
+          "organ": "Testis",
+          "organ_key": "Testis",
+          "presence_auroc": 0.9712837837837838
+        },
+        {
+          "clean_fp_percent": 0.01041295878816643,
+          "head": "Linear probe",
+          "macro_dice": 0.40926362799704036,
+          "method": "DINOv2-small linear probe",
+          "method_key": "dinov2_linear",
+          "n_positive_fields": 44,
+          "organ": "Brain",
+          "organ_key": "Brain",
+          "presence_auroc": 0.9931289640591966
+        },
+        {
+          "clean_fp_percent": 0.023491384400982616,
+          "head": "Linear probe",
+          "macro_dice": 0.6683538196268283,
+          "method": "DINOv2-small linear probe",
+          "method_key": "dinov2_linear",
+          "n_positive_fields": 57,
+          "organ": "Kidney",
+          "organ_key": "Kidney",
+          "presence_auroc": 0.9868421052631579
+        },
+        {
+          "clean_fp_percent": 0.08591307419432419,
+          "head": "Linear probe",
+          "macro_dice": 0.6024101741484633,
+          "method": "DINOv2-small linear probe",
+          "method_key": "dinov2_linear",
+          "n_positive_fields": 54,
+          "organ": "Liver",
+          "organ_key": "Liver",
+          "presence_auroc": 0.9870931537598204
+        },
+        {
+          "clean_fp_percent": 0.39190198648904007,
+          "head": "Linear probe",
+          "macro_dice": 0.5185652059847549,
+          "method": "DINOv2-small linear probe",
+          "method_key": "dinov2_linear",
+          "n_positive_fields": 42,
+          "organ": "Small intestine",
+          "organ_key": "Small_Intestine",
+          "presence_auroc": 0.9738095238095238
+        },
+        {
+          "clean_fp_percent": 0.046167819605319606,
+          "head": "Linear probe",
+          "macro_dice": 0.7569995495395069,
+          "method": "DINOv2-small linear probe",
+          "method_key": "dinov2_linear",
+          "n_positive_fields": 48,
+          "organ": "Testis",
+          "organ_key": "Testis",
+          "presence_auroc": 0.9932432432432432
+        },
+        {
+          "clean_fp_percent": 2.235670491549333,
+          "head": "PatchKNN",
+          "macro_dice": 0.1641743764065631,
+          "method": "SigLIP2 Base PatchKNN",
+          "method_key": "siglip2_patchknn",
+          "n_positive_fields": 44,
+          "organ": "Brain",
+          "organ_key": "Brain",
+          "presence_auroc": 0.968816067653277
+        },
+        {
+          "clean_fp_percent": 3.649837756283069,
+          "head": "PatchKNN",
+          "macro_dice": 0.18280774892368248,
+          "method": "SigLIP2 Base PatchKNN",
+          "method_key": "siglip2_patchknn",
+          "n_positive_fields": 57,
+          "organ": "Kidney",
+          "organ_key": "Kidney",
+          "presence_auroc": 0.8854775828460039
+        },
+        {
+          "clean_fp_percent": 8.789270521971416,
+          "head": "PatchKNN",
+          "macro_dice": 0.2278227220192546,
+          "method": "SigLIP2 Base PatchKNN",
+          "method_key": "siglip2_patchknn",
+          "n_positive_fields": 54,
+          "organ": "Liver",
+          "organ_key": "Liver",
+          "presence_auroc": 0.5987654320987654
+        },
+        {
+          "clean_fp_percent": 13.705991945389268,
+          "head": "PatchKNN",
+          "macro_dice": 0.13677597529564267,
+          "method": "SigLIP2 Base PatchKNN",
+          "method_key": "siglip2_patchknn",
+          "n_positive_fields": 42,
+          "organ": "Small intestine",
+          "organ_key": "Small_Intestine",
+          "presence_auroc": 0.6603174603174603
+        },
+        {
+          "clean_fp_percent": 10.126588642213642,
+          "head": "PatchKNN",
+          "macro_dice": 0.31827720261347453,
+          "method": "SigLIP2 Base PatchKNN",
+          "method_key": "siglip2_patchknn",
+          "n_positive_fields": 48,
+          "organ": "Testis",
+          "organ_key": "Testis",
+          "presence_auroc": 0.8941441441441441
+        },
+        {
+          "clean_fp_percent": 0.04633818159046565,
+          "head": "Linear probe",
+          "macro_dice": 0.360393711216549,
+          "method": "SigLIP2 Base linear probe",
+          "method_key": "siglip2_linear",
+          "n_positive_fields": 44,
+          "organ": "Brain",
+          "organ_key": "Brain",
+          "presence_auroc": 0.9899577167019028
+        },
+        {
+          "clean_fp_percent": 0.0778617291824137,
+          "head": "Linear probe",
+          "macro_dice": 0.5952007070615699,
+          "method": "SigLIP2 Base linear probe",
+          "method_key": "siglip2_linear",
+          "n_positive_fields": 57,
+          "organ": "Kidney",
+          "organ_key": "Kidney",
+          "presence_auroc": 0.9941520467836257
+        },
+        {
+          "clean_fp_percent": 0.2601012785164571,
+          "head": "Linear probe",
+          "macro_dice": 0.5398520951585455,
+          "method": "SigLIP2 Base linear probe",
+          "method_key": "siglip2_linear",
+          "n_positive_fields": 54,
+          "organ": "Liver",
+          "organ_key": "Liver",
+          "presence_auroc": 0.9702581369248036
+        },
+        {
+          "clean_fp_percent": 1.0225044879062737,
+          "head": "Linear probe",
+          "macro_dice": 0.3961467360464071,
+          "method": "SigLIP2 Base linear probe",
+          "method_key": "siglip2_linear",
+          "n_positive_fields": 42,
+          "organ": "Small intestine",
+          "organ_key": "Small_Intestine",
+          "presence_auroc": 0.9047619047619048
+        },
+        {
+          "clean_fp_percent": 0.25351603197585343,
+          "head": "Linear probe",
+          "macro_dice": 0.6950049872823275,
+          "method": "SigLIP2 Base linear probe",
+          "method_key": "siglip2_linear",
+          "n_positive_fields": 48,
+          "organ": "Testis",
+          "organ_key": "Testis",
+          "presence_auroc": 0.990990990990991
+        },
+        {
+          "clean_fp_percent": 0.9343493332410484,
+          "head": "PatchKNN",
+          "macro_dice": 0.16960851296921883,
+          "method": "Hibou-B PatchKNN",
+          "method_key": "hibou_patchknn",
+          "n_positive_fields": 44,
+          "organ": "Brain",
+          "organ_key": "Brain",
+          "presence_auroc": 0.9635306553911205
+        },
+        {
+          "clean_fp_percent": 2.2985633778974552,
+          "head": "PatchKNN",
+          "macro_dice": 0.3699136617587944,
+          "method": "Hibou-B PatchKNN",
+          "method_key": "hibou_patchknn",
+          "n_positive_fields": 57,
+          "organ": "Kidney",
+          "organ_key": "Kidney",
+          "presence_auroc": 0.9624756335282652
+        },
+        {
+          "clean_fp_percent": 0.3596163054868412,
+          "head": "PatchKNN",
+          "macro_dice": 0.30728333099459004,
+          "method": "Hibou-B PatchKNN",
+          "method_key": "hibou_patchknn",
+          "n_positive_fields": 54,
+          "organ": "Liver",
+          "organ_key": "Liver",
+          "presence_auroc": 0.9494949494949495
+        },
+        {
+          "clean_fp_percent": 2.6933638038548753,
+          "head": "PatchKNN",
+          "macro_dice": 0.25581031936818743,
+          "method": "Hibou-B PatchKNN",
+          "method_key": "hibou_patchknn",
+          "n_positive_fields": 42,
+          "organ": "Small intestine",
+          "organ_key": "Small_Intestine",
+          "presence_auroc": 0.8468253968253968
+        },
+        {
+          "clean_fp_percent": 0.0784685354997855,
+          "head": "PatchKNN",
+          "macro_dice": 0.46257780081580385,
+          "method": "Hibou-B PatchKNN",
+          "method_key": "hibou_patchknn",
+          "n_positive_fields": 48,
+          "organ": "Testis",
+          "organ_key": "Testis",
+          "presence_auroc": 0.9893018018018018
+        },
+        {
+          "clean_fp_percent": 0.004547300994041027,
+          "head": "Linear probe",
+          "macro_dice": 0.4589526601615679,
+          "method": "Hibou-B linear probe",
+          "method_key": "hibou_linear",
+          "n_positive_fields": 44,
+          "organ": "Brain",
+          "organ_key": "Brain",
+          "presence_auroc": 0.9994714587737844
+        },
+        {
+          "clean_fp_percent": 0.08284419091710758,
+          "head": "Linear probe",
+          "macro_dice": 0.7209664754551938,
+          "method": "Hibou-B linear probe",
+          "method_key": "hibou_linear",
+          "n_positive_fields": 57,
+          "organ": "Kidney",
+          "organ_key": "Kidney",
+          "presence_auroc": 0.9868421052631579
+        },
+        {
+          "clean_fp_percent": 0.014970871555692985,
+          "head": "Linear probe",
+          "macro_dice": 0.6865893751106583,
+          "method": "Hibou-B linear probe",
+          "method_key": "hibou_linear",
+          "n_positive_fields": 54,
+          "organ": "Liver",
+          "organ_key": "Liver",
+          "presence_auroc": 0.9943883277216611
+        },
+        {
+          "clean_fp_percent": 0.053662958238851095,
+          "head": "Linear probe",
+          "macro_dice": 0.6374536865327536,
+          "method": "Hibou-B linear probe",
+          "method_key": "hibou_linear",
+          "n_positive_fields": 42,
+          "organ": "Small intestine",
+          "organ_key": "Small_Intestine",
+          "presence_auroc": 0.9880952380952381
+        },
+        {
+          "clean_fp_percent": 0.08241859525341669,
+          "head": "Linear probe",
+          "macro_dice": 0.7971954838795098,
+          "method": "Hibou-B linear probe",
+          "method_key": "hibou_linear",
+          "n_positive_fields": 48,
+          "organ": "Testis",
+          "organ_key": "Testis",
+          "presence_auroc": 0.9898648648648649
+        }
+      ],
+      "he_qualitative": [
+        {
+          "case": "A",
+          "classical_pixel_dice": 0.06990524419849121,
+          "classical_presence": "FN",
+          "hibou_pixel_dice": 0.6186220812914385,
+          "hibou_presence": "FN",
+          "image_sha256": "018b73942980c7982f89e27a59b8be0cdef9b71417dc320bde0a4c83e7cb07c9",
+          "organ": "Brain",
+          "overlay_path": "qualitative_cache/case1_Brain_Fold_-20260410140426972_f43adca74814.png",
+          "reference": "Fold",
+          "source_slide_id": "Brain_Fold_S001"
+        },
+        {
+          "case": "B",
+          "classical_pixel_dice": 0.582179993347506,
+          "classical_presence": "TP",
+          "hibou_pixel_dice": 0.9091575203407165,
+          "hibou_presence": "TP",
+          "image_sha256": "02347ae9cb88bcef9cb9c8c9050325832f6b428ba9f292009a8537c425ab1295",
+          "organ": "Kidney",
+          "overlay_path": "qualitative_cache/case2_Kidney__Fold_-20260409155008912_19c6e416eb54.png",
+          "reference": "Fold",
+          "source_slide_id": "Kidney_Fold_S016"
+        },
+        {
+          "case": "C",
+          "classical_pixel_dice": 0.4912070000857854,
+          "classical_presence": "TP",
+          "hibou_pixel_dice": 0.8598613636962652,
+          "hibou_presence": "TP",
+          "image_sha256": "0116c5346876426f2464d2f447db9fad800c596b4d968a9a24b26addc13f4476",
+          "organ": "Liver",
+          "overlay_path": "qualitative_cache/case3_Liver__Fold_-20260406110823972_c707cacc6327.png",
+          "reference": "Fold",
+          "source_slide_id": "Liver_Fold_S023"
+        },
+        {
+          "case": "D",
+          "classical_pixel_dice": 0.8099224006945952,
+          "classical_presence": "FN",
+          "hibou_pixel_dice": 0.7874898576381205,
+          "hibou_presence": "TP",
+          "image_sha256": "038e7716bc553b5a73aea69a0711ab366e85b0f8abb9a8a50815ebf5dc585485",
+          "organ": "Small intestine",
+          "overlay_path": "qualitative_cache/case4_Small_Intestine_Fold_-20260413150334899_be5b63afe2f5.png",
+          "reference": "Fold",
+          "source_slide_id": "Small_Intestine_Fold_S015"
+        },
+        {
+          "case": "E",
+          "classical_pixel_dice": 0.7128689066538438,
+          "classical_presence": "FN",
+          "hibou_pixel_dice": 0.8745063890970212,
+          "hibou_presence": "TP",
+          "image_sha256": "00ed48504b700060742242d5ef1777cf0425dd8484e84cb52a3deeecc3ea5b4c",
+          "organ": "Testis",
+          "overlay_path": "qualitative_cache/case5_Testis__Fold_-20260406101118662_bc52f9b19b17.png",
+          "reference": "Fold",
+          "source_slide_id": "Testis_Fold_S001"
+        },
+        {
+          "case": "F",
+          "classical_pixel_dice": null,
+          "classical_presence": "FP",
+          "hibou_pixel_dice": null,
+          "hibou_presence": "TN",
+          "image_sha256": "29d690e4bf832ad7361e091f09d235329c3d4156a25260f5ef1c73278028afb7",
+          "organ": "Brain",
+          "overlay_path": "qualitative_cache/case6_Brain_Clean-20260423152633332_1d20edb52790.png",
+          "reference": "Clean",
+          "source_slide_id": "Brain_Clean_S007"
+        },
+        {
+          "case": "G",
+          "classical_pixel_dice": null,
+          "classical_presence": "TN",
+          "hibou_pixel_dice": null,
+          "hibou_presence": "FP",
+          "image_sha256": "29e9362b8374d04e4a9f89774223ce4a8c387fedb56ad60641bae52516152040",
+          "organ": "Kidney",
+          "overlay_path": "qualitative_cache/case7_Kidney_Clean-20260420151005412_9e5cacdfce6b.png",
+          "reference": "Clean",
+          "source_slide_id": "Kidney_Clean_S025"
+        }
+      ],
+      "model_status": [
+        {
+          "access": "BSD-3-Clause-Clear",
+          "current_evidence": "Not run in this repository",
+          "decision": "Add as an open operational QC baseline; define an output-to-fold mapping before localization scoring",
+          "domain": "H&E WSI QC",
+          "model_or_method": "HistoQC",
+          "priority": 1
+        },
+        {
+          "access": "Non-commercial / CC BY-NC-SA; legal review required",
+          "current_evidence": "Not run; public manual test masks exist",
+          "decision": "Strong public comparator after written clearance",
+          "domain": "H&E multiclass artifact segmentation",
+          "model_or_method": "GrandQC",
+          "priority": 2
+        },
+        {
+          "access": "Obtain Merck internal assets and exact split",
+          "current_evidence": "Paper only; no official public code/checkpoint found",
+          "decision": "Internal reproduction is preferable to reimplementation",
+          "domain": "H&E artifact-union anomaly mapping",
+          "model_or_method": "DiffusionQC",
+          "priority": 3
+        },
+        {
+          "access": "Apache-2.0",
+          "current_evidence": "Frozen PatchKNN and mask-supervised linear probe completed",
+          "decision": "Retain as current pathology-specific H&E comparator",
+          "domain": "Pathology tile encoder",
+          "model_or_method": "Hibou-B",
+          "priority": 4
+        },
+        {
+          "access": "Apache-2.0",
+          "current_evidence": "Frozen heads plus MPS/LoRA engineering smoke completed",
+          "decision": "Retain as stable, permissive generic control",
+          "domain": "Generic RGB encoder",
+          "model_or_method": "DINOv2-small",
+          "priority": 5
+        },
+        {
+          "access": "Meta custom license acceptance; institutional review",
+          "current_evidence": "Not run",
+          "decision": "Run same frozen heads after approval; newer is not evidence of superiority",
+          "domain": "Newer generic dense vision encoder",
+          "model_or_method": "DINOv3",
+          "priority": 6
+        },
+        {
+          "access": "Gated CC BY-NC-ND; commercial permission required",
+          "current_evidence": "Not run",
+          "decision": "Defer until license and 681M-model resource case are justified",
+          "domain": "Large H&E/IHC pathology encoder",
+          "model_or_method": "UNI2-h",
+          "priority": 7
+        },
+        {
+          "access": "Gated CC BY-NC-ND; commercial permission required",
+          "current_evidence": "Not run; no official CONCH v2 located",
+          "decision": "Use exact model ID; defer until legal and semantic-use case are clear",
+          "domain": "Pathology vision-language encoder",
+          "model_or_method": "CONCHv1.5",
+          "priority": 8
+        },
+        {
+          "access": "Gated CC BY-NC-ND; commercial/derivative permission required",
+          "current_evidence": "Not run; no fold/crack localization head",
+          "decision": "Most aligned reviewed frozen COMET candidate after written approval and labels",
+          "domain": "Marker-aware multiplex spatial-proteomics encoder",
+          "model_or_method": "KRONOS2",
+          "priority": 9
+        }
+      ],
+      "paired_differences": [
+        {
+          "ci_excludes_zero": true,
+          "ci_high": 0.0842316032594091,
+          "ci_low": 0.05312992398581019,
+          "contrast": "Hibou-B linear probe − DINOv2-small linear probe",
+          "contrast_key": "hibou_linear_minus_dinov2_linear",
+          "point_difference": 0.06797402726836999,
+          "short_contrast": "Hibou linear − DINOv2 linear"
+        },
+        {
+          "ci_excludes_zero": true,
+          "ci_high": 0.08317269287326896,
+          "ci_low": 0.06186204975226722,
+          "contrast": "DINOv2-small linear probe − SigLIP2 Base linear probe",
+          "contrast_key": "dinov2_linear_minus_siglip2_linear",
+          "point_difference": 0.07271614181947805,
+          "short_contrast": "DINOv2 linear − SigLIP2 linear"
+        },
+        {
+          "ci_excludes_zero": true,
+          "ci_high": 0.11566854734332438,
+          "ci_low": 0.045191185730058515,
+          "contrast": "SigLIP2 Base linear probe − Classical fold candidate",
+          "contrast_key": "siglip2_linear_minus_classical",
+          "point_difference": 0.08043876175588077,
+          "short_contrast": "SigLIP2 linear − Classical"
+        },
+        {
+          "ci_excludes_zero": true,
+          "ci_high": 0.15878987847334422,
+          "ci_low": 0.05235906589118685,
+          "contrast": "Classical fold candidate − DINOv2-small PatchKNN",
+          "contrast_key": "classical_minus_dinov2_patchknn",
+          "point_difference": 0.10518675201310562,
+          "short_contrast": "Classical − DINOv2 PatchKNN"
+        },
+        {
+          "ci_excludes_zero": true,
+          "ci_high": 0.17352846755623258,
+          "ci_low": 0.08605056909008804,
+          "contrast": "Classical fold candidate − Hibou-B PatchKNN",
+          "contrast_key": "classical_minus_hibou_patchknn",
+          "point_difference": 0.1270929036354364,
+          "short_contrast": "Classical − Hibou PatchKNN"
+        },
+        {
+          "ci_excludes_zero": false,
+          "ci_high": 0.05427174028701049,
+          "ci_low": -0.010370148217606442,
+          "contrast": "DINOv2-small PatchKNN − Hibou-B PatchKNN",
+          "contrast_key": "dinov2_patchknn_minus_hibou_patchknn",
+          "point_difference": 0.021906151622330783,
+          "short_contrast": "DINOv2 PatchKNN − Hibou PatchKNN"
+        }
+      ],
+      "proxy_alert": [
+        {
+          "alert_burden": 0.01338098984904933,
+          "alert_burden_percent": 1.338098984904933,
+          "ci_high": 0.02112875987149835,
+          "ci_high_percent": 2.112875987149835,
+          "ci_low": 0.006781770318948961,
+          "ci_low_percent": 0.6781770318948961,
+          "method": "Classical",
+          "method_key": "classical",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5
+        },
+        {
+          "alert_burden": 0.011531959650362692,
+          "alert_burden_percent": 1.1531959650362693,
+          "ci_high": 0.018229333342346624,
+          "ci_high_percent": 1.8229333342346623,
+          "ci_low": 0.004878276088111401,
+          "ci_low_percent": 0.48782760881114007,
+          "method": "Nominal-reference anomaly",
+          "method_key": "clean_reference_anomaly",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5
+        },
+        {
+          "alert_burden": 0.013633306699594403,
+          "alert_burden_percent": 1.3633306699594403,
+          "ci_high": 0.021634177172016274,
+          "ci_high_percent": 2.1634177172016273,
+          "ci_low": 0.006829342110051322,
+          "ci_low_percent": 0.6829342110051322,
+          "method": "Hybrid",
+          "method_key": "hybrid",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5
+        },
+        {
+          "alert_burden": 0.030439076185495392,
+          "alert_burden_percent": 3.043907618549539,
+          "ci_high": 0.08680992425089147,
+          "ci_high_percent": 8.680992425089148,
+          "ci_low": 0.001185567172063549,
+          "ci_low_percent": 0.1185567172063549,
+          "method": "Classical",
+          "method_key": "classical",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4
+        },
+        {
+          "alert_burden": 0.1433309190510375,
+          "alert_burden_percent": 14.333091905103752,
+          "ci_high": 0.4276147959183674,
+          "ci_high_percent": 42.76147959183674,
+          "ci_low": 0.0,
+          "ci_low_percent": 0.0,
+          "method": "Nominal-reference anomaly",
+          "method_key": "clean_reference_anomaly",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4
+        },
+        {
+          "alert_burden": 0.19455665763380575,
+          "alert_burden_percent": 19.455665763380576,
+          "ci_high": 0.5761073716289181,
+          "ci_high_percent": 57.61073716289181,
+          "ci_low": 0.0007927486787546363,
+          "ci_low_percent": 0.07927486787546363,
+          "method": "Hybrid",
+          "method_key": "hybrid",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4
+        }
+      ],
+      "proxy_comet": [
+        {
+          "artifact": "Crack perturbation",
+          "artifact_key": "crack",
+          "ci_high": 0.7079567706077691,
+          "ci_low": 0.37301843146411906,
+          "dice": 0.5672992091459619,
+          "method": "Classical",
+          "method_key": "classical",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5,
+          "n_test_rows": 15
+        },
+        {
+          "artifact": "Fold perturbation",
+          "artifact_key": "fold",
+          "ci_high": 0.5733898530640607,
+          "ci_low": 0.41195363747961783,
+          "dice": 0.5001157505811523,
+          "method": "Classical",
+          "method_key": "classical",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5,
+          "n_test_rows": 15
+        },
+        {
+          "artifact": "Crack perturbation",
+          "artifact_key": "crack",
+          "ci_high": 0.09784570790138225,
+          "ci_low": 0.028611035894761033,
+          "dice": 0.06456247741986017,
+          "method": "Nominal-reference anomaly",
+          "method_key": "clean_reference_anomaly",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5,
+          "n_test_rows": 15
+        },
+        {
+          "artifact": "Fold perturbation",
+          "artifact_key": "fold",
+          "ci_high": 0.23386299843043806,
+          "ci_low": 0.03604071112781661,
+          "dice": 0.13495185477912736,
+          "method": "Nominal-reference anomaly",
+          "method_key": "clean_reference_anomaly",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5,
+          "n_test_rows": 15
+        },
+        {
+          "artifact": "Crack perturbation",
+          "artifact_key": "crack",
+          "ci_high": 0.7394177076870376,
+          "ci_low": 0.3353913344080526,
+          "dice": 0.5674622708025095,
+          "method": "Hybrid",
+          "method_key": "hybrid",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5,
+          "n_test_rows": 15
+        },
+        {
+          "artifact": "Fold perturbation",
+          "artifact_key": "fold",
+          "ci_high": 0.4859095213336112,
+          "ci_low": 0.27895855440884987,
+          "dice": 0.3822310439902747,
+          "method": "Hybrid",
+          "method_key": "hybrid",
+          "modality": "COMET",
+          "modality_key": "comet",
+          "n_groups": 5,
+          "n_test_rows": 15
+        }
+      ],
+      "proxy_cosmx": [
+        {
+          "artifact": "Crack perturbation",
+          "artifact_key": "crack",
+          "ci_high": 0.4380383146119246,
+          "ci_low": 0.07898937347540863,
+          "dice": 0.2353040859051902,
+          "method": "Classical",
+          "method_key": "classical",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4,
+          "n_test_rows": 18
+        },
+        {
+          "artifact": "Fold perturbation",
+          "artifact_key": "fold",
+          "ci_high": 0.6026588228104641,
+          "ci_low": 0.2523158092307244,
+          "dice": 0.3930383728281376,
+          "method": "Classical",
+          "method_key": "classical",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4,
+          "n_test_rows": 18
+        },
+        {
+          "artifact": "Crack perturbation",
+          "artifact_key": "crack",
+          "ci_high": 0.12947262393326242,
+          "ci_low": 0.03495619040683439,
+          "dice": 0.07458912641635054,
+          "method": "Nominal-reference anomaly",
+          "method_key": "clean_reference_anomaly",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4,
+          "n_test_rows": 18
+        },
+        {
+          "artifact": "Fold perturbation",
+          "artifact_key": "fold",
+          "ci_high": 0.3688676728499158,
+          "ci_low": 0.049953084279504824,
+          "dice": 0.19251452781350517,
+          "method": "Nominal-reference anomaly",
+          "method_key": "clean_reference_anomaly",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4,
+          "n_test_rows": 18
+        },
+        {
+          "artifact": "Crack perturbation",
+          "artifact_key": "crack",
+          "ci_high": 0.4006691603176067,
+          "ci_low": 0.06696165332638064,
+          "dice": 0.23381540682199364,
+          "method": "Hybrid",
+          "method_key": "hybrid",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4,
+          "n_test_rows": 18
+        },
+        {
+          "artifact": "Fold perturbation",
+          "artifact_key": "fold",
+          "ci_high": 0.5694899836474623,
+          "ci_low": 0.24224683924069174,
+          "dice": 0.37603194340173773,
+          "method": "Hybrid",
+          "method_key": "hybrid",
+          "modality": "CosMx",
+          "modality_key": "cosmx",
+          "n_groups": 4,
+          "n_test_rows": 18
+        }
+      ],
+      "proxy_resolution": [
+        {
+          "absolute_delta": 0.0888810541183307,
+          "artifact": "Crack",
+          "comparison_key": "comet:classical:crack",
+          "delta_896_minus_256": -0.0888810541183307,
+          "dice_256": 0.6561802632642926,
+          "dice_896": 0.5672992091459619,
+          "label": "Classical · crack",
+          "method": "Classical",
+          "modality": "COMET"
+        },
+        {
+          "absolute_delta": 0.03732947521665575,
+          "artifact": "Fold",
+          "comparison_key": "comet:classical:fold",
+          "delta_896_minus_256": -0.03732947521665575,
+          "dice_256": 0.5374452257978081,
+          "dice_896": 0.5001157505811523,
+          "label": "Classical · fold",
+          "method": "Classical",
+          "modality": "COMET"
+        },
+        {
+          "absolute_delta": 0.058172708214497,
+          "artifact": "Crack",
+          "comparison_key": "comet:clean_reference_anomaly:crack",
+          "delta_896_minus_256": 0.058172708214497,
+          "dice_256": 0.0063897692053631674,
+          "dice_896": 0.06456247741986017,
+          "label": "Nominal-reference anomaly · crack",
+          "method": "Nominal-reference anomaly",
+          "modality": "COMET"
+        },
+        {
+          "absolute_delta": 0.052952914922639926,
+          "artifact": "Fold",
+          "comparison_key": "comet:clean_reference_anomaly:fold",
+          "delta_896_minus_256": 0.052952914922639926,
+          "dice_256": 0.08199893985648743,
+          "dice_896": 0.13495185477912736,
+          "label": "Nominal-reference anomaly · fold",
+          "method": "Nominal-reference anomaly",
+          "modality": "COMET"
+        },
+        {
+          "absolute_delta": 0.1768568183117108,
+          "artifact": "Crack",
+          "comparison_key": "comet:hybrid:crack",
+          "delta_896_minus_256": 0.1768568183117108,
+          "dice_256": 0.39060545249079875,
+          "dice_896": 0.5674622708025095,
+          "label": "Hybrid · crack",
+          "method": "Hybrid",
+          "modality": "COMET"
+        },
+        {
+          "absolute_delta": 0.1572251795594429,
+          "artifact": "Fold",
+          "comparison_key": "comet:hybrid:fold",
+          "delta_896_minus_256": 0.1572251795594429,
+          "dice_256": 0.2250058644308318,
+          "dice_896": 0.3822310439902747,
+          "label": "Hybrid · fold",
+          "method": "Hybrid",
+          "modality": "COMET"
+        },
+        {
+          "absolute_delta": 0.33229482254290615,
+          "artifact": "Crack",
+          "comparison_key": "cosmx:classical:crack",
+          "delta_896_minus_256": -0.33229482254290615,
+          "dice_256": 0.5675989084480964,
+          "dice_896": 0.2353040859051902,
+          "label": "Classical · crack",
+          "method": "Classical",
+          "modality": "CosMx"
+        },
+        {
+          "absolute_delta": 0.07240269188902387,
+          "artifact": "Fold",
+          "comparison_key": "cosmx:classical:fold",
+          "delta_896_minus_256": -0.07240269188902387,
+          "dice_256": 0.46544106471716146,
+          "dice_896": 0.3930383728281376,
+          "label": "Classical · fold",
+          "method": "Classical",
+          "modality": "CosMx"
+        },
+        {
+          "absolute_delta": 0.044743195355594345,
+          "artifact": "Crack",
+          "comparison_key": "cosmx:clean_reference_anomaly:crack",
+          "delta_896_minus_256": 0.044743195355594345,
+          "dice_256": 0.0298459310607562,
+          "dice_896": 0.07458912641635054,
+          "label": "Nominal-reference anomaly · crack",
+          "method": "Nominal-reference anomaly",
+          "modality": "CosMx"
+        },
+        {
+          "absolute_delta": 0.12357075576218253,
+          "artifact": "Fold",
+          "comparison_key": "cosmx:clean_reference_anomaly:fold",
+          "delta_896_minus_256": 0.12357075576218253,
+          "dice_256": 0.06894377205132264,
+          "dice_896": 0.19251452781350517,
+          "label": "Nominal-reference anomaly · fold",
+          "method": "Nominal-reference anomaly",
+          "modality": "CosMx"
+        },
+        {
+          "absolute_delta": 0.20031406691298353,
+          "artifact": "Crack",
+          "comparison_key": "cosmx:hybrid:crack",
+          "delta_896_minus_256": -0.20031406691298353,
+          "dice_256": 0.4341294737349772,
+          "dice_896": 0.23381540682199364,
+          "label": "Hybrid · crack",
+          "method": "Hybrid",
+          "modality": "CosMx"
+        },
+        {
+          "absolute_delta": 0.14198063563186245,
+          "artifact": "Fold",
+          "comparison_key": "cosmx:hybrid:fold",
+          "delta_896_minus_256": 0.14198063563186245,
+          "dice_256": 0.2340513077698753,
+          "dice_896": 0.37603194340173773,
+          "label": "Hybrid · fold",
+          "method": "Hybrid",
+          "modality": "CosMx"
+        }
+      ],
+      "proxy_summary": [
+        {
+          "alert_ci_high_percent": 2.112875987149835,
+          "alert_ci_low_percent": 0.6781770318948961,
+          "crack_ci_high": 0.7079567706077691,
+          "crack_ci_low": 0.37301843146411906,
+          "crack_dice": 0.5672992091459619,
+          "fold_ci_high": 0.5733898530640607,
+          "fold_ci_low": 0.41195363747961783,
+          "fold_dice": 0.5001157505811523,
+          "interpretation": "generator-conditional proxy; not natural-artifact accuracy",
+          "method": "Classical",
+          "modality": "COMET",
+          "untouched_alert_burden_percent": 1.338098984904933
+        },
+        {
+          "alert_ci_high_percent": 1.8229333342346623,
+          "alert_ci_low_percent": 0.48782760881114007,
+          "crack_ci_high": 0.09784570790138225,
+          "crack_ci_low": 0.028611035894761033,
+          "crack_dice": 0.06456247741986017,
+          "fold_ci_high": 0.23386299843043806,
+          "fold_ci_low": 0.03604071112781661,
+          "fold_dice": 0.13495185477912736,
+          "interpretation": "generator-conditional proxy; not natural-artifact accuracy",
+          "method": "Nominal-reference anomaly",
+          "modality": "COMET",
+          "untouched_alert_burden_percent": 1.1531959650362693
+        },
+        {
+          "alert_ci_high_percent": 2.1634177172016273,
+          "alert_ci_low_percent": 0.6829342110051322,
+          "crack_ci_high": 0.7394177076870376,
+          "crack_ci_low": 0.3353913344080526,
+          "crack_dice": 0.5674622708025095,
+          "fold_ci_high": 0.4859095213336112,
+          "fold_ci_low": 0.27895855440884987,
+          "fold_dice": 0.3822310439902747,
+          "interpretation": "generator-conditional proxy; not natural-artifact accuracy",
+          "method": "Hybrid",
+          "modality": "COMET",
+          "untouched_alert_burden_percent": 1.3633306699594403
+        },
+        {
+          "alert_ci_high_percent": 8.680992425089148,
+          "alert_ci_low_percent": 0.1185567172063549,
+          "crack_ci_high": 0.4380383146119246,
+          "crack_ci_low": 0.07898937347540863,
+          "crack_dice": 0.2353040859051902,
+          "fold_ci_high": 0.6026588228104641,
+          "fold_ci_low": 0.2523158092307244,
+          "fold_dice": 0.3930383728281376,
+          "interpretation": "generator-conditional proxy; not natural-artifact accuracy",
+          "method": "Classical",
+          "modality": "CosMx",
+          "untouched_alert_burden_percent": 3.043907618549539
+        },
+        {
+          "alert_ci_high_percent": 42.76147959183674,
+          "alert_ci_low_percent": 0.0,
+          "crack_ci_high": 0.12947262393326242,
+          "crack_ci_low": 0.03495619040683439,
+          "crack_dice": 0.07458912641635054,
+          "fold_ci_high": 0.3688676728499158,
+          "fold_ci_low": 0.049953084279504824,
+          "fold_dice": 0.19251452781350517,
+          "interpretation": "generator-conditional proxy; not natural-artifact accuracy",
+          "method": "Nominal-reference anomaly",
+          "modality": "CosMx",
+          "untouched_alert_burden_percent": 14.333091905103752
+        },
+        {
+          "alert_ci_high_percent": 57.61073716289181,
+          "alert_ci_low_percent": 0.07927486787546363,
+          "crack_ci_high": 0.4006691603176067,
+          "crack_ci_low": 0.06696165332638064,
+          "crack_dice": 0.23381540682199364,
+          "fold_ci_high": 0.5694899836474623,
+          "fold_ci_low": 0.24224683924069174,
+          "fold_dice": 0.37603194340173773,
+          "interpretation": "generator-conditional proxy; not natural-artifact accuracy",
+          "method": "Hybrid",
+          "modality": "CosMx",
+          "untouched_alert_burden_percent": 19.455665763380576
+        }
+      ],
+      "smoke_results": [
+        {
+          "cpu_seconds_two_patches": 0.0377832500016666,
+          "engineering_passed": true,
+          "lora_rank": 4,
+          "max_abs_cpu_mps_error": 0.0001786947250366211,
+          "model": "DINOv2-small",
+          "mps_seconds_two_patches": 0.01671816700400086,
+          "mps_speedup": 2.2600115187642644,
+          "scientific_validation_passed": false,
+          "trainable_fraction": 0.0011304013846499905
+        },
+        {
+          "cpu_seconds_two_patches": 0.12349670799449086,
+          "engineering_passed": true,
+          "lora_rank": 4,
+          "max_abs_cpu_mps_error": 0.0011463165283203125,
+          "model": "SigLIP2 Base",
+          "mps_seconds_two_patches": 0.03236487500544172,
+          "mps_speedup": 3.8157634773416103,
+          "scientific_validation_passed": false,
+          "trainable_fraction": 0.0005371653228207996
+        }
+      ],
+      "summary": [
+        {
+          "best_macro_dice": 0.6669521243453986,
+          "best_method": "Hibou-B linear probe",
+          "hibou_vs_dinov2_delta": 0.06797402726836999,
+          "labeled_natural_multiplex_fields": 0,
+          "locked_test_fields": 424
+        }
+      ]
+    },
+    "generatedAt": "2026-08-27T09:30:00-04:00",
+    "status": "ready",
+    "version": 1
+  },
+  "sources": [
+    {
+      "id": "he_benchmark",
+      "label": "Hardened public H&E fold benchmark artifacts",
+      "path": "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json",
+      "query": {
+        "description": "Extracts and independently verifies locked-test outcomes from all report-eligible schema-v1.2 H&E artifacts.",
+        "engine": "local_json_audit",
+        "executed_at": "2026-08-27T09:30:00-04:00",
+        "filters": [
+          "locked_test role only",
+          "localization_reference_valid=true for positive-field overlap",
+          "empty positive masks excluded under the frozen benchmark policy"
+        ],
+        "language": "python",
+        "metric_definitions": [
+          "Positive-field macro Dice is the arithmetic mean of field-level 2TP/(2TP+FP+FN) across 245 valid fold-positive fields.",
+          "All-field micro Dice pools TP, FP and FN over 424 locked-test fields.",
+          "Clean FP area is predicted positive pixels divided by valid pixels across 179 clean fields.",
+          "Intervals resample supplied source-slide groups within organ/class strata."
+        ],
+        "sql": "import json\nfrom pathlib import Path\npaths = ['artifacts/public_fold/classical_hardened_v1_2.json', 'artifacts/public_fold/dinov2_hardened_v1_2.json', 'artifacts/public_fold/siglip2_hardened_v1_2.json', 'artifacts/public_fold/hibou_hardened_v1_2.json', 'artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json']\nreports = {path: json.loads(Path(path).read_text(encoding='utf-8')) for path in paths}",
+        "tables_used": [
+          "artifacts/public_fold/classical_hardened_v1_2.json",
+          "artifacts/public_fold/dinov2_hardened_v1_2.json",
+          "artifacts/public_fold/siglip2_hardened_v1_2.json",
+          "artifacts/public_fold/hibou_hardened_v1_2.json",
+          "artifacts/public_fold/hardened_all_methods_paired_comparison_v1.json"
+        ]
+      }
+    },
+    {
+      "id": "multiplex_proxy",
+      "label": "Real-background COMET/CosMx perturbation benchmark",
+      "path": "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+      "query": {
+        "description": "Extracts out-of-fold group-macro controlled-perturbation response and untouched real-field alert burden.",
+        "engine": "local_json_audit",
+        "executed_at": "2026-08-27T09:30:00-04:00",
+        "filters": [
+          "leave-one-declared-source-group-out results",
+          "896-pixel primary sensitivity configuration",
+          "fold and crack perturbations reported separately"
+        ],
+        "language": "python",
+        "metric_definitions": [
+          "Calibration-thresholded Dice compares paired incremental response with the inserted perturbation mask.",
+          "Untouched alert burden is the predicted-area fraction on unmodified real fields and is not a false-positive rate."
+        ],
+        "sql": "import json\nfrom pathlib import Path\npaths = ['artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json', 'artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json']\nproxies = {path: json.loads(Path(path).read_text(encoding='utf-8')) for path in paths}",
+        "tables_used": [
+          "artifacts/multiplex_proxy/real_public_logo_cv_896_v3.json",
+          "artifacts/multiplex_proxy/real_public_logo_cv_256_v3.json"
+        ]
+      }
+    },
+    {
+      "id": "foundation_smoke",
+      "label": "Frozen-encoder Apple MPS and rank-4 LoRA engineering smokes",
+      "path": "artifacts/foundation_smoke/foundation_smoke.json",
+      "query": {
+        "description": "Reads CPU/MPS parity, timing, memory and one-step adapter outcomes from deterministic engineering smokes.",
+        "engine": "local_json_audit",
+        "executed_at": "2026-08-27T09:30:00-04:00",
+        "filters": [
+          "engineering smoke only; no efficacy interpretation"
+        ],
+        "language": "python",
+        "sql": "import json\nfrom pathlib import Path\npaths = ['artifacts/foundation_smoke/foundation_smoke.json', 'artifacts/foundation_smoke/siglip2_base_mps_lora.json']\nsmokes = {path: json.loads(Path(path).read_text(encoding='utf-8')) for path in paths}",
+        "tables_used": [
+          "artifacts/foundation_smoke/foundation_smoke.json",
+          "artifacts/foundation_smoke/siglip2_base_mps_lora.json"
+        ]
+      }
+    },
+    {
+      "id": "evaluation_protocol",
+      "label": "Locked evaluation protocol",
+      "path": "docs/EVALUATION.md",
+      "query": {
+        "description": "Reads the repository evaluation protocol used to formulate the proposed internal gates.",
+        "engine": "local_document",
+        "executed_at": "2026-08-27T09:30:00-04:00",
+        "language": "python",
+        "sql": "from pathlib import Path\nprotocol = Path('docs/EVALUATION.md').read_text(encoding='utf-8')",
+        "tables_used": [
+          "docs/EVALUATION.md"
+        ]
+      }
+    },
+    {
+      "id": "method_audit",
+      "label": "Public data and model audit",
+      "path": "docs/PUBLIC_BENCHMARK_AUDIT.md",
+      "query": {
+        "description": "Reads the repository audit used to classify method execution and evidence status.",
+        "engine": "local_document",
+        "executed_at": "2026-08-27T09:30:00-04:00",
+        "language": "python",
+        "sql": "from pathlib import Path\naudit = Path('docs/PUBLIC_BENCHMARK_AUDIT.md').read_text(encoding='utf-8')",
+        "tables_used": [
+          "docs/PUBLIC_BENCHMARK_AUDIT.md"
+        ]
+      }
+    },
+    {
+      "href": "https://zenodo.org/records/21493260",
+      "id": "histology_fold_dataset",
+      "label": "Histology Tissue Fold Dataset v1"
+    },
+    {
+      "href": "https://doi.org/10.1038/s41467-024-54769-y",
+      "id": "grandqc",
+      "label": "GrandQC manual test masks and primary paper"
+    },
+    {
+      "href": "https://doi.org/10.1200/CCI.18.00157",
+      "id": "histoqc",
+      "label": "HistoQC primary paper"
+    },
+    {
+      "href": "https://doi.org/10.1109/ISBI61048.2026.11515418",
+      "id": "diffusionqc",
+      "label": "DiffusionQC ISBI 2026 paper"
+    },
+    {
+      "href": "https://zenodo.org/records/12699470",
+      "id": "qualifai",
+      "label": "QUALIFAI public COMET release"
+    },
+    {
+      "href": "https://zenodo.org/records/8333281",
+      "id": "cosmx_gastric",
+      "label": "CosMx gastric public dataset"
+    },
+    {
+      "href": "https://zenodo.org/records/16877090",
+      "id": "cosmx_phgg",
+      "label": "CosMx pediatric high-grade glioma public dataset"
+    },
+    {
+      "href": "https://github.com/facebookresearch/dinov3",
+      "id": "dinov3",
+      "label": "Official DINOv3 repository and license"
+    },
+    {
+      "href": "https://github.com/facebookresearch/dinov2",
+      "id": "dinov2",
+      "label": "Official DINOv2 repository and license"
+    },
+    {
+      "href": "https://github.com/cpath-ukk/grandqc",
+      "id": "grandqc_repo",
+      "label": "Official GrandQC repository and noncommercial license"
+    },
+    {
+      "href": "https://huggingface.co/MahmoodLab/UNI2-h",
+      "id": "uni2h",
+      "label": "Official UNI2-h model card"
+    },
+    {
+      "href": "https://huggingface.co/MahmoodLab/conchv1_5",
+      "id": "conch15",
+      "label": "Official CONCHv1.5 model card"
+    },
+    {
+      "href": "https://huggingface.co/MahmoodLab/KRONOS2",
+      "id": "kronos2",
+      "label": "Official KRONOS2 model card"
+    }
+  ],
+  "surface": "report"
+}

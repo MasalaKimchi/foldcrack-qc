@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="650" height="335" preserveAspectRatio="xMinYMin meet" viewBox="0 0 650 335" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>Selected paired H&amp;E macro-Dice differences</title>
+	<desc>Forest plot of six prespecified method contrasts with descriptive source-slide-cluster bootstrap intervals.</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="650" height="335"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-335)" style="clip-path: url(#clip)">
+		<g transform="">
+			<text x="16" y="314" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,628) scale(1,-1)">Selected paired differences on the identical H&amp;E locked test</text>
+			<text x="16" y="299" style="font-family: Helvetica; font-size: 7.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,598) scale(1,-1)">Difference in positive-field macro Dice; positive values favor the first named method</text>
+			<path d="M 255,61 L 255,270 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="247.36535" y="48" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,96) scale(1,-1)">-0.04</text>
+			<path d="M 302.741935,61 L 302.741935,270 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1;"/>
+			<text x="294.26643548387096" y="48" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,96) scale(1,-1)">+0.00</text>
+			<path d="M 362.419355,61 L 362.419355,270 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="353.9438548387096" y="48" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,96) scale(1,-1)">+0.05</text>
+			<path d="M 422.096774,61 L 422.096774,270 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="413.6212741935484" y="48" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,96) scale(1,-1)">+0.10</text>
+			<path d="M 481.774194,61 L 481.774194,270 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="473.29869354838706" y="48" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,96) scale(1,-1)">+0.15</text>
+			<path d="M 541.451613,61 L 541.451613,270 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="532.9761129032258" y="48" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,96) scale(1,-1)">+0.20</text>
+			<path d="M 601.129032,61 L 601.129032,270 Z" style="stroke: rgb(93%,94%,96%); stroke-linecap: butt; stroke-width: 0.6;"/>
+			<text x="592.6535322580645" y="48" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,96) scale(1,-1)">+0.25</text>
+			<path d="M 255,61 L 625,61 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.75;"/>
+			<text x="153.4232" y="253.3" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,506) scale(1,-1)">Hibou linear − DINOv2 linear</text>
+			<path d="M 366.155071,256 L 403.27643,256 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1.15;"/>
+			<path d="M 366.155071,253 L 366.155071,259 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 403.27643,253 L 403.27643,259 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="383.8722260945061" cy="256.0" r="4.1" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<text x="409.2764296967141" y="253.4" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,506) scale(1,-1)">+0.068</text>
+			<text x="147.0152" y="217.3" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,434) scale(1,-1)">DINOv2 linear − SigLIP2 linear</text>
+			<path d="M 376.577285,220 L 402.012569,220 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1.15;"/>
+			<path d="M 376.577285,217 L 376.577285,223 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 402.012569,217 L 402.012569,223 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="389.5321692684093" cy="220.0" r="4.1" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<text x="408.0125689132565" y="217.4" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,434) scale(1,-1)">+0.073</text>
+			<text x="163.42399999999998" y="181.3" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,362) scale(1,-1)">SigLIP2 linear − Classical</text>
+			<path d="M 356.679802,184 L 440.797944,184 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1.15;"/>
+			<path d="M 356.679802,181 L 356.679802,187 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 440.797944,181 L 440.797944,187 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="398.74948983766416" cy="184.0" r="4.1" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<text x="446.79794360332266" y="181.4" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,362) scale(1,-1)">+0.080</text>
+			<text x="147.0296" y="145.3" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,290) scale(1,-1)">Classical − DINOv2 PatchKNN</text>
+			<path d="M 365.235014,148 L 492.265339,148 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1.15;"/>
+			<path d="M 365.235014,145 L 365.235014,151 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 492.265339,145 L 492.265339,151 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="428.2874136930616" cy="148.0" r="4.1" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<text x="498.26533882302374" y="145.4" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,290) scale(1,-1)">+0.105</text>
+			<text x="153.82639999999998" y="109.3" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,218) scale(1,-1)">Classical − Hibou PatchKNN</text>
+			<path d="M 405.447453,112 L 509.856558,112 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1.15;"/>
+			<path d="M 405.447453,109 L 405.447453,115 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 509.856558,109 L 509.856558,115 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="454.43346562939183" cy="112.0" r="4.1" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(18%,41%,72%); fill-rule: evenodd;"/>
+			<text x="515.8565580509872" y="109.4" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,218) scale(1,-1)">+0.127</text>
+			<text x="121.412" y="73.3" style="font-family: Helvetica; font-size: 7.2px;fill: rgb(12%,16%,21%); stroke:none;" transform="translate(0,146) scale(1,-1)">DINOv2 PatchKNN − Hibou PatchKNN</text>
+			<path d="M 290.364662,76 L 367.517884,76 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 1.15;"/>
+			<path d="M 290.364662,73 L 290.364662,79 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<path d="M 367.517884,73 L 367.517884,79 Z" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.8;"/>
+			<circle cx="328.8879874202013" cy="76.0" r="4.1" style="stroke: rgb(12%,16%,21%); stroke-linecap: butt; stroke-width: 0.55; fill: rgb(76%,54%,0%); fill-rule: evenodd;"/>
+			<text x="373.5178835683673" y="73.4" style="font-family: Helvetica; font-size: 6.8px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,146) scale(1,-1)">+0.022</text>
+			<text x="16" y="29" style="font-family: Helvetica; font-size: 6.5px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,58) scale(1,-1)">Display set: adjacent linear/classical ranks, classical versus the top two PatchKNN estimates, and the top-two PatchKNN contrast.</text>
+			<text x="16" y="16" style="font-family: Helvetica; font-size: 6.7px;fill: rgb(37%,41%,47%); stroke:none;" transform="translate(0,32) scale(1,-1)">n=245 positive fields / 28 source-slide groups; 95% paired cluster-bootstrap intervals (10,000 resamples); descriptive only.</text>
+		</g>
+	</g>
+</svg>

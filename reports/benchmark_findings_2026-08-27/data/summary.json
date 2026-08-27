@@ -1,0 +1,9 @@
+[
+  {
+    "best_macro_dice": 0.6669521243453986,
+    "best_method": "Hibou-B linear probe",
+    "hibou_vs_dinov2_delta": 0.06797402726836999,
+    "labeled_natural_multiplex_fields": 0,
+    "locked_test_fields": 424
+  }
+]

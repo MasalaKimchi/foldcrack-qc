@@ -1,0 +1,80 @@
+[
+  {
+    "artifact": "Crack perturbation",
+    "artifact_key": "crack",
+    "ci_high": 0.4380383146119246,
+    "ci_low": 0.07898937347540863,
+    "dice": 0.2353040859051902,
+    "method": "Classical",
+    "method_key": "classical",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4,
+    "n_test_rows": 18
+  },
+  {
+    "artifact": "Fold perturbation",
+    "artifact_key": "fold",
+    "ci_high": 0.6026588228104641,
+    "ci_low": 0.2523158092307244,
+    "dice": 0.3930383728281376,
+    "method": "Classical",
+    "method_key": "classical",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4,
+    "n_test_rows": 18
+  },
+  {
+    "artifact": "Crack perturbation",
+    "artifact_key": "crack",
+    "ci_high": 0.12947262393326242,
+    "ci_low": 0.03495619040683439,
+    "dice": 0.07458912641635054,
+    "method": "Nominal-reference anomaly",
+    "method_key": "clean_reference_anomaly",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4,
+    "n_test_rows": 18
+  },
+  {
+    "artifact": "Fold perturbation",
+    "artifact_key": "fold",
+    "ci_high": 0.3688676728499158,
+    "ci_low": 0.049953084279504824,
+    "dice": 0.19251452781350517,
+    "method": "Nominal-reference anomaly",
+    "method_key": "clean_reference_anomaly",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4,
+    "n_test_rows": 18
+  },
+  {
+    "artifact": "Crack perturbation",
+    "artifact_key": "crack",
+    "ci_high": 0.4006691603176067,
+    "ci_low": 0.06696165332638064,
+    "dice": 0.23381540682199364,
+    "method": "Hybrid",
+    "method_key": "hybrid",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4,
+    "n_test_rows": 18
+  },
+  {
+    "artifact": "Fold perturbation",
+    "artifact_key": "fold",
+    "ci_high": 0.5694899836474623,
+    "ci_low": 0.24224683924069174,
+    "dice": 0.37603194340173773,
+    "method": "Hybrid",
+    "method_key": "hybrid",
+    "modality": "CosMx",
+    "modality_key": "cosmx",
+    "n_groups": 4,
+    "n_test_rows": 18
+  }
+]

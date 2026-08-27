@@ -1,0 +1,86 @@
+[
+  {
+    "case": "A",
+    "classical_pixel_dice": 0.06990524419849121,
+    "classical_presence": "FN",
+    "hibou_pixel_dice": 0.6186220812914385,
+    "hibou_presence": "FN",
+    "image_sha256": "018b73942980c7982f89e27a59b8be0cdef9b71417dc320bde0a4c83e7cb07c9",
+    "organ": "Brain",
+    "overlay_path": "qualitative_cache/case1_Brain_Fold_-20260410140426972_f43adca74814.png",
+    "reference": "Fold",
+    "source_slide_id": "Brain_Fold_S001"
+  },
+  {
+    "case": "B",
+    "classical_pixel_dice": 0.582179993347506,
+    "classical_presence": "TP",
+    "hibou_pixel_dice": 0.9091575203407165,
+    "hibou_presence": "TP",
+    "image_sha256": "02347ae9cb88bcef9cb9c8c9050325832f6b428ba9f292009a8537c425ab1295",
+    "organ": "Kidney",
+    "overlay_path": "qualitative_cache/case2_Kidney__Fold_-20260409155008912_19c6e416eb54.png",
+    "reference": "Fold",
+    "source_slide_id": "Kidney_Fold_S016"
+  },
+  {
+    "case": "C",
+    "classical_pixel_dice": 0.4912070000857854,
+    "classical_presence": "TP",
+    "hibou_pixel_dice": 0.8598613636962652,
+    "hibou_presence": "TP",
+    "image_sha256": "0116c5346876426f2464d2f447db9fad800c596b4d968a9a24b26addc13f4476",
+    "organ": "Liver",
+    "overlay_path": "qualitative_cache/case3_Liver__Fold_-20260406110823972_c707cacc6327.png",
+    "reference": "Fold",
+    "source_slide_id": "Liver_Fold_S023"
+  },
+  {
+    "case": "D",
+    "classical_pixel_dice": 0.8099224006945952,
+    "classical_presence": "FN",
+    "hibou_pixel_dice": 0.7874898576381205,
+    "hibou_presence": "TP",
+    "image_sha256": "038e7716bc553b5a73aea69a0711ab366e85b0f8abb9a8a50815ebf5dc585485",
+    "organ": "Small intestine",
+    "overlay_path": "qualitative_cache/case4_Small_Intestine_Fold_-20260413150334899_be5b63afe2f5.png",
+    "reference": "Fold",
+    "source_slide_id": "Small_Intestine_Fold_S015"
+  },
+  {
+    "case": "E",
+    "classical_pixel_dice": 0.7128689066538438,
+    "classical_presence": "FN",
+    "hibou_pixel_dice": 0.8745063890970212,
+    "hibou_presence": "TP",
+    "image_sha256": "00ed48504b700060742242d5ef1777cf0425dd8484e84cb52a3deeecc3ea5b4c",
+    "organ": "Testis",
+    "overlay_path": "qualitative_cache/case5_Testis__Fold_-20260406101118662_bc52f9b19b17.png",
+    "reference": "Fold",
+    "source_slide_id": "Testis_Fold_S001"
+  },
+  {
+    "case": "F",
+    "classical_pixel_dice": null,
+    "classical_presence": "FP",
+    "hibou_pixel_dice": null,
+    "hibou_presence": "TN",
+    "image_sha256": "29d690e4bf832ad7361e091f09d235329c3d4156a25260f5ef1c73278028afb7",
+    "organ": "Brain",
+    "overlay_path": "qualitative_cache/case6_Brain_Clean-20260423152633332_1d20edb52790.png",
+    "reference": "Clean",
+    "source_slide_id": "Brain_Clean_S007"
+  },
+  {
+    "case": "G",
+    "classical_pixel_dice": null,
+    "classical_presence": "TN",
+    "hibou_pixel_dice": null,
+    "hibou_presence": "FP",
+    "image_sha256": "29e9362b8374d04e4a9f89774223ce4a8c387fedb56ad60641bae52516152040",
+    "organ": "Kidney",
+    "overlay_path": "qualitative_cache/case7_Kidney_Clean-20260420151005412_9e5cacdfce6b.png",
+    "reference": "Clean",
+    "source_slide_id": "Kidney_Clean_S025"
+  }
+]

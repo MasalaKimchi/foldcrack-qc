@@ -1,0 +1,134 @@
+[
+  {
+    "absolute_delta": 0.0888810541183307,
+    "artifact": "Crack",
+    "comparison_key": "comet:classical:crack",
+    "delta_896_minus_256": -0.0888810541183307,
+    "dice_256": 0.6561802632642926,
+    "dice_896": 0.5672992091459619,
+    "label": "Classical · crack",
+    "method": "Classical",
+    "modality": "COMET"
+  },
+  {
+    "absolute_delta": 0.03732947521665575,
+    "artifact": "Fold",
+    "comparison_key": "comet:classical:fold",
+    "delta_896_minus_256": -0.03732947521665575,
+    "dice_256": 0.5374452257978081,
+    "dice_896": 0.5001157505811523,
+    "label": "Classical · fold",
+    "method": "Classical",
+    "modality": "COMET"
+  },
+  {
+    "absolute_delta": 0.058172708214497,
+    "artifact": "Crack",
+    "comparison_key": "comet:clean_reference_anomaly:crack",
+    "delta_896_minus_256": 0.058172708214497,
+    "dice_256": 0.0063897692053631674,
+    "dice_896": 0.06456247741986017,
+    "label": "Nominal-reference anomaly · crack",
+    "method": "Nominal-reference anomaly",
+    "modality": "COMET"
+  },
+  {
+    "absolute_delta": 0.052952914922639926,
+    "artifact": "Fold",
+    "comparison_key": "comet:clean_reference_anomaly:fold",
+    "delta_896_minus_256": 0.052952914922639926,
+    "dice_256": 0.08199893985648743,
+    "dice_896": 0.13495185477912736,
+    "label": "Nominal-reference anomaly · fold",
+    "method": "Nominal-reference anomaly",
+    "modality": "COMET"
+  },
+  {
+    "absolute_delta": 0.1768568183117108,
+    "artifact": "Crack",
+    "comparison_key": "comet:hybrid:crack",
+    "delta_896_minus_256": 0.1768568183117108,
+    "dice_256": 0.39060545249079875,
+    "dice_896": 0.5674622708025095,
+    "label": "Hybrid · crack",
+    "method": "Hybrid",
+    "modality": "COMET"
+  },
+  {
+    "absolute_delta": 0.1572251795594429,
+    "artifact": "Fold",
+    "comparison_key": "comet:hybrid:fold",
+    "delta_896_minus_256": 0.1572251795594429,
+    "dice_256": 0.2250058644308318,
+    "dice_896": 0.3822310439902747,
+    "label": "Hybrid · fold",
+    "method": "Hybrid",
+    "modality": "COMET"
+  },
+  {
+    "absolute_delta": 0.33229482254290615,
+    "artifact": "Crack",
+    "comparison_key": "cosmx:classical:crack",
+    "delta_896_minus_256": -0.33229482254290615,
+    "dice_256": 0.5675989084480964,
+    "dice_896": 0.2353040859051902,
+    "label": "Classical · crack",
+    "method": "Classical",
+    "modality": "CosMx"
+  },
+  {
+    "absolute_delta": 0.07240269188902387,
+    "artifact": "Fold",
+    "comparison_key": "cosmx:classical:fold",
+    "delta_896_minus_256": -0.07240269188902387,
+    "dice_256": 0.46544106471716146,
+    "dice_896": 0.3930383728281376,
+    "label": "Classical · fold",
+    "method": "Classical",
+    "modality": "CosMx"
+  },
+  {
+    "absolute_delta": 0.044743195355594345,
+    "artifact": "Crack",
+    "comparison_key": "cosmx:clean_reference_anomaly:crack",
+    "delta_896_minus_256": 0.044743195355594345,
+    "dice_256": 0.0298459310607562,
+    "dice_896": 0.07458912641635054,
+    "label": "Nominal-reference anomaly · crack",
+    "method": "Nominal-reference anomaly",
+    "modality": "CosMx"
+  },
+  {
+    "absolute_delta": 0.12357075576218253,
+    "artifact": "Fold",
+    "comparison_key": "cosmx:clean_reference_anomaly:fold",
+    "delta_896_minus_256": 0.12357075576218253,
+    "dice_256": 0.06894377205132264,
+    "dice_896": 0.19251452781350517,
+    "label": "Nominal-reference anomaly · fold",
+    "method": "Nominal-reference anomaly",
+    "modality": "CosMx"
+  },
+  {
+    "absolute_delta": 0.20031406691298353,
+    "artifact": "Crack",
+    "comparison_key": "cosmx:hybrid:crack",
+    "delta_896_minus_256": -0.20031406691298353,
+    "dice_256": 0.4341294737349772,
+    "dice_896": 0.23381540682199364,
+    "label": "Hybrid · crack",
+    "method": "Hybrid",
+    "modality": "CosMx"
+  },
+  {
+    "absolute_delta": 0.14198063563186245,
+    "artifact": "Fold",
+    "comparison_key": "cosmx:hybrid:fold",
+    "delta_896_minus_256": 0.14198063563186245,
+    "dice_256": 0.2340513077698753,
+    "dice_896": 0.37603194340173773,
+    "label": "Hybrid · fold",
+    "method": "Hybrid",
+    "modality": "CosMx"
+  }
+]

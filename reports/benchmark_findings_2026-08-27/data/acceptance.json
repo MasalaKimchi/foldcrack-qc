@@ -1,0 +1,44 @@
+[
+  {
+    "cohort": "Enriched adjudicated challenge cohort",
+    "criterion": "Severe actionable artifact sensitivity",
+    "priority": 1,
+    "proposed_gate": "95% CI lower bound ≥ 0.95"
+  },
+  {
+    "cohort": "Production-prevalence cohort",
+    "criterion": "Safety of automatic PASS",
+    "priority": 2,
+    "proposed_gate": "95% CI lower bound for NPV ≥ 0.99"
+  },
+  {
+    "cohort": "Adjudicated mask subset",
+    "criterion": "High-confidence localization precision",
+    "priority": 3,
+    "proposed_gate": "95% CI lower bound ≥ 0.95"
+  },
+  {
+    "cohort": "Prevalence and hard-negative cohorts",
+    "criterion": "Valid-tissue overmask",
+    "priority": 4,
+    "proposed_gate": "Mean ≤ 0.5%"
+  },
+  {
+    "cohort": "Production-prevalence cohort",
+    "criterion": "Review referral rate",
+    "priority": 5,
+    "proposed_gate": "≤ 25%"
+  },
+  {
+    "cohort": "Degraded-input cohort",
+    "criterion": "Missing, invalid or OOD input",
+    "priority": 6,
+    "proposed_gate": "100% routes to REVIEW"
+  },
+  {
+    "cohort": "Paired downstream-impact cohort",
+    "criterion": "Downstream assay effect",
+    "priority": 7,
+    "proposed_gate": "Meets approved noninferiority margin"
+  }
+]
