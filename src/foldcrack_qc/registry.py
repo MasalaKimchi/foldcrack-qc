@@ -6,9 +6,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .resources import resource_path
+
 
 def default_registry_path() -> Path:
-    return Path(__file__).resolve().parents[2] / "configs" / "datasets.json"
+    return resource_path("datasets.json")
 
 
 def load_registry(path: str | Path | None = None) -> list[dict[str, Any]]:

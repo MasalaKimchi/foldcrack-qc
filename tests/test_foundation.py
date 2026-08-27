@@ -245,6 +245,20 @@ class RuntimeDiagnosticTests(unittest.TestCase):
         self.assertEqual(diagnostics.mps_current_allocated_bytes, 1_024)
         self.assertEqual(diagnostics.mps_driver_allocated_bytes, 2_048)
         self.assertEqual(diagnostics.mps_recommended_max_memory_bytes, 16_384)
+        self.assertEqual(
+            set(diagnostics.as_dict()),
+            {
+                "torch_available",
+                "torch_version",
+                "device",
+                "mps_built",
+                "mps_available",
+                "mps_current_allocated_bytes",
+                "mps_driver_allocated_bytes",
+                "mps_recommended_max_memory_bytes",
+                "error",
+            },
+        )
 
     def test_missing_torch_is_a_diagnostic_not_an_import_failure(self) -> None:
         with mock.patch(

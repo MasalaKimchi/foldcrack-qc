@@ -25,7 +25,13 @@ foundation = [
   "huggingface-hub>=0.34",
 ]
 adaptation = ["peft>=0.17", "accelerate>=1.0"]
-dev = ["pytest>=8", "coverage>=7", "ruff>=0.8"]
+dev = [
+  "pytest>=8",
+  "coverage>=7",
+  "ruff>=0.8",
+  "setuptools>=68",
+  "wheel",
+]
 
 [project.scripts]
 foldcrack-qc = "foldcrack_qc.cli:entrypoint"
@@ -35,3 +41,6 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"foldcrack_qc.resources" = ["*.json", "public_data/*.json"]

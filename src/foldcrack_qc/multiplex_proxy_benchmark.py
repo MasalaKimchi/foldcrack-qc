@@ -34,6 +34,7 @@ from .detectors import (
     tile_scores_to_map,
 )
 from .features import FeatureTable, extract_patch_feature_table
+from .resources import resource_path
 
 FloatArray = NDArray[np.float64]
 BoolArray = NDArray[np.bool_]
@@ -676,7 +677,7 @@ def load_public_multiplex_fields(
     manifest_dir = (
         Path(lock_manifest_dir)
         if lock_manifest_dir is not None
-        else Path(__file__).resolve().parents[2] / "configs" / "public_data"
+        else resource_path("public_data")
     )
     return _verify_public_field_locks(fields, manifest_dir)
 

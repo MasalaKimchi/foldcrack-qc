@@ -1,0 +1,70 @@
+{
+  "schema_version": "public-data-recovery-manifest-1.0",
+  "dataset_id": "qualifai_comet_v2",
+  "title": "QualIFAI public Lunaphore/COMET data",
+  "record_url": "https://zenodo.org/records/12699470",
+  "record_doi": "10.5281/zenodo.12699470",
+  "record_version": "v2",
+  "record_license": "CC-BY-4.0",
+  "upstream_archive": {
+    "name": "Lunaphore_dataset.tar.gz",
+    "size_bytes": 12485349376,
+    "md5": "733c12420230f68c81e02925c8b809a1",
+    "integrity_observation": "The exact publisher-sized, MD5-matching object ends unexpectedly during gzip decoding. Ten image headers are visible; no fold/crack masks or split manifest are recoverable."
+  },
+  "recovered_subset_contract": {
+    "modality": "COMET multiplex immunofluorescence",
+    "content": "five real single-channel DAPI TIFFs",
+    "pixel_size_um": null,
+    "pixel_size_reason": "TIFF ResolutionUnit is NONE and ImageJ unit is blank",
+    "artifact_ground_truth": false,
+    "allowed_evidence": [
+      "decode and runtime compatibility",
+      "metamorphic consistency",
+      "controlled perturbation recovery on real backgrounds",
+      "unmodified alert burden"
+    ]
+  },
+  "files": [
+    {
+      "path": "images/COMET02_DAPI.tif",
+      "shape_yx": [13392, 11016],
+      "dtype": "uint16",
+      "size_bytes": 295053003,
+      "md5": "4d47626b1cc9b73b6e06283fb666d653",
+      "sha256": "f486ab36ecaba2cb670d9241a37b394605fafa3d576dcb70c53010be40e10eb8"
+    },
+    {
+      "path": "images/COMET03_DAPI.tif",
+      "shape_yx": [11160, 10152],
+      "dtype": "uint16",
+      "size_bytes": 226593099,
+      "md5": "785288c61844dd776c13d8e78c522681",
+      "sha256": "528a81a0f9ebbedc564e31cb66b4a1f9bf12954c65f480dd7ff6314a36aa2fbb"
+    },
+    {
+      "path": "images/COMET04_DAPI.tif",
+      "shape_yx": [10512, 10656],
+      "dtype": "uint16",
+      "size_bytes": 224032203,
+      "md5": "d78fb53aef1104afb41d3a72774e6a02",
+      "sha256": "749766fe6e5e4fc6f9ae2242a80256512fa5cc80d8a27f371efc0c4b3aded05c"
+    },
+    {
+      "path": "images/COMET05_DAPI.tif",
+      "shape_yx": [10512, 10656],
+      "dtype": "uint16",
+      "size_bytes": 224032203,
+      "md5": "09d946dc23c26aa89fd1453507f789ef",
+      "sha256": "0d4024f814ec96c837d07277b082daf3ca96b7d353ee7ac242537a38af57c796"
+    },
+    {
+      "path": "images/COMET06_DAPI.tif",
+      "shape_yx": [9360, 10152],
+      "dtype": "uint16",
+      "size_bytes": 190045899,
+      "md5": "ff844e1a38546d37f9a17a0219bf51d9",
+      "sha256": "aa9a2e90e498fea180ab51a24a6ef81a531a6014eaf3b3eacd53505895872d5c"
+    }
+  ]
+}

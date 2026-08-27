@@ -30,6 +30,7 @@ from typing import Any
 
 import numpy as np
 
+from ._torch_runtime import synchronize_torch_device
 from .foundation import (
     DINOv2FeatureExtractor,
     FoundationFeatures,
@@ -329,14 +330,6 @@ def deterministic_smoke_patches(image_size: int = 224) -> np.ndarray:
     )
 
 
-def _synchronize(torch: Any, device: str) -> None:
-    if device != "mps":
-        return
-    synchronize = getattr(getattr(torch, "mps", None), "synchronize", None)
-    if callable(synchronize):
-        synchronize()
-
-
 def _time_encode(
     extractor: DINOv2FeatureExtractor,
     patches: np.ndarray,
@@ -344,18 +337,18 @@ def _time_encode(
     steady_runs: int,
 ) -> tuple[FoundationFeatures, dict[str, Any]]:
     torch = extractor._torch
-    _synchronize(torch, extractor.device)
+    synchronize_torch_device(torch, extractor.device)
     start = time.perf_counter()
     features = extractor.encode(patches, batch_size=2)
-    _synchronize(torch, extractor.device)
+    synchronize_torch_device(torch, extractor.device)
     warm_seconds = time.perf_counter() - start
 
     durations: list[float] = []
     for _ in range(steady_runs):
-        _synchronize(torch, extractor.device)
+        synchronize_torch_device(torch, extractor.device)
         start = time.perf_counter()
         features = extractor.encode(patches, batch_size=2)
-        _synchronize(torch, extractor.device)
+        synchronize_torch_device(torch, extractor.device)
         durations.append(time.perf_counter() - start)
     return features, {
         "scope": "two_patch_preprocess_and_frozen_forward",
@@ -603,7 +596,7 @@ def _run_lora_step(
     tensor = torch.as_tensor(normalized, dtype=torch.bfloat16, device=device)
     labels = torch.as_tensor((0.0, 1.0), dtype=torch.float32, device=device)
 
-    _synchronize(torch, device)
+    synchronize_torch_device(torch, device)
     start = time.perf_counter()
     optimizer.zero_grad(set_to_none=True)
     output = adapted(pixel_values=tensor)
@@ -615,7 +608,7 @@ def _run_lora_step(
         raise RuntimeError("LoRA smoke step produced a non-finite loss")
     loss.backward()
     optimizer.step()
-    _synchronize(torch, device)
+    synchronize_torch_device(torch, device)
     elapsed = time.perf_counter() - start
 
     squared_delta = 0.0

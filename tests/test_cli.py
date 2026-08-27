@@ -7,11 +7,56 @@ from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 
-from foldcrack_qc.cli import _clean_generated_output, entrypoint, main
+from foldcrack_qc.cli import _clean_generated_output, _run_tests, entrypoint, main
+
+
+class TestCommandTests(unittest.TestCase):
+    @patch.dict(
+        "foldcrack_qc.cli.os.environ",
+        {
+            "PYTEST_ADDOPTS": "--collect-only",
+            "PYTEST_PLUGINS": "unapproved_plugin",
+        },
+    )
+    @patch("foldcrack_qc.cli.subprocess.run")
+    @patch("foldcrack_qc.cli.importlib.util.find_spec", return_value=object())
+    def test_complete_suite_delegates_to_pytest_with_pattern(
+        self,
+        _find_spec: object,
+        run: Mock,
+    ) -> None:
+        run.return_value = SimpleNamespace(returncode=7)
+
+        status = _run_tests("check_*.py")
+
+        self.assertEqual(status, 7)
+        command = run.call_args.args[0]
+        self.assertEqual(command[1:4], ["-m", "pytest", "-q"])
+        self.assertIn("python_files=check_*.py", command)
+        self.assertEqual(run.call_args.kwargs["check"], False)
+        environment = run.call_args.kwargs["env"]
+        self.assertNotIn("PYTEST_ADDOPTS", environment)
+        self.assertNotIn("PYTEST_PLUGINS", environment)
+        self.assertEqual(environment["PYTEST_DISABLE_PLUGIN_AUTOLOAD"], "1")
+
+    @patch("foldcrack_qc.cli.subprocess.run")
+    @patch("foldcrack_qc.cli.importlib.util.find_spec", return_value=None)
+    def test_missing_pytest_has_actionable_exit(
+        self,
+        _find_spec: object,
+        run: Mock,
+    ) -> None:
+        stderr = StringIO()
+        with redirect_stderr(stderr):
+            status = _run_tests("test*.py")
+
+        self.assertEqual(status, 2)
+        self.assertIn("'.[dev]'", stderr.getvalue())
+        run.assert_not_called()
 
 
 class CleanCommandTests(unittest.TestCase):
@@ -286,6 +331,97 @@ class EvaluationCommandTests(unittest.TestCase):
             self.assertEqual(runner.call_args.kwargs["patch_size_um"], 112.0)
             self.assertEqual(runner.call_args.kwargs["stride_um"], 56.0)
 
+    def test_public_fold_cli_classical_only_does_not_build_provider(self) -> None:
+        report = {
+            "status": "complete_nonreportable_feasibility_run",
+            "report_eligible": False,
+            "methods": {
+                "classical_fold": {
+                    "locked_test": {"pixel_all_fields_micro": {"dice": 0.5}}
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "classical-fold.json"
+            with (
+                patch(
+                    "foldcrack_qc.public_fold_providers.build_public_fold_encoder"
+                ) as builder,
+                patch(
+                    "foldcrack_qc.cli._public_fold_run_provenance",
+                    return_value={"capture": "test"},
+                ) as provenance,
+                patch(
+                    "foldcrack_qc.public_fold_benchmark.run_public_fold_benchmark",
+                    return_value=report,
+                ) as runner,
+                redirect_stdout(StringIO()),
+            ):
+                status = main(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "classical_fold",
+                        "--foundation-encoder",
+                        "hibou-b-local",
+                        "--allow-download",
+                        "--bootstrap-resamples",
+                        "0",
+                        "--output-json",
+                        str(output),
+                    ]
+                )
+            payload = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertEqual(status, 0)
+        builder.assert_not_called()
+        self.assertIsNone(runner.call_args.kwargs["encoder"])
+        provenance.assert_called_once()
+        self.assertIsNone(provenance.call_args.args[1])
+        self.assertNotIn("model_identity", payload)
+
+    def test_public_fold_cli_validates_config_before_loading_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "invalid.json"
+            errors = StringIO()
+            with (
+                patch(
+                    "foldcrack_qc.public_fold_providers.build_public_fold_encoder"
+                ) as builder,
+                patch("foldcrack_qc.cli._public_fold_run_provenance") as provenance,
+                patch(
+                    "foldcrack_qc.public_fold_benchmark.run_public_fold_benchmark"
+                ) as runner,
+                redirect_stderr(errors),
+            ):
+                status = entrypoint(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "foundation_patchknn",
+                        "--tile-size",
+                        "224",
+                        "--tile-stride",
+                        "225",
+                        "--bootstrap-resamples",
+                        "0",
+                        "--output-json",
+                        str(output),
+                    ]
+                )
+            output_created = output.exists()
+
+        self.assertEqual(status, 2)
+        self.assertIn("tile_stride cannot exceed tile_size", errors.getvalue())
+        builder.assert_not_called()
+        provenance.assert_not_called()
+        runner.assert_not_called()
+        self.assertFalse(output_created)
+
     def test_public_fold_cli_wires_real_dataset_and_audited_mask_exclusion(
         self,
     ) -> None:
@@ -325,7 +461,7 @@ class EvaluationCommandTests(unittest.TestCase):
                 ),
                 patch(
                     "foldcrack_qc.foundation.DINOv2FeatureExtractor",
-                    return_value=object(),
+                    return_value=SimpleNamespace(device="mps", encode=Mock()),
                 ),
                 patch(
                     "foldcrack_qc.public_fold_benchmark.run_public_fold_benchmark",
@@ -399,7 +535,7 @@ class EvaluationCommandTests(unittest.TestCase):
                 ) as loader,
                 patch(
                     "foldcrack_qc.foundation.DINOv2FeatureExtractor",
-                    return_value=SimpleNamespace(device="mps"),
+                    return_value=SimpleNamespace(device="mps", encode=Mock()),
                 ) as extractor,
                 patch(
                     "foldcrack_qc.public_fold_benchmark.run_public_fold_benchmark",
@@ -486,7 +622,7 @@ class EvaluationCommandTests(unittest.TestCase):
                 ) as loader,
                 patch(
                     "foldcrack_qc.foundation.DINOv2FeatureExtractor",
-                    return_value=SimpleNamespace(device="mps"),
+                    return_value=SimpleNamespace(device="mps", encode=Mock()),
                 ) as extractor,
                 patch(
                     "foldcrack_qc.public_fold_benchmark.run_public_fold_benchmark",

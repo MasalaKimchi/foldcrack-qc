@@ -29,6 +29,7 @@ from typing import Any
 
 import numpy as np
 
+from ._torch_runtime import synchronize_torch_device
 from .foundation import (
     SIGLIP2_BASE_MEAN,
     SIGLIP2_BASE_STD,
@@ -209,15 +210,6 @@ def _runtime_versions(torch: Any) -> dict[str, Any]:
     }
 
 
-def _synchronize(torch: Any, device: str) -> None:
-    if device != "mps":
-        return
-    synchronize = getattr(getattr(torch, "mps", None), "synchronize", None)
-    if not callable(synchronize):
-        raise TypeError("MPS synchronization is unavailable")
-    synchronize()
-
-
 def _parameter_stats(model: Any) -> dict[str, Any]:
     by_dtype: dict[str, dict[str, int]] = {}
     total_count = 0
@@ -328,19 +320,19 @@ def _time_encode(
     steady_runs: int,
 ) -> tuple[FoundationFeatures, dict[str, Any]]:
     torch = extractor._torch
-    _synchronize(torch, extractor.device)
+    synchronize_torch_device(torch, extractor.device, require_available=True)
     started = time.perf_counter()
     features = extractor.encode(patches, batch_size=2)
-    _synchronize(torch, extractor.device)
+    synchronize_torch_device(torch, extractor.device, require_available=True)
     warm_seconds = time.perf_counter() - started
 
     durations: list[float] = []
     output_hashes: list[str] = []
     for _ in range(steady_runs):
-        _synchronize(torch, extractor.device)
+        synchronize_torch_device(torch, extractor.device, require_available=True)
         started = time.perf_counter()
         features = extractor.encode(patches, batch_size=2)
-        _synchronize(torch, extractor.device)
+        synchronize_torch_device(torch, extractor.device, require_available=True)
         durations.append(time.perf_counter() - started)
         output_hashes.append(
             _array_sha256(features.cls_embedding)
@@ -634,7 +626,7 @@ def _run_lora_step(
         tuple(all_trainable.values()), lr=1e-3, weight_decay=0.0
     )
 
-    _synchronize(torch, device)
+    synchronize_torch_device(torch, device, require_available=True)
     started = time.perf_counter()
     optimizer.zero_grad(set_to_none=True)
     output = adapted(pixel_values=tensor)
@@ -656,7 +648,7 @@ def _run_lora_step(
     if not math.isfinite(gradient_l2) or gradient_l2 <= 0.0:
         raise RuntimeError("LoRA smoke produced no finite non-zero gradient")
     optimizer.step()
-    _synchronize(torch, device)
+    synchronize_torch_device(torch, device, require_available=True)
     step_seconds = time.perf_counter() - started
 
     after = {

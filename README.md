@@ -36,19 +36,29 @@ The design deliberately separates two questions:
 
 ## Run the complete feasibility test
 
-The current environment already contains NumPy, SciPy, and OpenCV, so no model
-or dataset download is required:
+Create an isolated environment and install the core and development
+dependencies. No model or dataset download is required for this smoke path:
 
 ```bash
-make test
-make feasibility
+python3 -m venv .venv
+./.venv/bin/python -m pip install -e '.[dev]'
 ```
+
+Then run the complete test suite and deterministic feasibility benchmark:
+
+```bash
+make check PYTHON=./.venv/bin/python
+make feasibility PYTHON=./.venv/bin/python
+```
+
+`make check` runs static analysis, formatting verification, the complete pytest
+suite, byte-code compilation, and an isolated installed-wheel smoke test.
 
 Equivalent direct commands:
 
 ```bash
-PYTHONPATH=src python3 -m foldcrack_qc test
-PYTHONPATH=src python3 -m foldcrack_qc feasibility \
+PYTHONPATH=src ./.venv/bin/python -m foldcrack_qc test
+PYTHONPATH=src ./.venv/bin/python -m foldcrack_qc feasibility \
   --output artifacts/feasibility \
   --samples-per-modality 12 \
   --size 384 \
@@ -399,8 +409,16 @@ defines the accepting party to include an employer/entity when accepted on its
 behalf. Merck license/governance approval is required first; this repository
 does not assert that the DINOv3 license is noncommercial.
 
-## Evaluation contract
+## Documentation and evaluation contract
 
+- [`docs/README.md`](docs/README.md): consolidated documentation map and
+  canonical-source guidance
+- [`docs/QUICKSTART.md`](docs/QUICKSTART.md): clean installation, complete
+  quality gate, deterministic smoke run, and evidence boundaries
+- [`docs/MODEL_SUPPORT.md`](docs/MODEL_SUPPORT.md): current encoder, device, and
+  evidence-support matrix
+- [`docs/ADDING_FOUNDATION_MODEL.md`](docs/ADDING_FOUNDATION_MODEL.md): safe
+  provider integration, provenance, testing, and separate multiplex contract
 - [`docs/TEAM_BRIEF.md`](docs/TEAM_BRIEF.md): decision-ready recommendation,
   evidence plan, illustrative gates, and immediate team asks
 - [`docs/AI-SPEC.md`](docs/AI-SPEC.md): architecture, risks, model ladder, and

@@ -1,0 +1,45 @@
+{
+  "schema_version": "public-data-recovery-manifest-1.0",
+  "dataset_id": "cosmx_phgg_v1",
+  "title": "CosMx pediatric high-grade glioma spatial molecular-imaging data",
+  "record_url": "https://zenodo.org/records/16877090",
+  "record_concept_doi": "10.5281/zenodo.14225940",
+  "publication_doi": "10.1093/neuped/wuaf002",
+  "record_license": "CC-BY-4.0",
+  "upstream_archive": {
+    "name": "cosmx.zip",
+    "size_bytes": 8311215588,
+    "md5": "f21b5dc16c87b69f846f457589556c3e"
+  },
+  "subset_contract": {
+    "content": "two real raw morphology FOVs from two independent slide/run directories",
+    "axes": "IYX",
+    "channels": "five acquisition UIDs in TIFF ChannelOrder BGYRU; biological names are used only if present in TIFF MorphologyKit metadata",
+    "native_pixel_size_um": 0.120280945,
+    "pixel_size_source": "TIFF ImageDescription.ImPixelSize_nm=120.280945",
+    "artifact_ground_truth": false,
+    "extraction": "ZIP64 central-directory enumeration followed by exact member byte-range extraction, raw-deflate decompression, CRC verification, TIFF decode, and local SHA-256"
+  },
+  "files": [
+    {
+      "path": "raw_morphology/R5779_TMA2-S6__20230505_010716_S2_C902_P99_N99_F055.TIF",
+      "group_id": "zenodo16877090:R5779_TMA2-S6",
+      "upstream_member": "R5779_TMA2-S6/RawMorphologyImages/20230505_010716_S2_C902_P99_N99_F055.TIF",
+      "upstream_member_crc32": "abfd65ab",
+      "shape_cyx": [5, 4256, 4256],
+      "size_bytes": 108675942,
+      "md5": "4703227d6680b6e3bcf97be1b00cfc71",
+      "sha256": "28f0099d13b89181f6ebb8eabce87f4fb7f710c3a130f722460ba3aae4549000"
+    },
+    {
+      "path": "raw_morphology/R5779_TMA3-S4__20230505_010716_S3_C902_P99_N99_F008.TIF",
+      "group_id": "zenodo16877090:R5779_TMA3-S4",
+      "upstream_member": "R5779_TMA3-S4/RawMorphologyImages/20230505_010716_S3_C902_P99_N99_F008.TIF",
+      "upstream_member_crc32": "a2fcafa9",
+      "shape_cyx": [5, 4256, 4256],
+      "size_bytes": 138553178,
+      "md5": "bf49e69024671f2da108e5ffaa09ed32",
+      "sha256": "d4d5b24987e017c1086fffc69952c89b71637557ef9986bb44df9b46f4bb44f0"
+    }
+  ]
+}

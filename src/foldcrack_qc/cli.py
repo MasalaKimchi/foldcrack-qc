@@ -5,16 +5,18 @@ from __future__ import annotations
 import argparse
 import hashlib
 import importlib.metadata
+import importlib.util
 import json
+import os
 import platform
 import shutil
 import subprocess
 import sys
-import unittest
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from .public_fold_providers import PUBLIC_FOLD_ENCODER_NAMES
 from .registry import format_registry, load_registry
 
 
@@ -256,7 +258,7 @@ def _build_parser() -> argparse.ArgumentParser:
     datasets.add_argument("--registry", type=Path, default=None)
 
     tests = subparsers.add_parser(
-        "test", help="run the dependency-light unittest suite"
+        "test", help="run the complete pytest suite from a source checkout"
     )
     tests.add_argument("--pattern", default="test*.py")
 
@@ -404,7 +406,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     public_fold.add_argument(
         "--foundation-encoder",
-        choices=("dinov2-hf", "hibou-b-local", "siglip2-base-local"),
+        choices=PUBLIC_FOLD_ENCODER_NAMES,
         default="dinov2-hf",
         help=(
             "frozen encoder for foundation_* methods; the default preserves the "
@@ -548,9 +550,40 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def _run_tests(pattern: str) -> int:
     root = Path(__file__).resolve().parents[2]
-    suite = unittest.defaultTestLoader.discover(str(root / "tests"), pattern=pattern)
-    result = unittest.TextTestRunner(verbosity=2).run(suite)
-    return 0 if result.wasSuccessful() else 1
+    tests_root = root / "tests"
+    if not tests_root.is_dir():
+        print(
+            "The test command requires a source checkout containing tests/. "
+            "Installed wheels intentionally do not bundle the test suite.",
+            file=sys.stderr,
+        )
+        return 2
+    if importlib.util.find_spec("pytest") is None:
+        print(
+            "The complete test suite requires pytest. Install the project's "
+            "development extra with: python -m pip install -e '.[dev]'",
+            file=sys.stderr,
+        )
+        return 2
+    environment = dict(os.environ)
+    environment.pop("PYTEST_ADDOPTS", None)
+    environment.pop("PYTEST_PLUGINS", None)
+    environment["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "-o",
+            f"python_files={pattern}",
+            str(tests_root),
+        ],
+        cwd=root,
+        env=environment,
+        check=False,
+    )
+    return int(completed.returncode)
 
 
 def _path_has_symlink_below(path: Path, root: Path) -> bool:
@@ -807,166 +840,6 @@ def _run_public_fold_benchmark(args: argparse.Namespace) -> int:
     )
 
     methods = tuple(args.methods)
-    foundation_methods = {
-        "foundation_patchknn",
-        "foundation_linear_probe",
-        "dinov2_patchknn",
-        "dinov2_linear_probe",
-    }
-    encoder = None
-    model_identity: dict[str, Any] | None = None
-    if set(methods) & foundation_methods:
-        from .foundation import DINOv2FeatureExtractor
-
-        if args.foundation_encoder == "hibou-b-local":
-            legacy_aliases = sorted(
-                method for method in methods if method.startswith("dinov2_")
-            )
-            if legacy_aliases:
-                raise ValueError(
-                    "Hibou-B must use encoder-agnostic foundation_patchknn and/or "
-                    f"foundation_linear_probe, not DINOv2 aliases: {legacy_aliases}"
-                )
-            if args.allow_download:
-                raise ValueError(
-                    "--allow-download is incompatible with the local-only Hibou-B loader"
-                )
-            if args.hibou_weights is None or args.hibou_source is None:
-                raise ValueError(
-                    "hibou-b-local requires both --hibou-weights and --hibou-source"
-                )
-            if args.hibou_weights_sha256 is None or args.hibou_source_commit is None:
-                raise ValueError(
-                    "hibou-b-local requires both --hibou-weights-sha256 and "
-                    "--hibou-source-commit from an approved release"
-                )
-            from .foundation import (
-                HIBOU_B_MEAN,
-                HIBOU_B_STD,
-                load_local_hibou_b,
-            )
-
-            local = load_local_hibou_b(
-                args.hibou_weights,
-                args.hibou_source,
-                expected_weights_sha256=args.hibou_weights_sha256,
-                expected_source_commit=args.hibou_source_commit,
-            )
-            encoder = DINOv2FeatureExtractor(
-                local.model,
-                device=args.device,
-                image_size=224,
-                patch_size=14,
-                prefix_tokens=5,
-                model_input_name=None,
-                normalization_mean=HIBOU_B_MEAN,
-                normalization_std=HIBOU_B_STD,
-            )
-            model_identity = {
-                **dict(local.provenance),
-                "requested_device": args.device,
-                "resolved_device": str(getattr(encoder, "device", args.device)),
-                "output_contract": {
-                    "type": "mapping",
-                    "cls_key": "x_norm_clstoken",
-                    "patch_key": "x_norm_patchtokens",
-                    "prefix_tokens": 5,
-                },
-            }
-        elif args.foundation_encoder == "siglip2-base-local":
-            legacy_aliases = sorted(
-                method for method in methods if method.startswith("dinov2_")
-            )
-            if legacy_aliases:
-                raise ValueError(
-                    "SigLIP2 Base must use encoder-agnostic foundation_patchknn "
-                    "and/or foundation_linear_probe, not DINOv2 aliases: "
-                    f"{legacy_aliases}"
-                )
-            if args.allow_download:
-                raise ValueError(
-                    "--allow-download is incompatible with the local-only "
-                    "SigLIP2 Base loader"
-                )
-            if args.siglip2_snapshot is None:
-                raise ValueError("siglip2-base-local requires --siglip2-snapshot")
-            from .foundation import (
-                SIGLIP2_BASE_MEAN,
-                SIGLIP2_BASE_STD,
-                load_local_siglip2_base_vision,
-            )
-
-            local = load_local_siglip2_base_vision(args.siglip2_snapshot)
-            encoder = DINOv2FeatureExtractor(
-                local.model,
-                device=args.device,
-                image_size=224,
-                patch_size=16,
-                prefix_tokens=0,
-                model_input_name="pixel_values",
-                global_embedding_name="pooler_output",
-                normalization_mean=SIGLIP2_BASE_MEAN,
-                normalization_std=SIGLIP2_BASE_STD,
-                preprocessor=local.preprocessor,
-            )
-            model_identity = {
-                **dict(local.provenance),
-                "requested_device": args.device,
-                "resolved_device": str(getattr(encoder, "device", args.device)),
-                "output_contract": {
-                    "type": "object",
-                    "global_key": "pooler_output",
-                    "patch_key": "last_hidden_state",
-                    "prefix_tokens": 0,
-                },
-            }
-        else:
-            from .foundation_smoke import (
-                FoundationSmokeConfig,
-                dinov2_model_geometry,
-                load_huggingface_model,
-            )
-
-            model_config = FoundationSmokeConfig(
-                revision=args.revision,
-                model_id=args.model_id,
-                cache_dir=args.cache_dir,
-                device=args.device,
-                allow_download=args.allow_download,
-                image_size=224,
-                steady_runs=1,
-            )
-            loaded = load_huggingface_model(model_config)
-            patch_size, prefix_tokens = dinov2_model_geometry(loaded.model, 224)
-            encoder = DINOv2FeatureExtractor(
-                loaded.model,
-                device=args.device,
-                image_size=224,
-                patch_size=patch_size,
-                prefix_tokens=prefix_tokens,
-                model_input_name="pixel_values",
-            )
-            model_identity = {
-                "id": args.model_id,
-                "requested_revision": args.revision,
-                "resolved_revision": loaded.resolved_revision,
-                "weight_files": [item.as_dict() for item in loaded.weight_digests],
-                "configuration_files": [
-                    item.as_dict() for item in loaded.configuration_digests
-                ],
-                "requested_device": args.device,
-                "resolved_device": str(getattr(encoder, "device", args.device)),
-                "trust_remote_code": False,
-                "token_used": False,
-                "network_access_allowed": bool(args.allow_download),
-                "input": {
-                    "normalization": "ImageNet",
-                    "image_size": [224, 224],
-                    "patch_size": list(patch_size),
-                    "prefix_tokens": prefix_tokens,
-                },
-            }
-
     config = PublicFoldBenchmarkConfig(
         methods=methods,
         max_dimension=args.max_dimension,
@@ -986,6 +859,24 @@ def _run_public_fold_benchmark(args: argparse.Namespace) -> int:
         validate_asset_dimensions=not args.skip_dimension_validation,
         strict_public_v1=not (args.no_asset_hashes or args.skip_dimension_validation),
     )
+    foundation_methods = {
+        "foundation_patchknn",
+        "foundation_linear_probe",
+        "dinov2_patchknn",
+        "dinov2_linear_probe",
+    }
+    encoder = None
+    model_identity: dict[str, Any] | None = None
+    if set(methods) & foundation_methods:
+        from .public_fold_providers import build_public_fold_encoder
+
+        built_provider = build_public_fold_encoder(
+            args.foundation_encoder,
+            args,
+            methods,
+        )
+        encoder = built_provider.encoder
+        model_identity = dict(built_provider.model_identity)
     run_provenance = _public_fold_run_provenance(config, model_identity)
     report = run_public_fold_benchmark(
         args.dataset_root,

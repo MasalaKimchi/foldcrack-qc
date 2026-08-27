@@ -27,6 +27,9 @@ from typing import Any
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ._torch_runtime import import_torch as _runtime_import_torch
+from ._torch_runtime import select_torch_device as _runtime_select_torch_device
+
 Float32Array = NDArray[np.float32]
 Float64Array = NDArray[np.float64]
 
@@ -100,14 +103,7 @@ _SIGLIP2_BASE_ASSET_SHA256 = {
 def _import_torch() -> Any:
     """Import torch lazily and provide an actionable optional-dependency error."""
 
-    try:
-        import torch
-    except ImportError as error:  # pragma: no cover - depends on environment
-        raise ImportError(
-            "Foundation feature extraction requires PyTorch. Install the "
-            "project's 'foundation' extra or inject an approved torch runtime."
-        ) from error
-    return torch
+    return _runtime_import_torch()
 
 
 def _validate_semantic_channels(
@@ -252,22 +248,7 @@ def select_torch_device(
     """Resolve ``auto``, ``mps``, or ``cpu`` without silently changing requests."""
 
     torch = _import_torch() if torch_module is None else torch_module
-    requested = str(requested).lower()
-    if requested not in {"auto", "mps", "cpu"}:
-        raise ValueError("device must be one of 'auto', 'mps', or 'cpu'")
-    mps_backend = getattr(getattr(torch, "backends", None), "mps", None)
-    mps_available = bool(
-        mps_backend is not None
-        and callable(getattr(mps_backend, "is_available", None))
-        and mps_backend.is_available()
-    )
-    if requested == "auto":
-        return "mps" if mps_available else "cpu"
-    if requested == "mps" and not mps_available:
-        raise RuntimeError(
-            "MPS was requested but is unavailable in this PyTorch/macOS runtime"
-        )
-    return requested
+    return _runtime_select_torch_device(requested, torch_module=torch)
 
 
 @dataclass(frozen=True)
