@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib.metadata
 import json
+import platform
 import shutil
+import subprocess
 import sys
 import unittest
 from collections.abc import Mapping, Sequence
@@ -14,11 +18,209 @@ from typing import Any
 from .registry import format_registry, load_registry
 
 
+def _canonical_json_sha256(value: object) -> str:
+    payload = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _public_fold_code_identity() -> dict[str, Any]:
+    """Capture the committed revision plus every uncommitted runtime source byte."""
+
+    root = Path(__file__).resolve().parents[2]
+    try:
+        commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        diff = subprocess.run(
+            ["git", "diff", "--binary", "HEAD", "--", "src", "pyproject.toml"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+        ).stdout
+        untracked_output = subprocess.run(
+            [
+                "git",
+                "ls-files",
+                "--others",
+                "--exclude-standard",
+                "--",
+                "src",
+                "pyproject.toml",
+            ],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise RuntimeError(
+            "Public fold reporting requires a readable Git source identity"
+        ) from error
+    if len(commit) != 40 or any(
+        character not in "0123456789abcdef" for character in commit
+    ):
+        raise RuntimeError("Public fold reporting requires an exact Git commit")
+    digest = hashlib.sha256(diff)
+    untracked: list[str] = []
+    for raw_relative in sorted(untracked_output.splitlines()):
+        relative = Path(raw_relative)
+        candidate = (root / relative).resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError as error:
+            raise RuntimeError("Unsafe untracked source path in Git output") from error
+        if not candidate.is_file():
+            continue
+        untracked.append(relative.as_posix())
+        digest.update(b"\0untracked\0")
+        digest.update(relative.as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(candidate.read_bytes())
+    return {
+        "identity_type": "git",
+        "commit": commit,
+        "dirty_diff_sha256": digest.hexdigest(),
+        "dirty_diff_capture": "git_diff_HEAD_plus_untracked_runtime_sources",
+        "untracked_runtime_sources": untracked,
+    }
+
+
+def _foundation_weight_identity(model_identity: Mapping[str, Any]) -> str:
+    candidates: list[str] = []
+    weights = model_identity.get("weights")
+    if isinstance(weights, Mapping) and isinstance(weights.get("sha256"), str):
+        candidates.append(str(weights["sha256"]))
+    weight_files = model_identity.get("weight_files")
+    if isinstance(weight_files, list):
+        candidates.extend(
+            str(item["sha256"])
+            for item in weight_files
+            if isinstance(item, Mapping) and isinstance(item.get("sha256"), str)
+        )
+    assets = model_identity.get("assets")
+    if isinstance(assets, Mapping):
+        model_asset = assets.get("model.safetensors")
+        if isinstance(model_asset, Mapping) and isinstance(
+            model_asset.get("sha256"), str
+        ):
+            candidates.append(str(model_asset["sha256"]))
+    unique = sorted(set(candidates))
+    if not unique or any(
+        len(value) != 64
+        or any(character not in "0123456789abcdef" for character in value)
+        for value in unique
+    ):
+        raise RuntimeError(
+            "Foundation benchmark weights lack an exact SHA-256 identity"
+        )
+    return unique[0] if len(unique) == 1 else _canonical_json_sha256(unique)
+
+
+def _public_fold_run_provenance(
+    config: Any,
+    model_identity: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Build the runner's strict pre-scoring provenance object."""
+
+    import cv2
+    import numpy as np
+    import scipy
+
+    foundation_requested = any(method != "classical_fold" for method in config.methods)
+    if foundation_requested and model_identity is None:
+        raise RuntimeError("Foundation methods require captured model identity")
+    identity: Mapping[str, Any] = model_identity or {
+        "id": "classical-fold-candidates-v1",
+        "loader": "in_process_foldcrack_qc.detectors.classical_fold_candidates",
+    }
+    weights_sha256 = (
+        _foundation_weight_identity(identity) if foundation_requested else None
+    )
+    dependencies = {
+        "numpy": np.__version__,
+        "scipy": scipy.__version__,
+        "opencv": cv2.__version__,
+    }
+    if foundation_requested:
+        for distribution, key in (
+            ("torch", "torch"),
+            ("transformers", "transformers"),
+            ("huggingface-hub", "huggingface_hub"),
+        ):
+            try:
+                dependencies[key] = importlib.metadata.version(distribution)
+            except importlib.metadata.PackageNotFoundError as error:
+                raise RuntimeError(
+                    f"Foundation provenance cannot resolve {distribution!r} version"
+                ) from error
+    return {
+        "schema_version": "public-fold-run-provenance-1.1",
+        "capture": {
+            "captured_before_scoring": True,
+            "validation_status": "structurally_validated",
+            "validator_id": "foldcrack-qc-cli-preflight-v1.1",
+            "approval_scope": "reproducibility_structure_not_corporate_model_governance",
+        },
+        "code": _public_fold_code_identity(),
+        "environment": {
+            "python_version": platform.python_version(),
+            "platform": platform.platform(),
+            "dependencies": dependencies,
+        },
+        "method_model": {
+            "selected_methods": list(config.methods),
+            "benchmark_configuration_sha256": _canonical_json_sha256(config.as_dict()),
+            "implementation_id": "foldcrack_qc.public_fold_benchmark:v1.2",
+            "model_id": str(identity.get("id", "unknown")),
+            "model_config_sha256": _canonical_json_sha256(dict(identity)),
+            "weights_sha256": weights_sha256,
+            "weights_not_applicable": not foundation_requested,
+            "loader_identity": str(
+                identity.get(
+                    "loader",
+                    "transformers_pretrained_trust_remote_code_false",
+                )
+            ),
+            "frozen_evaluation": True,
+            "transductive_updates": False,
+        },
+        "execution": {
+            "device": str(identity.get("resolved_device", "cpu")),
+            "precision": "float32",
+        },
+    }
+
+
 def _positive_int(value: str) -> int:
     parsed = int(value)
     if parsed <= 0:
         raise argparse.ArgumentTypeError("value must be positive")
     return parsed
+
+
+def _fixed_hex(value: str, *, length: int, label: str) -> str:
+    normalized = value.strip().lower()
+    if len(normalized) != length or any(
+        character not in "0123456789abcdef" for character in normalized
+    ):
+        raise argparse.ArgumentTypeError(
+            f"{label} must contain exactly {length} hexadecimal characters"
+        )
+    return normalized
+
+
+def _sha256(value: str) -> str:
+    return _fixed_hex(value, length=64, label="SHA-256")
+
+
+def _git_commit(value: str) -> str:
+    return _fixed_hex(value, length=40, label="Git commit")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -40,7 +242,9 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     feasibility.add_argument("--size", type=_positive_int, default=384)
     feasibility.add_argument("--seed", type=int, default=17)
-    feasibility.add_argument("--patch-size", type=_positive_int, default=64)
+    # Keep this in lock-step with BenchmarkConfig.patch_size.  A 64-pixel
+    # context diluted thin crack signals and is intentionally not the default.
+    feasibility.add_argument("--patch-size", type=_positive_int, default=32)
     feasibility.add_argument("--overlays-per-modality", type=int, default=2)
 
     datasets = subparsers.add_parser(
@@ -124,12 +328,8 @@ def _build_parser() -> argparse.ArgumentParser:
         help="run the strict real H&E DINOv2 artifact-union anomaly benchmark",
     )
     frozen_benchmark.add_argument("--fit-manifest", type=Path, required=True)
-    frozen_benchmark.add_argument(
-        "--calibration-manifest", type=Path, required=True
-    )
-    frozen_benchmark.add_argument(
-        "--locked-test-manifest", type=Path, required=True
-    )
+    frozen_benchmark.add_argument("--calibration-manifest", type=Path, required=True)
+    frozen_benchmark.add_argument("--locked-test-manifest", type=Path, required=True)
     frozen_benchmark.add_argument("--revision", required=True)
     frozen_benchmark.add_argument("--model-id", default="facebook/dinov2-small")
     frozen_benchmark.add_argument(
@@ -157,13 +357,9 @@ def _build_parser() -> argparse.ArgumentParser:
         help="physical stride in micrometres; defaults to half the patch size",
     )
     frozen_benchmark.add_argument("--batch-size", type=_positive_int, default=8)
-    frozen_benchmark.add_argument(
-        "--min-valid-token-fraction", type=float, default=0.5
-    )
+    frozen_benchmark.add_argument("--min-valid-token-fraction", type=float, default=0.5)
     frozen_benchmark.add_argument("--neighbors", type=_positive_int, default=1)
-    frozen_benchmark.add_argument(
-        "--calibration-quantile", type=float, default=0.995
-    )
+    frozen_benchmark.add_argument("--calibration-quantile", type=float, default=0.995)
     frozen_benchmark.add_argument(
         "--max-reference-tokens", type=_positive_int, default=100_000
     )
@@ -186,6 +382,152 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     frozen_benchmark.add_argument("--output-json", type=Path, required=True)
     frozen_benchmark.add_argument(
+        "--json", action="store_true", help="also emit the complete report to stdout"
+    )
+
+    public_fold = subparsers.add_parser(
+        "public-fold-benchmark",
+        help="run the slide-grouped real H&E fold benchmark from Zenodo 21493260",
+    )
+    public_fold.add_argument("--dataset-root", type=Path, required=True)
+    public_fold.add_argument(
+        "--methods",
+        nargs="+",
+        choices=(
+            "classical_fold",
+            "foundation_patchknn",
+            "foundation_linear_probe",
+            "dinov2_patchknn",
+            "dinov2_linear_probe",
+        ),
+        default=("classical_fold", "dinov2_patchknn", "dinov2_linear_probe"),
+    )
+    public_fold.add_argument(
+        "--foundation-encoder",
+        choices=("dinov2-hf", "hibou-b-local", "siglip2-base-local"),
+        default="dinov2-hf",
+        help=(
+            "frozen encoder for foundation_* methods; the default preserves the "
+            "original Hugging Face DINOv2 benchmark"
+        ),
+    )
+    public_fold.add_argument(
+        "--revision",
+        default="ed25f3a31f01632728cabb09d1542f84ab7b0056",
+        help="exact immutable DINOv2 revision used by foundation methods",
+    )
+    public_fold.add_argument("--model-id", default="facebook/dinov2-small")
+    public_fold.add_argument(
+        "--cache-dir", type=Path, default=Path("models/hf_home/hub")
+    )
+    public_fold.add_argument("--device", choices=("auto", "cpu", "mps"), default="auto")
+    public_fold.add_argument("--allow-download", action="store_true")
+    public_fold.add_argument(
+        "--hibou-weights",
+        type=Path,
+        default=None,
+        help="explicit official local Hibou-B .pth (required for hibou-b-local)",
+    )
+    public_fold.add_argument(
+        "--hibou-source",
+        type=Path,
+        default=None,
+        help="explicit clean official HistAI/hibou checkout (required for hibou-b-local)",
+    )
+    public_fold.add_argument(
+        "--hibou-weights-sha256",
+        type=_sha256,
+        default=None,
+        help="optional expected SHA-256 lock for the local Hibou-B .pth",
+    )
+    public_fold.add_argument(
+        "--hibou-source-commit",
+        type=_git_commit,
+        default=None,
+        help="optional expected 40-character commit lock for the Hibou checkout",
+    )
+    public_fold.add_argument(
+        "--siglip2-snapshot",
+        type=Path,
+        default=None,
+        help=(
+            "explicit hash-locked local google/siglip2-base-patch16-224 snapshot "
+            "(required for siglip2-base-local)"
+        ),
+    )
+    public_fold.add_argument("--max-dimension", type=_positive_int, default=896)
+    public_fold.add_argument("--tile-size", type=_positive_int, default=224)
+    public_fold.add_argument("--tile-stride", type=_positive_int, default=224)
+    public_fold.add_argument("--batch-size", type=_positive_int, default=8)
+    public_fold.add_argument(
+        "--max-reference-tokens", type=_positive_int, default=4_096
+    )
+    public_fold.add_argument(
+        "--max-probe-tokens-per-class", type=_positive_int, default=8_192
+    )
+    public_fold.add_argument(
+        "--probe-max-iterations",
+        type=_positive_int,
+        default=100,
+        help="explicit L-BFGS iteration ceiling; non-convergence fails the run",
+    )
+    public_fold.add_argument("--neighbors", type=_positive_int, default=3)
+    public_fold.add_argument("--bootstrap-resamples", type=int, default=1_000)
+    public_fold.add_argument(
+        "--limit-slides-per-stratum-per-split", type=_positive_int, default=None
+    )
+    public_fold.add_argument(
+        "--exclude-empty-positive-masks",
+        action="store_true",
+        help=(
+            "retain the two released fold-presence labels but explicitly exclude "
+            "their empty masks from localization evidence"
+        ),
+    )
+    public_fold.add_argument(
+        "--no-asset-hashes",
+        action="store_true",
+        help="skip per-asset SHA-256 hashing for a development smoke only",
+    )
+    public_fold.add_argument(
+        "--skip-dimension-validation",
+        action="store_true",
+        help="skip complete image/mask decode validation for a development smoke only",
+    )
+    public_fold.add_argument("--output-json", type=Path, required=True)
+    public_fold.add_argument(
+        "--json", action="store_true", help="also emit the complete report to stdout"
+    )
+
+    multiplex_proxy = subparsers.add_parser(
+        "multiplex-proxy-benchmark",
+        help=(
+            "run the checksum-locked real COMET/CosMx synthetic-spike proxy; "
+            "this is not real-artifact efficacy"
+        ),
+    )
+    multiplex_proxy.add_argument("--comet-dir", type=Path, required=True)
+    multiplex_proxy.add_argument(
+        "--cosmx-dir",
+        type=Path,
+        nargs="+",
+        required=True,
+        help="one or more locked public CosMx cohort directories",
+    )
+    multiplex_proxy.add_argument(
+        "--mode",
+        choices=("logo-cv", "locked-split"),
+        default="logo-cv",
+        help="leave-one-source-group-out is the stronger default proxy protocol",
+    )
+    multiplex_proxy.add_argument("--max-dimension", type=_positive_int, default=896)
+    multiplex_proxy.add_argument("--seed", type=int, default=29)
+    multiplex_proxy.add_argument(
+        "--group-bootstrap-resamples", type=_positive_int, default=2_000
+    )
+    multiplex_proxy.add_argument("--group-bootstrap-seed", type=int, default=20_260_826)
+    multiplex_proxy.add_argument("--output-json", type=Path, required=True)
+    multiplex_proxy.add_argument(
         "--json", action="store_true", help="also emit the complete report to stdout"
     )
 
@@ -352,13 +694,10 @@ def _run_benchmark_validation(
             f"{report.status}; configuration_valid={report.configuration_valid}; "
             f"scientific_report_eligible={report.report_eligible}"
         )
-        print(
-            f"Eligible methods: {', '.join(report.eligible_method_ids) or 'none'}"
-        )
+        print(f"Eligible methods: {', '.join(report.eligible_method_ids) or 'none'}")
         for issue in report.issues:
             print(
-                f"{issue.severity.upper()} [{issue.code}] "
-                f"{issue.path}: {issue.message}"
+                f"{issue.severity.upper()} [{issue.code}] {issue.path}: {issue.message}"
             )
     if not report.configuration_valid:
         return 2
@@ -461,6 +800,224 @@ def _run_frozen_feature_benchmark(args: argparse.Namespace) -> int:
     return 0 if int(summary["abstained_count"]) == 0 else 3
 
 
+def _run_public_fold_benchmark(args: argparse.Namespace) -> int:
+    from .public_fold_benchmark import (
+        PublicFoldBenchmarkConfig,
+        run_public_fold_benchmark,
+    )
+
+    methods = tuple(args.methods)
+    foundation_methods = {
+        "foundation_patchknn",
+        "foundation_linear_probe",
+        "dinov2_patchknn",
+        "dinov2_linear_probe",
+    }
+    encoder = None
+    model_identity: dict[str, Any] | None = None
+    if set(methods) & foundation_methods:
+        from .foundation import DINOv2FeatureExtractor
+
+        if args.foundation_encoder == "hibou-b-local":
+            legacy_aliases = sorted(
+                method for method in methods if method.startswith("dinov2_")
+            )
+            if legacy_aliases:
+                raise ValueError(
+                    "Hibou-B must use encoder-agnostic foundation_patchknn and/or "
+                    f"foundation_linear_probe, not DINOv2 aliases: {legacy_aliases}"
+                )
+            if args.allow_download:
+                raise ValueError(
+                    "--allow-download is incompatible with the local-only Hibou-B loader"
+                )
+            if args.hibou_weights is None or args.hibou_source is None:
+                raise ValueError(
+                    "hibou-b-local requires both --hibou-weights and --hibou-source"
+                )
+            if args.hibou_weights_sha256 is None or args.hibou_source_commit is None:
+                raise ValueError(
+                    "hibou-b-local requires both --hibou-weights-sha256 and "
+                    "--hibou-source-commit from an approved release"
+                )
+            from .foundation import (
+                HIBOU_B_MEAN,
+                HIBOU_B_STD,
+                load_local_hibou_b,
+            )
+
+            local = load_local_hibou_b(
+                args.hibou_weights,
+                args.hibou_source,
+                expected_weights_sha256=args.hibou_weights_sha256,
+                expected_source_commit=args.hibou_source_commit,
+            )
+            encoder = DINOv2FeatureExtractor(
+                local.model,
+                device=args.device,
+                image_size=224,
+                patch_size=14,
+                prefix_tokens=5,
+                model_input_name=None,
+                normalization_mean=HIBOU_B_MEAN,
+                normalization_std=HIBOU_B_STD,
+            )
+            model_identity = {
+                **dict(local.provenance),
+                "requested_device": args.device,
+                "resolved_device": str(getattr(encoder, "device", args.device)),
+                "output_contract": {
+                    "type": "mapping",
+                    "cls_key": "x_norm_clstoken",
+                    "patch_key": "x_norm_patchtokens",
+                    "prefix_tokens": 5,
+                },
+            }
+        elif args.foundation_encoder == "siglip2-base-local":
+            legacy_aliases = sorted(
+                method for method in methods if method.startswith("dinov2_")
+            )
+            if legacy_aliases:
+                raise ValueError(
+                    "SigLIP2 Base must use encoder-agnostic foundation_patchknn "
+                    "and/or foundation_linear_probe, not DINOv2 aliases: "
+                    f"{legacy_aliases}"
+                )
+            if args.allow_download:
+                raise ValueError(
+                    "--allow-download is incompatible with the local-only "
+                    "SigLIP2 Base loader"
+                )
+            if args.siglip2_snapshot is None:
+                raise ValueError("siglip2-base-local requires --siglip2-snapshot")
+            from .foundation import (
+                SIGLIP2_BASE_MEAN,
+                SIGLIP2_BASE_STD,
+                load_local_siglip2_base_vision,
+            )
+
+            local = load_local_siglip2_base_vision(args.siglip2_snapshot)
+            encoder = DINOv2FeatureExtractor(
+                local.model,
+                device=args.device,
+                image_size=224,
+                patch_size=16,
+                prefix_tokens=0,
+                model_input_name="pixel_values",
+                global_embedding_name="pooler_output",
+                normalization_mean=SIGLIP2_BASE_MEAN,
+                normalization_std=SIGLIP2_BASE_STD,
+                preprocessor=local.preprocessor,
+            )
+            model_identity = {
+                **dict(local.provenance),
+                "requested_device": args.device,
+                "resolved_device": str(getattr(encoder, "device", args.device)),
+                "output_contract": {
+                    "type": "object",
+                    "global_key": "pooler_output",
+                    "patch_key": "last_hidden_state",
+                    "prefix_tokens": 0,
+                },
+            }
+        else:
+            from .foundation_smoke import (
+                FoundationSmokeConfig,
+                dinov2_model_geometry,
+                load_huggingface_model,
+            )
+
+            model_config = FoundationSmokeConfig(
+                revision=args.revision,
+                model_id=args.model_id,
+                cache_dir=args.cache_dir,
+                device=args.device,
+                allow_download=args.allow_download,
+                image_size=224,
+                steady_runs=1,
+            )
+            loaded = load_huggingface_model(model_config)
+            patch_size, prefix_tokens = dinov2_model_geometry(loaded.model, 224)
+            encoder = DINOv2FeatureExtractor(
+                loaded.model,
+                device=args.device,
+                image_size=224,
+                patch_size=patch_size,
+                prefix_tokens=prefix_tokens,
+                model_input_name="pixel_values",
+            )
+            model_identity = {
+                "id": args.model_id,
+                "requested_revision": args.revision,
+                "resolved_revision": loaded.resolved_revision,
+                "weight_files": [item.as_dict() for item in loaded.weight_digests],
+                "configuration_files": [
+                    item.as_dict() for item in loaded.configuration_digests
+                ],
+                "requested_device": args.device,
+                "resolved_device": str(getattr(encoder, "device", args.device)),
+                "trust_remote_code": False,
+                "token_used": False,
+                "network_access_allowed": bool(args.allow_download),
+                "input": {
+                    "normalization": "ImageNet",
+                    "image_size": [224, 224],
+                    "patch_size": list(patch_size),
+                    "prefix_tokens": prefix_tokens,
+                },
+            }
+
+    config = PublicFoldBenchmarkConfig(
+        methods=methods,
+        max_dimension=args.max_dimension,
+        tile_size=args.tile_size,
+        tile_stride=args.tile_stride,
+        encoder_batch_size=args.batch_size,
+        max_reference_tokens=args.max_reference_tokens,
+        max_probe_tokens_per_class=args.max_probe_tokens_per_class,
+        probe_max_iterations=args.probe_max_iterations,
+        patchknn_neighbors=args.neighbors,
+        bootstrap_resamples=args.bootstrap_resamples,
+        limit_slides_per_stratum_per_split=(args.limit_slides_per_stratum_per_split),
+        empty_positive_mask_policy=(
+            "exclude_localization" if args.exclude_empty_positive_masks else "error"
+        ),
+        hash_assets=not args.no_asset_hashes,
+        validate_asset_dimensions=not args.skip_dimension_validation,
+        strict_public_v1=not (args.no_asset_hashes or args.skip_dimension_validation),
+    )
+    run_provenance = _public_fold_run_provenance(config, model_identity)
+    report = run_public_fold_benchmark(
+        args.dataset_root,
+        encoder=encoder,
+        config=config,
+        run_provenance=run_provenance,
+    )
+    if model_identity is not None:
+        report["model_identity"] = model_identity
+    rendered = json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    args.output_json.parent.mkdir(parents=True, exist_ok=True)
+    args.output_json.write_text(rendered, encoding="utf-8")
+    if args.json:
+        print(rendered, end="")
+    else:
+        scores = ", ".join(
+            (
+                f"{method} all-field-micro-Dice="
+                f"{value['locked_test']['pixel_all_fields_micro']['dice']:.3f}"
+            )
+            for method, value in report["methods"].items()
+        )
+        evidence_status = (
+            "report-eligible" if report["report_eligible"] else "nonreportable"
+        )
+        print(
+            f"Public real H&E fold benchmark complete ({evidence_status}): {scores}; "
+            f"report={args.output_json}"
+        )
+    return 0
+
+
 def _run_operational_evaluation(
     records_path: Path,
     acceptance_path: Path,
@@ -491,6 +1048,43 @@ def _run_operational_evaluation(
     return 3 if report.get("overall_status") in {"FAIL", "INSUFFICIENT_EVIDENCE"} else 0
 
 
+def _run_multiplex_proxy_benchmark(args: argparse.Namespace) -> int:
+    from .multiplex_proxy_benchmark import (
+        MultiplexProxyConfig,
+        load_public_multiplex_fields,
+        run_multiplex_proxy_benchmark,
+        run_multiplex_proxy_cross_validation,
+        write_multiplex_proxy_report,
+    )
+
+    fields = load_public_multiplex_fields(
+        comet_dir=args.comet_dir,
+        cosmx_dir=tuple(args.cosmx_dir),
+        max_dimension=args.max_dimension,
+    )
+    config = MultiplexProxyConfig(
+        seed=args.seed,
+        group_bootstrap_resamples=args.group_bootstrap_resamples,
+        group_bootstrap_seed=args.group_bootstrap_seed,
+    )
+    report = (
+        run_multiplex_proxy_cross_validation(fields, config)
+        if args.mode == "logo-cv"
+        else run_multiplex_proxy_benchmark(fields, config)
+    )
+    destination = write_multiplex_proxy_report(report, args.output_json)
+    if args.json:
+        print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+    else:
+        modalities = sorted({field.modality for field in fields})
+        print(
+            "Real-background multiplex proxy complete: "
+            f"mode={args.mode}; fields={len(fields)}; modalities={','.join(modalities)}; "
+            f"report={destination}; efficacy_claim=false"
+        )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     if args.command == "datasets":
@@ -517,6 +1111,10 @@ def main(argv: list[str] | None = None) -> int:
         return _run_foundation_smoke(args)
     if args.command == "frozen-feature-benchmark":
         return _run_frozen_feature_benchmark(args)
+    if args.command == "public-fold-benchmark":
+        return _run_public_fold_benchmark(args)
+    if args.command == "multiplex-proxy-benchmark":
+        return _run_multiplex_proxy_benchmark(args)
     if args.command == "operational-eval":
         return _run_operational_evaluation(
             args.records,

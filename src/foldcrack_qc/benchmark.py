@@ -15,15 +15,20 @@ import math
 import platform
 import sys
 import time
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 import cv2
 import numpy as np
 
-from .detectors import HybridQCDetector, classical_candidate_masks
+from .detectors import (
+    HybridQCDetector,
+    classical_candidate_masks,
+    tile_scores_to_map,
+)
 from .evaluation import (
     aggregate_results,
     bootstrap_ci_by_cluster,
@@ -43,15 +48,18 @@ class BenchmarkConfig:
     output_dir: Path = Path("artifacts/feasibility")
     samples_per_modality: int = 12
     clean_samples_per_modality: int = 6
+    calibration_samples_per_modality: int = 6
     image_size: tuple[int, int] = (384, 384)
     seed: int = 17
-    patch_size: int = 64
+    patch_size: int = 32
     overlays_per_modality: int = 2
     bootstrap_resamples: int = 400
     min_component_area_um2: float = 4.0
     crack_neighborhood_radius_um: float = 2.0
     fold_morphology_radius_um: float = 0.5
     evaluation_min_instance_area_um2: float = 2.0
+    max_held_out_clean_fpr: float = 0.05
+    min_positive_anomaly_auprc: float = 0.01
 
     def __post_init__(self) -> None:
         if self.samples_per_modality < len(SYNTHETIC_SCENARIOS):
@@ -59,7 +67,10 @@ class BenchmarkConfig:
                 "samples_per_modality must be at least "
                 f"{len(SYNTHETIC_SCENARIOS)} so every synthetic scenario is covered"
             )
-        if self.clean_samples_per_modality <= 0:
+        if (
+            self.clean_samples_per_modality <= 0
+            or self.calibration_samples_per_modality <= 0
+        ):
             raise ValueError("sample counts must be positive")
         if min(self.image_size) < 128:
             raise ValueError("image_size must be at least 128x128")
@@ -75,6 +86,10 @@ class BenchmarkConfig:
             raise ValueError(
                 "physical detector/evaluation geometry must be finite and positive"
             )
+        if not 0.0 <= self.max_held_out_clean_fpr < 1.0:
+            raise ValueError("max_held_out_clean_fpr must lie in [0, 1)")
+        if not 0.0 <= self.min_positive_anomaly_auprc <= 1.0:
+            raise ValueError("min_positive_anomaly_auprc must lie in [0, 1]")
 
 
 @dataclass(frozen=True)
@@ -103,7 +118,7 @@ EXPECTED_OUTPUT_GROUPS: tuple[tuple[str, str, str], ...] = (
     ("hybrid", "artifact", "minimal_structural"),
 )
 
-ANOMALY_DECISION_THRESHOLD = 0.75
+ANOMALY_DECISION_THRESHOLD = 0.5
 
 
 class StructuralViewError(ValueError):
@@ -368,6 +383,163 @@ def _reference_matrix(
     return np.vstack(tables)
 
 
+def _calibration_maps(
+    detector: HybridQCDetector,
+    modality: str,
+    view_name: str,
+    *,
+    count: int,
+    seed: int,
+    size: tuple[int, int],
+    patch_size: int,
+    min_component_area_um2: float,
+    crack_neighborhood_radius_um: float,
+    fold_morphology_radius_um: float,
+) -> tuple[list[np.ndarray], list[np.ndarray], list[str]]:
+    """Create independent clean maps in the exact inference score domain."""
+
+    raw_maps: list[np.ndarray] = []
+    supports: list[np.ndarray] = []
+    group_ids: list[str] = []
+    stride = max(16, patch_size // 2)
+    for index in range(count):
+        sample = generate_synthetic_sample(
+            modality,
+            seed=seed + index,
+            size=size,
+            include_fold=False,
+            include_crack=False,
+            include_hard_negatives=True,
+        )
+        image = _view(sample, view_name)
+        candidates = classical_candidate_masks(
+            image,
+            modality=modality,
+            pixel_size_um=sample.image.pixel_size_um,
+            min_component_area_um2=min_component_area_um2,
+            crack_neighborhood_radius_um=crack_neighborhood_radius_um,
+            fold_morphology_radius_um=fold_morphology_radius_um,
+        )
+        table = extract_patch_feature_table(
+            image,
+            modality=modality,
+            patch_size=patch_size,
+            stride=stride,
+            tissue=candidates.tissue,
+        )
+        if not len(table):
+            raise RuntimeError(
+                f"No calibration features for {modality}/{view_name}/sample-{index}"
+            )
+        raw_patch_scores = detector.anomaly_detector.score_samples(table)
+        raw_map, coverage = tile_scores_to_map(
+            raw_patch_scores,
+            table.coordinates,
+            table.image_shape,
+            reduction="mean",
+            return_coverage=True,
+        )
+        raw_maps.append(raw_map)
+        supports.append(np.asarray(candidates.review_support, dtype=bool) & coverage)
+        group_ids.append(f"synthetic-calibration-{modality}-{view_name}-{seed + index}")
+    return raw_maps, supports, group_ids
+
+
+def _binary_average_precision(target: np.ndarray, score: np.ndarray) -> float:
+    """Compute deterministic pixel AP without adding a benchmark dependency."""
+
+    labels = np.asarray(target, dtype=bool).reshape(-1)
+    scores = np.asarray(score, dtype=np.float64).reshape(-1)
+    if labels.shape != scores.shape or np.any(~np.isfinite(scores)):
+        raise ValueError("Average-precision inputs must be aligned and finite")
+    n_positive = int(labels.sum())
+    if n_positive == 0:
+        return 0.0
+    order = np.argsort(-scores, kind="mergesort")
+    sorted_labels = labels[order]
+    sorted_scores = scores[order]
+    true_positives = np.cumsum(sorted_labels)
+    # Evaluate only at the end of each equal-score block so AP is invariant to
+    # arbitrary pixel ordering within tied, piecewise-constant patch maps.
+    threshold_indices = np.concatenate(
+        (np.flatnonzero(np.diff(sorted_scores)), [sorted_scores.size - 1])
+    )
+    true_positives_at_threshold = true_positives[threshold_indices]
+    precision = true_positives_at_threshold / (threshold_indices + 1)
+    recall = true_positives_at_threshold / n_positive
+    recall_increments = np.diff(np.concatenate(([0.0], recall)))
+    return float(np.sum(recall_increments * precision))
+
+
+def _anomaly_regression_diagnostics(
+    records: Sequence[Mapping[str, Any]],
+    *,
+    max_clean_fpr: float,
+    min_positive_auprc: float,
+) -> dict[str, Any]:
+    """Summarize locked-threshold FPR and ranking on held-out phantoms."""
+
+    grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for record in records:
+        grouped.setdefault((str(record["modality"]), str(record["view"])), []).append(
+            record
+        )
+    groups: dict[str, Any] = {}
+    for (modality, view_name), items in sorted(grouped.items()):
+        clean_items = [item for item in items if item["scenario"] == "clean"]
+        positive_items = [
+            item
+            for item in items
+            if item["scenario"] in {"fold_only", "crack_only", "both"}
+        ]
+        clean_predictions = np.concatenate(
+            [np.asarray(item["prediction"], dtype=bool) for item in clean_items]
+        )
+        positive_targets = np.concatenate(
+            [np.asarray(item["target"], dtype=bool) for item in positive_items]
+        )
+        positive_scores = np.concatenate(
+            [np.asarray(item["score"], dtype=np.float64) for item in positive_items]
+        )
+        positive_predictions = np.concatenate(
+            [np.asarray(item["prediction"], dtype=bool) for item in positive_items]
+        )
+        clean_fpr = float(np.mean(clean_predictions))
+        auprc = _binary_average_precision(positive_targets, positive_scores)
+        positive_count = int(positive_targets.sum())
+        positive_prevalence = float(np.mean(positive_targets))
+        ranking_floor = max(min_positive_auprc, positive_prevalence)
+        sensitivity = float(
+            np.count_nonzero(positive_predictions & positive_targets)
+            / max(1, positive_count)
+        )
+        groups[f"{modality}/{view_name}"] = {
+            "held_out_clean_fpr": clean_fpr,
+            "max_held_out_clean_fpr": max_clean_fpr,
+            "positive_pixel_auprc": auprc,
+            "positive_pixel_prevalence": positive_prevalence,
+            "min_positive_pixel_auprc": min_positive_auprc,
+            "effective_positive_ranking_floor": ranking_floor,
+            "positive_pixel_sensitivity_at_locked_threshold": sensitivity,
+            "n_positive_pixels": positive_count,
+            "clean_fpr_passed": clean_fpr <= max_clean_fpr,
+            "positive_ranking_passed": auprc > ranking_floor,
+        }
+    return {
+        "definition": (
+            "Synthetic regression guard only: held-out clean pixel FPR is bounded and "
+            "artifact-positive pixel AP exceeds both its configured floor and the "
+            "positive-pixel prevalence (random-ranking baseline) for every modality/view."
+        ),
+        "groups": groups,
+        "held_out_clean_fpr_passed": bool(groups)
+        and all(item["clean_fpr_passed"] for item in groups.values()),
+        "positive_ranking_passed": bool(groups)
+        and all(item["positive_ranking_passed"] for item in groups.values()),
+        "scientific_validation": False,
+    }
+
+
 def _evaluate(
     sample: QCSample,
     *,
@@ -383,6 +555,7 @@ def _evaluate(
     decision_threshold: float | None,
     runtime_scope: str,
     min_instance_area_um2: float,
+    threshold_provenance: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     if target_name == "artifact":
         target = sample.reference_artifact_mask
@@ -401,9 +574,7 @@ def _evaluate(
     valid_scores = scores[valid]
     spacing = sample.image.pixel_size_um
     pixel_area_um2 = float(spacing[0] * spacing[1])
-    min_instance_area_pixels = max(
-        1, int(math.ceil(min_instance_area_um2 / pixel_area_um2))
-    )
+    min_instance_area_pixels = max(1, math.ceil(min_instance_area_um2 / pixel_area_um2))
     recorded_threshold = 0.5 if decision_threshold is None else decision_threshold
     result = evaluate_sample(
         target,
@@ -445,6 +616,11 @@ def _evaluate(
                 "predicted_fraction": float(np.mean(prediction_array[valid])),
             },
             "data_kind": "synthetic_engineering_smoke_test",
+            "threshold_provenance": (
+                None
+                if threshold_provenance is None
+                else _json_safe(dict(threshold_provenance))
+            ),
         },
     )
     return result
@@ -640,8 +816,10 @@ def _grouped_evaluation_markdown(report: Mapping[str, Any]) -> str:
         key = group["group"]
         bootstrap = group["report"]["bootstrap"]
 
-        def interval(metric: str) -> str:
-            values = bootstrap[metric]
+        def interval(
+            metric: str, values_by_metric: Mapping[str, Any] = bootstrap
+        ) -> str:
+            values = values_by_metric[metric]
             return (
                 f"{_format_value(values['estimate'])} "
                 f"[{_format_value(values['lower'])}, {_format_value(values['upper'])}]"
@@ -686,6 +864,8 @@ def _feasibility_markdown(
     result_count: int,
     unique_image_count: int,
     engineering_checks: Mapping[str, bool],
+    anomaly_regression: Mapping[str, Any],
+    anomaly_threshold_provenance: Mapping[str, Mapping[str, Any]],
 ) -> str:
     lines = [
         "# Fold/Crack QC Feasibility Report",
@@ -714,6 +894,29 @@ def _feasibility_markdown(
         f"- {'PASS' if passed else 'FAIL'} — `{name}`"
         for name, passed in engineering_checks.items()
     )
+    lines.extend(
+        [
+            "",
+            "## Clean-reference anomaly calibration diagnostics",
+            "",
+            "The raw cutoff is selected once on disjoint clean calibration images in",
+            "the final mean-overlap-stitched pixel domain. The normalized locked cutoff",
+            "is exactly 0.5; no second post-stitch threshold is applied.",
+            "",
+            "| Modality/view | Raw locked cutoff | Quantile | Held-out clean FPR | Pixel prevalence | Positive pixel AP | Sensitivity at locked cutoff |",
+            "|---|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for group_name, diagnostics in anomaly_regression["groups"].items():
+        provenance = anomaly_threshold_provenance[group_name]
+        lines.append(
+            f"| {group_name} | {_format_value(provenance['raw_score_threshold'])} "
+            f"| {_format_value(provenance['calibration_quantile'])} "
+            f"| {_format_value(diagnostics['held_out_clean_fpr'])} "
+            f"| {_format_value(diagnostics['positive_pixel_prevalence'])} "
+            f"| {_format_value(diagnostics['positive_pixel_auprc'])} "
+            f"| {_format_value(diagnostics['positive_pixel_sensitivity_at_locked_threshold'])} |"
+        )
     lines.extend(
         [
             "",
@@ -746,7 +949,11 @@ def _feasibility_markdown(
             "- **Classical branch:** supplies interpretable fold/crack proposals and a",
             "  corporate-safe baseline, but must be tuned on internal development data.",
             "- **Clean-reference anomaly branch:** demonstrates label-light training, but",
-            "  anomaly is not a semantic fold/crack label and will flag rare normal anatomy.",
+            "  ranks novelty rather than semantic artifact identity. Its one decision threshold",
+            "  is fitted on independent clean images after overlap stitching, locked, and",
+            "  regression-checked for held-out clean FPR and positive pixel AP.",
+            "- **Crack-scale context:** the default 32 px patch is 16 um at the phantom's",
+            "  0.5 um/px spacing, replacing the prior 64 px context that diluted thin cracks.",
             "- **Hybrid branch:** is the recommended phase-1 architecture because it combines",
             "  physical cues with novelty while retaining an abstention/review pathway.",
             "- **Minimal-channel comparison:** is an engineering channel ablation, not channel",
@@ -915,10 +1122,15 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
         "config": {
             "samples_per_modality": config.samples_per_modality,
             "clean_samples_per_modality": config.clean_samples_per_modality,
+            "calibration_samples_per_modality": config.calibration_samples_per_modality,
             "image_size": list(config.image_size),
             "seed": config.seed,
             "patch_size": config.patch_size,
             "bootstrap_resamples": config.bootstrap_resamples,
+            "anomaly_regression_gates": {
+                "max_held_out_clean_fpr": config.max_held_out_clean_fpr,
+                "min_positive_anomaly_auprc": config.min_positive_anomaly_auprc,
+            },
             "scenarios": [scenario.name for scenario in SYNTHETIC_SCENARIOS],
             "physical_geometry": {
                 "min_component_area_um2": config.min_component_area_um2,
@@ -939,6 +1151,8 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
 
     started = time.perf_counter()
     results: list[dict[str, Any]] = []
+    anomaly_diagnostic_records: list[dict[str, Any]] = []
+    anomaly_threshold_provenance: dict[str, dict[str, Any]] = {}
     target_branch_checks: list[bool] = []
     overlay_paths: list[Path] = []
     modalities = (Modality.HE.value, Modality.COMET.value, Modality.COSMX.value)
@@ -946,15 +1160,42 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
     for modality_index, modality in enumerate(modalities):
         detectors: dict[str, HybridQCDetector] = {}
         for view_name in ("full_structural", "minimal_structural"):
+            fit_seed = config.seed + 10_000 * (modality_index + 1)
+            calibration_seed = config.seed + 1_000_000 + 10_000 * (modality_index + 1)
+            fit_group_id = f"synthetic-fit-{modality}-{view_name}-{fit_seed}"
             reference = _reference_matrix(
                 modality,
                 view_name,
                 count=config.clean_samples_per_modality,
-                seed=config.seed + 10_000 * (modality_index + 1),
+                seed=fit_seed,
                 size=config.image_size,
                 patch_size=config.patch_size,
             )
-            detectors[view_name] = HybridQCDetector().fit(reference)
+            detector = HybridQCDetector().fit(
+                reference,
+                reference_group_id=fit_group_id,
+            )
+            raw_maps, calibration_supports, calibration_group_ids = _calibration_maps(
+                detector,
+                modality,
+                view_name,
+                count=config.calibration_samples_per_modality,
+                seed=calibration_seed,
+                size=config.image_size,
+                patch_size=config.patch_size,
+                min_component_area_um2=config.min_component_area_um2,
+                crack_neighborhood_radius_um=config.crack_neighborhood_radius_um,
+                fold_morphology_radius_um=config.fold_morphology_radius_um,
+            )
+            detector.anomaly_detector.calibrate_stitched_maps(
+                raw_maps,
+                support_masks=calibration_supports,
+                calibration_group_ids=calibration_group_ids,
+            )
+            detectors[view_name] = detector
+            anomaly_threshold_provenance[f"{modality}/{view_name}"] = (
+                detector.anomaly_detector.locked_threshold_provenance
+            )
 
         for sample_index in range(config.samples_per_modality):
             sample, scenario, pair_id = _scenario_sample(
@@ -1099,6 +1340,20 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
                     )
                 )
                 anomaly_prediction = hybrid.anomaly_score >= anomaly_threshold
+                diagnostic_valid = _analysis_region(sample)
+                anomaly_diagnostic_records.append(
+                    {
+                        "modality": modality,
+                        "view": view_name,
+                        "scenario": scenario.name,
+                        "target": sample.reference_artifact_mask[diagnostic_valid],
+                        "score": hybrid.anomaly_score[diagnostic_valid],
+                        "prediction": anomaly_prediction[diagnostic_valid],
+                    }
+                )
+                threshold_provenance = (
+                    detector.anomaly_detector.locked_threshold_provenance
+                )
                 results.append(
                     _evaluate(
                         sample,
@@ -1112,7 +1367,8 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
                         pair_id=pair_id,
                         decision_rule=(
                             f"calibrated clean-reference anomaly score >= {anomaly_threshold:g}; "
-                            "0.5 represents the fitted upper clean-reference quantile"
+                            "0.5 exactly represents one locked threshold estimated on "
+                            "independent clean images after overlap stitching"
                         ),
                         decision_threshold=anomaly_threshold,
                         runtime_scope=(
@@ -1120,6 +1376,7 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
                             "anomaly-only and hybrid evaluation rows"
                         ),
                         min_instance_area_um2=config.evaluation_min_instance_area_um2,
+                        threshold_provenance=threshold_provenance,
                     )
                 )
                 hybrid_threshold = float(detector.decision_threshold)
@@ -1149,6 +1406,7 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
                             "anomaly-only and hybrid evaluation rows"
                         ),
                         min_instance_area_um2=config.evaluation_min_instance_area_um2,
+                        threshold_provenance=threshold_provenance,
                     )
                 )
                 if view_name == "full_structural":
@@ -1212,6 +1470,21 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
     expected_results = expected_images * len(EXPECTED_OUTPUT_GROUPS)
     unique_images = {str(result["sample_id"]) for result in results}
     metamorphic = _metamorphic_diagnostics(results)
+    anomaly_regression = _anomaly_regression_diagnostics(
+        anomaly_diagnostic_records,
+        max_clean_fpr=config.max_held_out_clean_fpr,
+        min_positive_auprc=config.min_positive_anomaly_auprc,
+    )
+    calibration_records_valid = bool(anomaly_threshold_provenance) and all(
+        record.get("locked") is True
+        and record.get("score_domain")
+        == "raw_mahalanobis_after_mean_overlap_stitching_valid_pixels"
+        and record.get("fit_calibration_exact_overlap") is False
+        and float(record.get("normalized_decision_threshold", -1.0)) == 0.5
+        and record.get("fit_reference_group_id")
+        not in set(record.get("calibration_group_ids", []))
+        for record in anomaly_threshold_provenance.values()
+    )
 
     expected_overlay_count = len(modalities) * min(
         config.overlays_per_modality, len(SYNTHETIC_SCENARIOS)
@@ -1244,6 +1517,13 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
         "nondegenerate_generated_target_branches": bool(target_branch_checks)
         and all(target_branch_checks),
         "paired_artifact_vs_clean_score_invariant": bool(metamorphic["passed"]),
+        "independent_stitched_domain_thresholds_locked": calibration_records_valid,
+        "held_out_clean_anomaly_fpr_bounded": bool(
+            anomaly_regression["held_out_clean_fpr_passed"]
+        ),
+        "positive_anomaly_ranking_nondegenerate": bool(
+            anomaly_regression["positive_ranking_passed"]
+        ),
         "decodable_fresh_overlays": overlays_decodable,
         "grouped_report_cardinality": (
             evaluation_report["unique_image_count"] == expected_images
@@ -1273,6 +1553,8 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
             result_count=len(results),
             unique_image_count=len(unique_images),
             engineering_checks=engineering_checks,
+            anomaly_regression=anomaly_regression,
+            anomaly_threshold_provenance=anomaly_threshold_provenance,
         ),
         encoding="utf-8",
     )
@@ -1288,6 +1570,8 @@ def run_feasibility(config: BenchmarkConfig) -> dict[str, Any]:
             "output_group_count": len(actual_group_keys),
             "engineering_checks": engineering_checks,
             "metamorphic_diagnostics": metamorphic,
+            "anomaly_threshold_provenance": anomaly_threshold_provenance,
+            "anomaly_regression_diagnostics": anomaly_regression,
             "runtime_measurement": (
                 "Wall-clock inference-call times. Alternative target/output rows that share a "
                 "call repeat its timing and must not be summed."

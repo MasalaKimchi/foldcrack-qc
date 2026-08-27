@@ -9,11 +9,10 @@ from pathlib import Path
 
 import numpy as np
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from foldcrack_qc.evaluation import (  # noqa: E402
+from foldcrack_qc.evaluation import (
     aggregate_by_slide,
     aggregate_results,
     bootstrap_ci_by_cluster,

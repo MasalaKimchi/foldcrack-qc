@@ -11,6 +11,7 @@ import numpy as np
 from foldcrack_qc.benchmark import (
     BenchmarkConfig,
     StructuralViewError,
+    _binary_average_precision,
     _view,
     run_feasibility,
 )
@@ -96,6 +97,18 @@ class SemanticStructuralViewTests(unittest.TestCase):
 
 
 class FeasibilityBenchmarkTests(unittest.TestCase):
+    def test_pixel_average_precision_is_tie_invariant(self) -> None:
+        labels = np.asarray([True, False, True, False])
+        scores = np.asarray([0.9, 0.8, 0.7, 0.6])
+        self.assertAlmostEqual(_binary_average_precision(labels, scores), 5.0 / 6.0)
+        self.assertAlmostEqual(
+            _binary_average_precision(
+                np.asarray([True, False]),
+                np.asarray([0.5, 0.5]),
+            ),
+            0.5,
+        )
+
     def test_end_to_end_benchmark_has_factorial_and_validation_boundaries(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "feasibility"
@@ -108,6 +121,10 @@ class FeasibilityBenchmarkTests(unittest.TestCase):
                     patch_size=32,
                     overlays_per_modality=2,
                     bootstrap_resamples=12,
+                    # One fit image is intentionally tiny for test speed; keep
+                    # the production/default gate at 5% and allow this unit
+                    # fixture's higher finite-sample variation explicitly.
+                    max_held_out_clean_fpr=0.20,
                     seed=101,
                 )
             )
@@ -124,6 +141,31 @@ class FeasibilityBenchmarkTests(unittest.TestCase):
             self.assertFalse(manifest["scientific_validation_passed"])
             self.assertIn("Synthetic", manifest["scientific_validation_reason"])
             self.assertTrue(manifest["metamorphic_diagnostics"]["passed"])
+            self.assertEqual(manifest["config"]["patch_size"], 32)
+            provenance = manifest["anomaly_threshold_provenance"]
+            self.assertEqual(len(provenance), 6)
+            for record in provenance.values():
+                self.assertTrue(record["locked"])
+                self.assertFalse(record["fit_calibration_exact_overlap"])
+                self.assertEqual(record["normalized_decision_threshold"], 0.5)
+                self.assertEqual(
+                    record["score_domain"],
+                    "raw_mahalanobis_after_mean_overlap_stitching_valid_pixels",
+                )
+                self.assertNotIn(
+                    record["fit_reference_group_id"],
+                    record["calibration_group_ids"],
+                )
+            anomaly_regression = manifest["anomaly_regression_diagnostics"]
+            self.assertTrue(anomaly_regression["held_out_clean_fpr_passed"])
+            self.assertTrue(anomaly_regression["positive_ranking_passed"])
+            self.assertEqual(len(anomaly_regression["groups"]), 6)
+            self.assertTrue(
+                all(
+                    group["positive_pixel_auprc"] > group["positive_pixel_prevalence"]
+                    for group in anomaly_regression["groups"].values()
+                )
+            )
 
             report = json.loads((output / "evaluation_report.json").read_text())
             self.assertEqual(report["unique_image_count"], 15)
@@ -157,6 +199,12 @@ class FeasibilityBenchmarkTests(unittest.TestCase):
             )
             self.assertTrue(all(row["decision_rule"] for row in rows))
             self.assertTrue(all(row["runtime_semantics"] for row in rows))
+            anomaly_rows = [
+                row for row in rows if row["method"] == "clean_reference_anomaly"
+            ]
+            self.assertEqual(
+                {row["decision_threshold"] for row in anomaly_rows}, {"0.5"}
+            )
 
             with (output / "per_sample_results.csv").open(
                 newline="", encoding="utf-8"
@@ -184,6 +232,16 @@ class FeasibilityBenchmarkTests(unittest.TestCase):
             self.assertIn(
                 "What is still required for a performance claim", feasibility_text
             )
+            self.assertIn(
+                "Clean-reference anomaly calibration diagnostics", feasibility_text
+            )
+            self.assertIn("no second post-stitch threshold", feasibility_text)
+
+    def test_default_patch_context_preserves_thin_crack_resolution(self) -> None:
+        config = BenchmarkConfig()
+        self.assertEqual(config.patch_size, 32)
+        self.assertEqual(config.patch_size * 0.5, 16.0)
+        self.assertEqual(config.max_held_out_clean_fpr, 0.05)
 
     def test_requires_every_factorial_scenario(self) -> None:
         with self.assertRaisesRegex(ValueError, "every synthetic scenario"):

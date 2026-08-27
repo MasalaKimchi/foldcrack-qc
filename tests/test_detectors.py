@@ -247,9 +247,17 @@ class CleanReferenceTests(unittest.TestCase):
     def test_robust_mahalanobis_separates_shifted_features(self) -> None:
         rng = np.random.default_rng(7)
         clean = rng.normal(0.0, 1.0, (300, 6))
+        calibration = rng.normal(0.0, 1.0, (100, 6))
         nominal = rng.normal(0.0, 1.0, (40, 6))
         anomalous = rng.normal(5.0, 1.0, (40, 6))
-        detector = CleanReferenceAnomalyDetector(threshold_quantile=0.99).fit(clean)
+        detector = CleanReferenceAnomalyDetector(calibration_quantile=0.99).fit(
+            clean,
+            reference_group_id="fit-patients",
+        )
+        detector.calibrate_stitched_maps(
+            [detector.score_samples(calibration).reshape(10, 10)],
+            calibration_group_ids=["calibration-patients"],
+        )
 
         nominal_scores = detector.score_samples(nominal)
         anomalous_scores = detector.score_samples(anomalous)
@@ -261,6 +269,61 @@ class CleanReferenceTests(unittest.TestCase):
         self.assertTrue(np.all(detector.calibrated_scores(anomalous) >= 0.0))
         self.assertTrue(np.all(detector.calibrated_scores(anomalous) <= 1.0))
 
+    def test_threshold_is_independent_stitched_domain_and_locked(self) -> None:
+        rng = np.random.default_rng(31)
+        fit = rng.normal(size=(80, 4))
+        detector = CleanReferenceAnomalyDetector(calibration_quantile=0.75).fit(
+            fit,
+            reference_group_id="fit-group",
+        )
+        with self.assertRaisesRegex(RuntimeError, "independent stitched clean maps"):
+            detector.calibrated_scores(fit[:2])
+
+        stitched_map = np.asarray([[1.0, 3.0], [5.0, 100.0]])
+        support = np.asarray([[True, True], [True, False]])
+        detector.calibrate_stitched_maps(
+            [stitched_map],
+            support_masks=[support],
+            calibration_group_ids=["calibration-group"],
+        )
+        self.assertAlmostEqual(detector.threshold_, 4.0)
+        self.assertAlmostEqual(float(detector.normalize_raw_scores([4.0])[0]), 0.5)
+        provenance = detector.locked_threshold_provenance
+        self.assertTrue(provenance["locked"])
+        self.assertEqual(
+            provenance["score_domain"],
+            "raw_mahalanobis_after_mean_overlap_stitching_valid_pixels",
+        )
+        self.assertFalse(provenance["fit_calibration_exact_overlap"])
+        provenance["calibration_group_ids"].append("mutation-attempt")
+        self.assertNotIn(
+            "mutation-attempt",
+            detector.locked_threshold_provenance["calibration_group_ids"],
+        )
+        with self.assertRaisesRegex(RuntimeError, "already locked"):
+            detector.calibrate_stitched_maps(
+                [stitched_map],
+                calibration_group_ids=["different-calibration-group"],
+            )
+
+    def test_fit_and_calibration_groups_cannot_overlap(self) -> None:
+        rng = np.random.default_rng(4)
+        unspecified = CleanReferenceAnomalyDetector().fit(rng.normal(size=(30, 3)))
+        with self.assertRaisesRegex(ValueError, "explicit fit reference_group_id"):
+            unspecified.calibrate_stitched_maps(
+                [np.ones((4, 4))],
+                calibration_group_ids=["calibration-group"],
+            )
+        detector = CleanReferenceAnomalyDetector().fit(
+            rng.normal(size=(30, 3)),
+            reference_group_id="same-group",
+        )
+        with self.assertRaisesRegex(ValueError, "must be disjoint"):
+            detector.calibrate_stitched_maps(
+                [np.ones((4, 4))],
+                calibration_group_ids=["same-group"],
+            )
+
     def test_constant_and_missing_clean_features_are_stable(self) -> None:
         clean = np.column_stack((np.ones(20), np.linspace(0.0, 1.0, 20)))
         clean[3, 1] = np.nan
@@ -271,11 +334,20 @@ class CleanReferenceTests(unittest.TestCase):
 
     def test_score_map_projection_and_fusion(self) -> None:
         coordinates = np.asarray([[0, 0, 4, 4], [2, 2, 6, 6]])
-        score_map = tile_scores_to_map([0.2, 0.8], coordinates, (6, 6))
+        score_map, coverage = tile_scores_to_map(
+            [0.2, 0.8],
+            coordinates,
+            (7, 7),
+            return_coverage=True,
+        )
         self.assertAlmostEqual(float(score_map[0, 0]), 0.2)
         self.assertAlmostEqual(float(score_map[3, 3]), 0.5)
         self.assertAlmostEqual(float(score_map[5, 5]), 0.8)
+        self.assertTrue(coverage[0, 0])
+        self.assertFalse(coverage[6, 6])
+        self.assertEqual(float(score_map[6, 6]), 0.0)
 
+        score_map = score_map[:6, :6]
         support = np.ones((6, 6), dtype=bool)
         support[0, 0] = False
         fused = fuse_score_maps(
@@ -294,10 +366,29 @@ class CleanReferenceTests(unittest.TestCase):
             for seed in range(6)
         ]
         reference = np.vstack([table.values for table in clean_tables])
-        detector = HybridQCDetector().fit(reference)
+        detector = HybridQCDetector().fit(
+            reference,
+            reference_group_id="fit-clean-images",
+        )
+        calibration_table = extract_patch_feature_table(
+            synthetic_he(include_artifacts=False, seed=999),
+            patch_size=32,
+            stride=32,
+        )
+        calibration_raw_map = tile_scores_to_map(
+            detector.anomaly_detector.score_samples(calibration_table),
+            calibration_table.coordinates,
+            calibration_table.image_shape,
+        )
+        detector.anomaly_detector.calibrate_stitched_maps(
+            [calibration_raw_map],
+            calibration_group_ids=["calibration-clean-images"],
+        )
         result = detector.score(synthetic_he(seed=101), patch_size=32, stride=32)
 
         self.assertEqual(result.anomaly_score.shape, (128, 128))
+        self.assertEqual(result.anomaly_coverage.shape, (128, 128))
+        self.assertTrue(np.any(result.anomaly_coverage))
         self.assertEqual(result.fused_score.shape, (128, 128))
         self.assertTrue(np.isfinite(result.fused_score).all())
         self.assertTrue(
@@ -330,7 +421,6 @@ class CleanReferenceTests(unittest.TestCase):
             classical_weight=0.99,
             anomaly_weight=0.01,
             decision_threshold=0.50,
-            anomaly_decision_threshold=0.75,
         )
         with mock.patch(
             "foldcrack_qc.detectors.classical_candidate_masks",
@@ -345,6 +435,7 @@ class CleanReferenceTests(unittest.TestCase):
             )
 
         self.assertLess(float(result.fused_score.max()), detector.decision_threshold)
+        self.assertEqual(detector.anomaly_decision_threshold, 0.5)
         self.assertGreaterEqual(float(result.anomaly_score.min()), 0.99)
         self.assertGreater(float(result.predicted_mask[2:-2, 2:-2].mean()), 0.99)
 
@@ -409,6 +500,14 @@ class CleanReferenceTests(unittest.TestCase):
 
 
 class OptionalEncoderTests(unittest.TestCase):
+    def test_dinov2_legacy_wrapper_never_executes_unpinned_torch_hub(self) -> None:
+        with (
+            mock.patch("torch.hub.load") as hub_load,
+            self.assertRaisesRegex(RuntimeError, "no longer permits unpinned"),
+        ):
+            FrozenDINOv2Encoder(allow_download=True)
+        hub_load.assert_not_called()
+
     def test_dinov2_rejects_implicit_multiplex_channel_truncation(self) -> None:
         # Bypass dependency-bearing initialization: channel-safety validation
         # must happen before torch/model access.

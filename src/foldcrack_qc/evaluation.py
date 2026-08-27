@@ -24,7 +24,6 @@ import numpy as np
 from scipy import ndimage
 from scipy.optimize import linear_sum_assignment
 
-
 __all__ = [
     "aggregate_by_slide",
     "aggregate_results",
@@ -509,8 +508,8 @@ def instance_metrics(
     prediction_labels, prediction_areas = _component_labels(
         prediction_mask, min_area=min_area, connectivity=connectivity
     )
-    n_target = int(len(target_areas))
-    n_prediction = int(len(prediction_areas))
+    n_target = len(target_areas)
+    n_prediction = len(prediction_areas)
 
     matches: list[dict[str, int | float]] = []
     if n_target and n_prediction:
@@ -747,7 +746,7 @@ def evaluate_sample(
         if not math.isfinite(physical_area) or physical_area <= 0:
             raise ValueError("min_instance_area_physical must be finite and positive")
         effective_min_instance_area = max(
-            1, int(math.ceil(physical_area / normalized_pixel_area))
+            1, math.ceil(physical_area / normalized_pixel_area)
         )
     normalized_runtime = None
     if runtime_seconds is not None:

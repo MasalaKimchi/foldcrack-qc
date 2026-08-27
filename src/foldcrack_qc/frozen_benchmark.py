@@ -165,8 +165,7 @@ def _truthy_synthetic_flag(value: Any) -> bool:
         return False
     return not (
         isinstance(value, str)
-        and _normalize_term(value)
-        in {"", "false", "no", "0", "real", "acquired"}
+        and _normalize_term(value) in {"", "false", "no", "0", "real", "acquired"}
     )
 
 
@@ -223,9 +222,8 @@ def _declares_approved_real_acquisition(value: Any) -> bool:
     if origin in _REAL_ORIGIN_TERMS and provenance in _APPROVED_PROVENANCE_TERMS:
         return True
     metadata = value.get("metadata")
-    return (
-        isinstance(metadata, Mapping)
-        and _declares_approved_real_acquisition(metadata)
+    return isinstance(metadata, Mapping) and _declares_approved_real_acquisition(
+        metadata
     )
 
 
@@ -287,13 +285,9 @@ def _validate_sample_contract(sample: QCSample, role: str) -> None:
     if sample.modality is not Modality.HE:
         raise FrozenBenchmarkValidationError("he_only", stage=role)
     if sample.image.data.ndim != 3 or sample.image.data.shape[-1] != 3:
-        raise FrozenBenchmarkValidationError(
-            "native_semantic_rgb_required", stage=role
-        )
+        raise FrozenBenchmarkValidationError("native_semantic_rgb_required", stage=role)
     if tuple(sample.image.channel_roles) != _RGB_ROLES:
-        raise FrozenBenchmarkValidationError(
-            "native_semantic_rgb_required", stage=role
-        )
+        raise FrozenBenchmarkValidationError("native_semantic_rgb_required", stage=role)
     input_shape = tuple(sample.image.metadata.get("input_shape", ()))
     input_axis = sample.image.metadata.get("input_channel_axis")
     if (
@@ -302,14 +296,14 @@ def _validate_sample_contract(sample: QCSample, role: str) -> None:
         or int(input_shape[int(input_axis)]) != 3
         or sample.image.metadata.get("color_order") != "rgb"
     ):
-        raise FrozenBenchmarkValidationError(
-            "native_semantic_rgb_required", stage=role
-        )
+        raise FrozenBenchmarkValidationError("native_semantic_rgb_required", stage=role)
     split = _normalize_term(sample.metadata.get("split", ""))
     if split not in _EXPECTED_SPLITS[role]:
         raise FrozenBenchmarkValidationError("unexpected_split_role", stage=role)
     missing_groups = [
-        field for field in GROUP_ID_FIELDS if not str(sample.metadata.get(field, "")).strip()
+        field
+        for field in GROUP_ID_FIELDS
+        if not str(sample.metadata.get(field, "")).strip()
     ]
     if missing_groups:
         raise FrozenBenchmarkValidationError(
@@ -350,9 +344,7 @@ def _identity_sets(split: _LoadedSplit) -> dict[str, set[str]]:
         verified = sample.metadata.get("verified_sha256", {})
         if isinstance(verified, Mapping) and verified.get("image_path"):
             values["image_file_sha256"].add(str(verified["image_path"]))
-        values["image_content_sha256"].add(
-            _canonical_array_sha256(sample.image.data)
-        )
+        values["image_content_sha256"].add(_canonical_array_sha256(sample.image.data))
     return values
 
 
@@ -505,7 +497,9 @@ def _pixel_geometry(
         )
         mode = "physical_um"
     else:
-        patch_native = _pair(224 if patch_size_px is None else patch_size_px, "patch_size_px")
+        patch_native = _pair(
+            224 if patch_size_px is None else patch_size_px, "patch_size_px"
+        )
         stride_native = (
             tuple(item / 2.0 for item in patch_native)
             if stride_px is None
@@ -650,7 +644,10 @@ def _clean_feature_matrix(
             if selected.size:
                 selected = np.asarray(selected, dtype=np.float64)
                 total_available_tokens += int(selected.shape[0])
-                if per_batch_budget is not None and selected.shape[0] > per_batch_budget:
+                if (
+                    per_batch_budget is not None
+                    and selected.shape[0] > per_batch_budget
+                ):
                     indices = np.linspace(
                         0,
                         selected.shape[0] - 1,
@@ -721,9 +718,7 @@ def _score_sample(
         batch_coordinates = coordinates[start : start + batch_size]
         images = np.stack(
             [
-                sample.image.data[
-                    patch.top : patch.bottom, patch.left : patch.right, :
-                ]
+                sample.image.data[patch.top : patch.bottom, patch.left : patch.right, :]
                 for patch in batch_coordinates
             ],
             axis=0,
@@ -957,7 +952,9 @@ def _reference_support(samples: Sequence[QCSample]) -> dict[str, Any]:
         counts = cohorts.setdefault(cohort, empty_counts())
         for destination in (overall, counts):
             destination["sample_count"] += 1
-            destination["positive_sample_count" if positive else "negative_sample_count"] += 1
+            destination[
+                "positive_sample_count" if positive else "negative_sample_count"
+            ] += 1
             destination["positive_pixel_count"] += int(np.count_nonzero(target))
             destination["artifact_instance_count"] += instance_count
         overall_patients.add(patient)
@@ -1113,19 +1110,17 @@ def run_frozen_anomaly_benchmark(
             calibration_patch_count,
             calibration_mode,
             calibration_available_pixel_count,
-        ) = (
-            _stitched_calibration_scores(
-                splits[1],
-                encoder,
-                active_scorer,
-                batch_size=batch_size,
-                patch_size_px=patch_size_px,
-                stride_px=stride_px,
-                patch_size_um=patch_size_um,
-                stride_um=stride_um,
-                min_valid_token_fraction=min_fraction,
-                max_calibration_pixels=int(max_calibration_pixels),
-            )
+        ) = _stitched_calibration_scores(
+            splits[1],
+            encoder,
+            active_scorer,
+            batch_size=batch_size,
+            patch_size_px=patch_size_px,
+            stride_px=stride_px,
+            patch_size_um=patch_size_um,
+            stride_um=stride_um,
+            min_valid_token_fraction=min_fraction,
+            max_calibration_pixels=int(max_calibration_pixels),
         )
         if calibration_mode != geometry_mode:
             raise ValueError("inconsistent geometry mode")
@@ -1237,9 +1232,7 @@ def run_frozen_anomaly_benchmark(
             seed=int(bootstrap_seed),
             bootstrap_cluster_key="metadata.bootstrap_cluster",
         )
-        cohort_names = sorted(
-            {str(item["metadata"]["cohort"]) for item in evaluations}
-        )
+        cohort_names = sorted({str(item["metadata"]["cohort"]) for item in evaluations})
         for cohort_name in cohort_names:
             cohort_results = [
                 item

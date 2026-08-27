@@ -13,18 +13,18 @@ paths are resolved against the directory containing the manifest.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
 import math
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 import numpy as np
 
 from .adapters import adapt_image, read_image
 from .schema import ChannelRole, Modality, QCSample
-
 
 REQUIRED_FIELDS: tuple[str, ...] = ("sample_id", "modality", "image_path", "split")
 MASK_PATH_FIELDS: Mapping[str, str] = {
@@ -332,8 +332,7 @@ def _normalize_sha256(value: Any) -> str | None:
     if not isinstance(value, str):
         return None
     normalized = value.strip().casefold()
-    if normalized.startswith("sha256:"):
-        normalized = normalized[7:]
+    normalized = normalized.removeprefix("sha256:")
     if len(normalized) != 64 or any(
         character not in "0123456789abcdef" for character in normalized
     ):
@@ -405,18 +404,25 @@ def _process_records(
         sample_id = _clean_identifier(raw_record.get("sample_id"))
         state = {"ok": True}
 
-        def add(issue: ManifestIssue) -> None:
+        def add(issue: ManifestIssue, *, _state: dict[str, bool] = state) -> None:
             if issue.severity == "error":
-                state["ok"] = False
+                _state["ok"] = False
             emit(issue)
 
-        def policy(code: str, message: str, field: str) -> None:
+        def policy(
+            code: str,
+            message: str,
+            field: str,
+            *,
+            _record_index: int = record_index,
+            _sample_id: str | None = sample_id,
+        ) -> None:
             add(
                 _issue(
                     code,
                     message,
-                    record_index=record_index,
-                    sample_id=sample_id,
+                    record_index=_record_index,
+                    sample_id=_sample_id,
                     field=field,
                     severity="error" if strict else "warning",
                 )
@@ -557,17 +563,16 @@ def _process_records(
                     field="image_path",
                 )
             )
-        if image_path is None:
-            if raw_record.get("image_path") is not None:
-                add(
-                    _issue(
-                        "invalid_path_field",
-                        "image_path must be a non-empty string",
-                        record_index=record_index,
-                        sample_id=sample_id,
-                        field="image_path",
-                    )
+        if image_path is None and raw_record.get("image_path") is not None:
+            add(
+                _issue(
+                    "invalid_path_field",
+                    "image_path must be a non-empty string",
+                    record_index=record_index,
+                    sample_id=sample_id,
+                    field="image_path",
                 )
+            )
 
         raw_channel_names = raw_record.get("channel_names")
         channel_names: tuple[str, ...] | None = None
@@ -772,9 +777,7 @@ def _process_records(
 
         try:
             raw_image = read_image(image_path)
-        except (
-            Exception
-        ) as exc:  # readers expose several backend-specific exception types
+        except Exception as exc:  # noqa: BLE001 - file backends vary by suffix
             add(
                 _issue(
                     "image_load_error",
@@ -841,7 +844,7 @@ def _process_records(
                 channel_axis=channel_axis,
                 color_order=color_order,
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - adapters validate external data
             add(
                 _issue(
                     "image_adaptation_error",
@@ -872,8 +875,16 @@ def _process_records(
 
         actual_digests: dict[str, str] = {}
 
-        def verify_digest(path_field: str, path: Path) -> None:
-            expected = expected_digests.get(path_field)
+        def verify_digest(
+            path_field: str,
+            path: Path,
+            *,
+            _expected_digests: dict[str, str] = expected_digests,
+            _actual_digests: dict[str, str] = actual_digests,
+            _record_index: int = record_index,
+            _sample_id: str | None = sample_id,
+        ) -> None:
+            expected = _expected_digests.get(path_field)
             if expected is None and not strict:
                 return
             try:
@@ -886,20 +897,20 @@ def _process_records(
                     _issue(
                         "checksum_read_error",
                         f"{_checksum_field(path_field)} could not be verified ({type(exc).__name__})",
-                        record_index=record_index,
-                        sample_id=sample_id,
+                        record_index=_record_index,
+                        sample_id=_sample_id,
                         field=_checksum_field(path_field),
                     )
                 )
                 return
-            actual_digests[path_field] = actual
+            _actual_digests[path_field] = actual
             if expected is not None and actual != expected:
                 add(
                     _issue(
                         "checksum_mismatch",
                         f"{_checksum_field(path_field)} does not match the referenced file",
-                        record_index=record_index,
-                        sample_id=sample_id,
+                        record_index=_record_index,
+                        sample_id=_sample_id,
                         field=_checksum_field(path_field),
                     )
                 )
@@ -911,7 +922,7 @@ def _process_records(
             path_field = mask_path_fields[mask_name]
             try:
                 raw_mask = read_image(mask_path)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - file backends vary by suffix
                 add(
                     _issue(
                         "mask_load_error",
@@ -959,7 +970,7 @@ def _process_records(
             path_field = instance_path_fields[mask_name]
             try:
                 raw_mask = read_image(mask_path)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - file backends vary by suffix
                 add(
                     _issue(
                         "mask_load_error",
@@ -1166,12 +1177,12 @@ def load_samples(path: str | Path, *, strict: bool = False) -> list[QCSample]:
 
 
 __all__ = [
-    "MASK_PATH_FIELDS",
-    "INSTANCE_MASK_PATH_FIELDS",
-    "REQUIRED_FIELDS",
     "ALLOWED_COHORTS",
     "ALLOWED_SPLITS",
     "GROUP_ID_FIELDS",
+    "INSTANCE_MASK_PATH_FIELDS",
+    "MASK_PATH_FIELDS",
+    "REQUIRED_FIELDS",
     "ManifestIssue",
     "ManifestValidation",
     "ManifestValidationError",

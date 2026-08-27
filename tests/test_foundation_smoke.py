@@ -99,7 +99,10 @@ class LoadingPolicyTests(unittest.TestCase):
 
     def test_offline_and_download_modes_never_use_token_or_remote_code(self) -> None:
         for allow_download in (False, True):
-            with self.subTest(allow_download=allow_download), tempfile.TemporaryDirectory() as temp:
+            with (
+                self.subTest(allow_download=allow_download),
+                tempfile.TemporaryDirectory() as temp,
+            ):
                 root = Path(temp)
                 snapshot, contents = self._snapshot(root)
                 hub = _FakeHub(snapshot)

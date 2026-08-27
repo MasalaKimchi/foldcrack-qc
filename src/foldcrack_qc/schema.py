@@ -8,10 +8,11 @@ native array layout.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -24,7 +25,7 @@ class Modality(str, Enum):
     COSMX = "cosmx"
 
     @classmethod
-    def coerce(cls, value: "Modality | str") -> "Modality":
+    def coerce(cls, value: Modality | str) -> Modality:
         if isinstance(value, cls):
             return value
         normalized = str(value).strip().lower().replace(" ", "")
@@ -66,7 +67,7 @@ class ChannelRole(str, Enum):
     UNKNOWN = "unknown"
 
     @classmethod
-    def coerce(cls, value: "ChannelRole | str") -> "ChannelRole":
+    def coerce(cls, value: ChannelRole | str) -> ChannelRole:
         if isinstance(value, cls):
             return value
         normalized = str(value).strip().lower().replace(" ", "_")
@@ -98,7 +99,7 @@ class ArtifactKind(str, Enum):
     HARD_NEGATIVE = "hard_negative"
 
     @classmethod
-    def coerce(cls, value: "ArtifactKind | str") -> "ArtifactKind":
+    def coerce(cls, value: ArtifactKind | str) -> ArtifactKind:
         if isinstance(value, cls):
             return value
         normalized = str(value).strip().lower().replace("-", "_").replace(" ", "_")
@@ -461,6 +462,6 @@ __all__ = [
     "CanonicalSample",
     "ChannelRole",
     "Modality",
-    "QCSample",
     "QCResult",
+    "QCSample",
 ]

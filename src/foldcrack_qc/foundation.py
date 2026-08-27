@@ -13,8 +13,15 @@ silently truncated to their first three channels.
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Mapping, Sequence
+import importlib.util
+import json
+import re
+import subprocess
+import sys
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import numpy as np
@@ -25,6 +32,69 @@ Float64Array = NDArray[np.float64]
 
 _IMAGENET_MEAN = np.asarray((0.485, 0.456, 0.406), dtype=np.float32)
 _IMAGENET_STD = np.asarray((0.229, 0.224, 0.225), dtype=np.float32)
+HIBOU_B_MEAN = (0.7068, 0.5755, 0.7220)
+HIBOU_B_STD = (0.1950, 0.2316, 0.1816)
+SIGLIP2_BASE_MEAN = (0.5, 0.5, 0.5)
+SIGLIP2_BASE_STD = (0.5, 0.5, 0.5)
+_HIBOU_OFFICIAL_REMOTE = "https://github.com/HistAI/hibou.git"
+_HIBOU_B_APPROVED_RELEASES: Mapping[str, Mapping[str, Any]] = {
+    "c453bbe4dab0fec6f7df343b09ea87048629c58d": {
+        "weights_sha256": (
+            "9d3e5ebc4e1ffaf6d7a0b672273e4fbef109cdd03df73c52920d6e886f2327e1"
+        ),
+        "source_sha256": {
+            "hibou/models/__init__.py": (
+                "a0ee97aaa0e802fec397bb6eb3d09dfe1d63759ecf1c702cd1fb04b8a2d51ae8"
+            ),
+            "hibou/models/vision_transformer.py": (
+                "4b729de30c673b3805e90fb65fc80d44b2aaacadb471959f50611d7948914b1d"
+            ),
+            "hibou/models/layers/__init__.py": (
+                "5b5f637b2371089e34e0bec9a49518e2250f915aa9e10cae83a32f8e671ad24f"
+            ),
+            "hibou/models/layers/attention.py": (
+                "069926c3335aaa6287058284f5f99685450fb06dbbb19e8acf7f4f5e8a78add3"
+            ),
+            "hibou/models/layers/block.py": (
+                "c89918d40c09d846c7b38979079429ed98c90bf087dced234e8821de3cc3dead"
+            ),
+            "hibou/models/layers/dino_head.py": (
+                "909bcae0f694da055809bb23815873010e809c7a91c63e90f693f3477e887eb4"
+            ),
+            "hibou/models/layers/drop_path.py": (
+                "81471280a70c0282f24f482b4b27656aac652851472a2bd06cf5b2bb44cb1783"
+            ),
+            "hibou/models/layers/layer_scale.py": (
+                "abb7bbfae152a9de2e6d0961ab5e75c79428e849281bfe50dd07b66b54b485d1"
+            ),
+            "hibou/models/layers/mlp.py": (
+                "255825c73b60a916dd00eb1e38aacbcdbf316e40d6a005efb46e245b7edb43aa"
+            ),
+            "hibou/models/layers/patch_embed.py": (
+                "cc295a8b139a642c77eaa2b3cc675b108fc341ff6456d4e00a81587bd04ad1e0"
+            ),
+            "hibou/models/layers/swiglu_ffn.py": (
+                "816539ba3958644009cb45fc00f033881574843beedaa41028ca191fcedea271"
+            ),
+            "README.md": (
+                "efa8b0fcbf36a4c1652afedbb6f14d497ca59bf040faa9fe9ee9ee638cf9b4f4"
+            ),
+            "LICENSE": (
+                "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+            ),
+        },
+    }
+}
+_HEX_SHA256 = re.compile(r"[0-9a-f]{64}")
+_HEX_GIT_COMMIT = re.compile(r"[0-9a-f]{40}")
+_SIGLIP2_BASE_MODEL_ID = "google/siglip2-base-patch16-224"
+_SIGLIP2_BASE_REVISION = "75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2"
+_SIGLIP2_BASE_ASSET_SHA256 = {
+    "model.safetensors": "612923381c76ec5a9bed335d1c48827e3f2e506ac31b044b63b2031fadee6a0b",
+    "config.json": "fe8b5fe6d5734360678fd71c11c21e1ea3364bd8598d34295d9206335973ffd7",
+    "preprocessor_config.json": "9b36b57ebaf20f09bf4c22100ccc21877ea6bfe5aead0c00c59f8af8ccefacfc",
+    "README.md": "39ac3705d62af9ffa1a14675b8ccb220a75f2d81acd530e564a3b1e3dfe418d8",
+}
 
 
 def _import_torch() -> Any:
@@ -111,12 +181,17 @@ def preprocess_dinov2_rgb(
     *,
     image_size: int | Sequence[int] = 224,
     semantic_channels: Sequence[str] = ("red", "green", "blue"),
+    normalization_mean: Sequence[float] = tuple(_IMAGENET_MEAN),
+    normalization_std: Sequence[float] = tuple(_IMAGENET_STD),
 ) -> Float32Array:
-    """Deterministically resize and ImageNet-normalize semantic RGB patches.
+    """Deterministically resize and normalize semantic RGB patches.
 
     The returned array is NCHW and ready to convert to a torch tensor.  Direct
     resizing is appropriate here because inputs are already extracted patches;
     no content-dependent crop or per-image intensity normalization is applied.
+    The defaults preserve the original ImageNet normalization used by DINOv2;
+    pathology encoders can supply their published RGB mean and standard
+    deviation explicitly.
     """
 
     if isinstance(image_size, Sequence) and not isinstance(image_size, (str, bytes)):
@@ -129,6 +204,7 @@ def preprocess_dinov2_rgb(
         output_size = (side, side)
     if min(output_size) <= 0:
         raise ValueError("image_size values must be positive")
+    mean, std = _validate_normalization(normalization_mean, normalization_std)
 
     batch = validate_semantic_rgb(
         images,
@@ -150,8 +226,22 @@ def preprocess_dinov2_rgb(
         )
     # Cubic interpolation can overshoot the unit interval by a tiny amount.
     resized = np.clip(resized, 0.0, 1.0)
-    normalized = (resized - _IMAGENET_MEAN) / _IMAGENET_STD
+    normalized = (resized - mean) / std
     return np.ascontiguousarray(np.moveaxis(normalized, -1, 1), dtype=np.float32)
+
+
+def _validate_normalization(
+    mean: Sequence[float], std: Sequence[float]
+) -> tuple[Float32Array, Float32Array]:
+    mean_array = np.asarray(tuple(mean), dtype=np.float32)
+    std_array = np.asarray(tuple(std), dtype=np.float32)
+    if mean_array.shape != (3,) or std_array.shape != (3,):
+        raise ValueError("normalization mean and std must each contain three values")
+    if not np.isfinite(mean_array).all() or not np.isfinite(std_array).all():
+        raise ValueError("normalization mean and std must contain only finite values")
+    if np.any(std_array <= 0):
+        raise ValueError("normalization std values must be positive")
+    return mean_array.reshape(1, 1, 3), std_array.reshape(1, 1, 3)
 
 
 def select_torch_device(
@@ -178,6 +268,486 @@ def select_torch_device(
             "MPS was requested but is unavailable in this PyTorch/macOS runtime"
         )
     return requested
+
+
+@dataclass(frozen=True)
+class LoadedLocalFoundationModel:
+    """A locally built foundation model plus reproducibility evidence."""
+
+    model: Any
+    provenance: Mapping[str, Any]
+    preprocessor: Callable[..., Float32Array] | None = None
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        while chunk := stream.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _git_output(source: Path, *arguments: str) -> str:
+    try:
+        completed = subprocess.run(
+            ("git", "-C", str(source), *arguments),
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ValueError(
+            f"Hibou source must be a readable local Git checkout: {source}"
+        ) from error
+    return completed.stdout.strip()
+
+
+def _import_hibou_build_model(source: Path) -> Any:
+    """Load the official ``hibou.models.build_model`` without CellViT extras."""
+
+    package_root = source / "hibou"
+    models_root = package_root / "models"
+    models_init = models_root / "__init__.py"
+    if not (package_root / "__init__.py").is_file() or not models_init.is_file():
+        raise ValueError("Hibou source does not expose hibou.models.build_model")
+    namespace_digest = hashlib.sha256(str(source).encode()).hexdigest()[:16]
+    package_name = f"_foldcrack_hibou_{namespace_digest}"
+    models_name = f"{package_name}.models"
+    existing = sys.modules.get(models_name)
+    if existing is not None:
+        build_model = getattr(existing, "build_model", None)
+        if callable(build_model):
+            return build_model
+
+    package = ModuleType(package_name)
+    package.__path__ = [str(package_root)]  # type: ignore[attr-defined]
+    package.__package__ = package_name
+    sys.modules[package_name] = package
+    spec = importlib.util.spec_from_file_location(
+        models_name,
+        models_init,
+        submodule_search_locations=[str(models_root)],
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("Unable to construct an import spec for Hibou build_model")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[models_name] = module
+    try:
+        spec.loader.exec_module(module)
+    except Exception:
+        for name in tuple(sys.modules):
+            if name == package_name or name.startswith(f"{package_name}."):
+                sys.modules.pop(name, None)
+        raise
+    build_model = getattr(module, "build_model", None)
+    if not callable(build_model):
+        raise TypeError("Official Hibou source does not define build_model")
+    return build_model
+
+
+def _load_strict_torch_state_dict(model: Any, weights: Path) -> None:
+    """Load an audited tensor-only checkpoint with an exact state contract."""
+
+    torch = _import_torch()
+    try:
+        state = torch.load(
+            str(weights),
+            map_location="cpu",
+            weights_only=True,
+        )
+    except TypeError as error:  # pragma: no cover - depends on torch version
+        raise RuntimeError(
+            "The Hibou loader requires torch.load(weights_only=True); upgrade "
+            "the approved PyTorch runtime"
+        ) from error
+    if not isinstance(state, Mapping) or not state:
+        raise ValueError("Hibou checkpoint must contain a non-empty tensor state dict")
+    if any(not isinstance(key, str) for key in state):
+        raise ValueError("Hibou state-dict keys must be strings")
+    if any(
+        not bool(getattr(value, "is_floating_point", lambda: False)())
+        for value in state.values()
+    ):
+        raise ValueError("Hibou state dict must contain only floating-point tensors")
+    try:
+        incompatibility = model.load_state_dict(state, strict=True)
+    except (RuntimeError, TypeError, ValueError) as error:
+        raise ValueError(
+            "Hibou checkpoint keys or tensor shapes do not match the audited architecture"
+        ) from error
+    if tuple(getattr(incompatibility, "missing_keys", ())) or tuple(
+        getattr(incompatibility, "unexpected_keys", ())
+    ):
+        raise ValueError("Hibou strict state load reported missing or unexpected keys")
+
+
+def load_local_hibou_b(
+    weights_path: str | Path,
+    source_path: str | Path,
+    *,
+    expected_weights_sha256: str | None = None,
+    expected_source_commit: str | None = None,
+) -> LoadedLocalFoundationModel:
+    """Build Hibou-B from an explicit, clean official checkout and local weights.
+
+    This loader performs no network access and never uses ``trust_remote_code``.
+    It hashes the weight file, verifies the Git origin/commit/cleanliness, then
+    invokes the checked-out official ``build_model`` implementation.
+    """
+
+    if expected_weights_sha256 is None or expected_source_commit is None:
+        raise ValueError(
+            "Hibou loading requires both an approved weights SHA-256 and source commit"
+        )
+    lexical_weights = Path(weights_path).expanduser()
+    lexical_source = Path(source_path).expanduser()
+    if lexical_weights.is_symlink() or not lexical_weights.is_file():
+        raise ValueError("Hibou weights must be an explicit regular local .pth file")
+    if lexical_weights.suffix.casefold() != ".pth":
+        raise ValueError("Hibou weights path must end in .pth")
+    if lexical_source.is_symlink() or not lexical_source.is_dir():
+        raise ValueError("Hibou source must be an explicit local checkout directory")
+    weights = lexical_weights.resolve()
+    source = lexical_source.resolve()
+
+    expected_digest = expected_weights_sha256.lower()
+    if _HEX_SHA256.fullmatch(expected_digest) is None:
+        raise ValueError(
+            "expected Hibou weights SHA-256 must be 64 lowercase hex characters"
+        )
+    weights_digest = _sha256_file(weights)
+    if weights_digest != expected_digest:
+        raise ValueError(
+            "Hibou weights SHA-256 mismatch: the selected .pth is not the locked asset"
+        )
+
+    commit = _git_output(source, "rev-parse", "HEAD").lower()
+    if _HEX_GIT_COMMIT.fullmatch(commit) is None:
+        raise ValueError("Hibou source checkout did not resolve to a full Git commit")
+    expected_commit = expected_source_commit.lower()
+    if _HEX_GIT_COMMIT.fullmatch(expected_commit) is None:
+        raise ValueError(
+            "expected Hibou source commit must be 40 lowercase hex characters"
+        )
+    if commit != expected_commit:
+        raise ValueError("Hibou source commit does not match the locked commit")
+    approved = _HIBOU_B_APPROVED_RELEASES.get(expected_commit)
+    if approved is None or approved.get("weights_sha256") != expected_digest:
+        raise ValueError(
+            "Hibou source/weight identity is not in the approved release allowlist"
+        )
+    dirty = _git_output(source, "status", "--porcelain", "--untracked-files=all")
+    if dirty:
+        raise ValueError(
+            "Hibou source checkout has tracked or untracked modifications; "
+            "use a clean checkout"
+        )
+    origin = _git_output(source, "config", "--get", "remote.origin.url")
+    normalized_origin = origin.casefold().removesuffix(".git")
+    if normalized_origin not in {
+        "https://github.com/histai/hibou",
+        "git@github.com:histai/hibou",
+    }:
+        raise ValueError(
+            "Hibou checkout origin must be the official HistAI/hibou repository"
+        )
+
+    expected_source_hashes = approved.get("source_sha256")
+    if not isinstance(expected_source_hashes, Mapping):
+        raise TypeError("Approved Hibou release is missing source-file identities")
+    source_files = {
+        str(relative_name): source / str(relative_name)
+        for relative_name in expected_source_hashes
+    }
+    if any(path.is_symlink() or not path.is_file() for path in source_files.values()):
+        raise ValueError(
+            "Hibou checkout is missing an audited regular source/license file"
+        )
+    license_path = source_files["LICENSE"]
+    build_path = source_files["hibou/models/__init__.py"]
+    vision_path = source_files["hibou/models/vision_transformer.py"]
+    readme_path = source_files["README.md"]
+    try:
+        license_text = license_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        raise ValueError("Hibou LICENSE is unreadable") from error
+    if "Apache License" not in license_text or "Version 2.0" not in license_text:
+        raise ValueError("Hibou checkout LICENSE is not the declared Apache-2.0 text")
+
+    for relative_name, path in source_files.items():
+        if _sha256_file(path) != expected_source_hashes.get(relative_name):
+            raise ValueError(f"Hibou audited source hash mismatch: {relative_name}")
+
+    build_model = _import_hibou_build_model(source)
+    model = build_model(
+        None,
+        img_size=224,
+        arch="vit_base",
+        patch_size=14,
+        num_register_tokens=4,
+    )
+    _load_strict_torch_state_dict(model, weights)
+    if not callable(getattr(model, "forward_features", None)):
+        raise TypeError("Hibou-B model must expose mapping-style forward_features")
+    if int(getattr(model, "patch_size", -1)) != 14:
+        raise ValueError("Hibou-B model patch geometry does not match patch14")
+    if int(getattr(model, "num_register_tokens", -1)) != 4:
+        raise ValueError("Hibou-B model must expose exactly four register tokens")
+
+    provenance = {
+        "id": "HistAI/Hibou-B",
+        "provider": "HistAI",
+        "architecture": "vit_base_patch14_reg4",
+        "loader": "audited_checkout_build_plus_strict_weights_only_state_load",
+        "weights": {
+            "path": str(weights),
+            "sha256": weights_digest,
+            "size_bytes": weights.stat().st_size,
+        },
+        "source": {
+            "path": str(source),
+            "repository": _HIBOU_OFFICIAL_REMOTE,
+            "recorded_origin": origin,
+            "commit": commit,
+            "worktree_clean_including_untracked": True,
+            "audited_executable_source_sha256": {
+                relative_name: _sha256_file(path)
+                for relative_name, path in source_files.items()
+                if relative_name.endswith(".py")
+            },
+            "build_model_sha256": _sha256_file(build_path),
+            "vision_transformer_sha256": _sha256_file(vision_path),
+            "readme_sha256": _sha256_file(readme_path),
+        },
+        "license": {
+            "spdx": "Apache-2.0",
+            "evidence_path": str(license_path),
+            "evidence_sha256": _sha256_file(license_path),
+        },
+        "input": {
+            "image_size": [224, 224],
+            "patch_size": [14, 14],
+            "register_tokens": 4,
+            "normalization_mean": list(HIBOU_B_MEAN),
+            "normalization_std": list(HIBOU_B_STD),
+        },
+        "trust_remote_code": False,
+        "network_access_allowed": False,
+    }
+    return LoadedLocalFoundationModel(model=model, provenance=provenance)
+
+
+def _import_siglip_vision_model() -> Any:
+    """Import the standard Transformers SigLIP vision class lazily."""
+
+    try:
+        from transformers import SiglipVisionModel
+    except ImportError as error:  # pragma: no cover - depends on environment
+        raise ImportError(
+            "SigLIP2 feature extraction requires the project's 'foundation' extra."
+        ) from error
+    return SiglipVisionModel
+
+
+def _import_siglip_image_processor() -> Any:
+    """Import the standard locked SigLIP image processor lazily."""
+
+    try:
+        from transformers import SiglipImageProcessor
+    except ImportError as error:  # pragma: no cover - depends on environment
+        raise ImportError(
+            "SigLIP2 preprocessing requires the project's 'foundation' extra."
+        ) from error
+    return SiglipImageProcessor
+
+
+def _locked_siglip2_preprocessor(processor: Any) -> Callable[..., Float32Array]:
+    """Wrap the official processor with an explicit semantic-RGB uint8 boundary."""
+
+    def preprocess(
+        images: ArrayLike,
+        *,
+        semantic_channels: Sequence[str] = ("red", "green", "blue"),
+    ) -> Float32Array:
+        normalized = validate_semantic_rgb(
+            images,
+            semantic_channels=semantic_channels,
+        )
+        # The upstream processor's published rescale factor is 1/255. Convert
+        # every supported source dtype through one declared 8-bit RGB boundary
+        # before invoking its exact resize/rescale/normalize implementation.
+        uint8_batch = np.rint(np.clip(normalized, 0.0, 1.0) * 255.0).astype(np.uint8)
+        processed = processor(
+            images=[image for image in uint8_batch],
+            return_tensors="np",
+        )
+        values = (
+            processed.get("pixel_values")
+            if isinstance(processed, Mapping)
+            else getattr(processed, "pixel_values", None)
+        )
+        output = np.asarray(values, dtype=np.float32)
+        if output.ndim != 4 or output.shape[1:] != (3, 224, 224):
+            raise ValueError(
+                "Locked SigLIP2 processor must return NCHW float32 at 224x224"
+            )
+        if output.shape[0] != uint8_batch.shape[0] or not np.isfinite(output).all():
+            raise ValueError("Locked SigLIP2 processor returned invalid values")
+        return np.ascontiguousarray(output)
+
+    return preprocess
+
+
+def load_local_siglip2_base_vision(
+    snapshot_path: str | Path,
+) -> LoadedLocalFoundationModel:
+    """Load the hash-locked public SigLIP2 Base vision tower offline.
+
+    The accepted files are pinned to the exact public Hugging Face revision
+    recorded in :data:`_SIGLIP2_BASE_REVISION`.  The loader performs no network
+    access, never executes remote code, verifies the Apache-2.0 model-card
+    evidence and official preprocessing contract, and loads only the vision
+    tower through the standard Transformers implementation.
+
+    Notes
+    -----
+    The upstream safetensors file also contains the text tower.  Transformers
+    ignores those keys when constructing ``SiglipVisionModel``; provenance
+    therefore records the hash of the complete official upstream checkpoint.
+    """
+
+    lexical_root = Path(snapshot_path).expanduser()
+    if lexical_root.is_symlink() or not lexical_root.is_dir():
+        raise ValueError("SigLIP2 snapshot must be an explicit local directory")
+    root = lexical_root.resolve()
+    assets = {name: root / name for name in _SIGLIP2_BASE_ASSET_SHA256}
+    if any(path.is_symlink() or not path.is_file() for path in assets.values()):
+        raise ValueError(
+            "SigLIP2 snapshot is missing a required regular model, configuration, "
+            "preprocessor, or license-evidence file"
+        )
+    observed_digests = {name: _sha256_file(path) for name, path in assets.items()}
+    mismatches = sorted(
+        name
+        for name, expected in _SIGLIP2_BASE_ASSET_SHA256.items()
+        if observed_digests[name] != expected
+    )
+    if mismatches:
+        raise ValueError(
+            "SigLIP2 snapshot hash mismatch for locked asset(s): "
+            + ", ".join(mismatches)
+        )
+
+    try:
+        configuration = json.loads(assets["config.json"].read_text(encoding="utf-8"))
+        preprocessor = json.loads(
+            assets["preprocessor_config.json"].read_text(encoding="utf-8")
+        )
+        readme = assets["README.md"].read_text(encoding="utf-8")
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError("SigLIP2 snapshot metadata is unreadable") from error
+    vision_configuration = configuration.get("vision_config")
+    if not isinstance(vision_configuration, Mapping):
+        raise TypeError("SigLIP2 config does not expose a vision configuration")
+    if configuration.get("model_type") != "siglip" or (
+        vision_configuration.get("model_type") != "siglip_vision_model"
+    ):
+        raise ValueError(
+            "SigLIP2 config does not identify the locked vision architecture"
+        )
+    if preprocessor.get("image_mean") != list(SIGLIP2_BASE_MEAN) or (
+        preprocessor.get("image_std") != list(SIGLIP2_BASE_STD)
+    ):
+        raise ValueError("SigLIP2 preprocessor normalization does not match the lock")
+    if preprocessor.get("size") != {"height": 224, "width": 224}:
+        raise ValueError("SigLIP2 preprocessor image size does not match 224x224")
+    if (
+        preprocessor.get("resample") != 2
+        or preprocessor.get("do_resize") is not True
+        or preprocessor.get("do_rescale") is not True
+        or preprocessor.get("do_normalize") is not True
+        or float(preprocessor.get("rescale_factor", -1.0)) != 1.0 / 255.0
+    ):
+        raise ValueError("SigLIP2 resize/rescale processor contract does not match")
+    if re.search(r"(?mi)^license:\s*apache-2\.0\s*$", readme) is None:
+        raise ValueError("SigLIP2 model card does not declare Apache-2.0")
+
+    model_class = _import_siglip_vision_model()
+    processor_class = _import_siglip_image_processor()
+    image_processor = processor_class.from_pretrained(
+        str(root),
+        local_files_only=True,
+        token=False,
+    )
+    model = model_class.from_pretrained(
+        str(root),
+        local_files_only=True,
+        trust_remote_code=False,
+        token=False,
+        use_safetensors=True,
+    )
+    model_configuration = getattr(model, "config", None)
+    geometry = (
+        int(getattr(model_configuration, "image_size", -1)),
+        int(getattr(model_configuration, "patch_size", -1)),
+        int(getattr(model_configuration, "hidden_size", -1)),
+    )
+    if geometry != (224, 16, 768):
+        raise ValueError(
+            "Loaded SigLIP2 vision geometry does not match image224/patch16/dim768"
+        )
+
+    provenance = {
+        "id": _SIGLIP2_BASE_MODEL_ID,
+        "provider": "Google",
+        "architecture": "siglip2_base_vit_b_patch16_224",
+        "loader": "transformers.SiglipVisionModel.from_pretrained",
+        "source": {
+            "repository": f"https://huggingface.co/{_SIGLIP2_BASE_MODEL_ID}",
+            "revision": _SIGLIP2_BASE_REVISION,
+        },
+        "assets": {
+            name: {
+                "path": str(path),
+                "sha256": observed_digests[name],
+                "size_bytes": path.stat().st_size,
+            }
+            for name, path in assets.items()
+        },
+        "license": {
+            "spdx": "Apache-2.0",
+            "evidence_path": str(assets["README.md"]),
+            "evidence_sha256": observed_digests["README.md"],
+        },
+        "input": {
+            "image_size": [224, 224],
+            "patch_size": [16, 16],
+            "normalization_mean": list(SIGLIP2_BASE_MEAN),
+            "normalization_std": list(SIGLIP2_BASE_STD),
+            "channels": "explicit semantic RGB only",
+            "source_dtype_boundary": "round_clipped_unit_RGB_to_uint8",
+            "processor": "transformers.SiglipImageProcessor",
+            "resample": 2,
+            "resample_semantics": "PIL.Image.Resampling.BILINEAR",
+            "rescale_factor": 1.0 / 255.0,
+        },
+        "output": {
+            "global_embedding": "pooler_output",
+            "spatial_embedding": "last_hidden_state",
+            "prefix_tokens": 0,
+            "grid_shape": [14, 14],
+            "embedding_dim": 768,
+        },
+        "trust_remote_code": False,
+        "token_used": False,
+        "network_access_allowed": False,
+    }
+    return LoadedLocalFoundationModel(
+        model=model,
+        provenance=provenance,
+        preprocessor=_locked_siglip2_preprocessor(image_processor),
+    )
 
 
 @dataclass(frozen=True)
@@ -232,7 +802,7 @@ class FoundationFeatures:
 
 
 class DINOv2FeatureExtractor:
-    """Frozen DINOv2-style encoder returning CLS and spatial patch tokens.
+    """Frozen ViT encoder returning global and spatial patch tokens.
 
     Parameters
     ----------
@@ -246,7 +816,21 @@ class DINOv2FeatureExtractor:
     prefix_tokens:
         Number of non-spatial tokens preceding the patch tokens.  Standard
         DINOv2 uses one CLS token.  Models with register tokens must declare the
-        larger value explicitly so token/grid alignment cannot be guessed.
+        larger value explicitly so token/grid alignment cannot be guessed.  A
+        model with no prefix token must set this to zero and explicitly name a
+        separate global output through ``global_embedding_name``.
+    global_embedding_name:
+        Named model output to use as the global embedding when
+        ``prefix_tokens=0``.  For example, fixed-resolution SigLIP2 vision
+        towers expose ``"pooler_output"``.  It is ignored when a CLS prefix
+        token is present.
+    normalization_mean, normalization_std:
+        Published RGB input normalization.  The defaults are ImageNet and
+        preserve the original DINOv2 behavior.
+    preprocessor:
+        Optional locked callable returning NCHW float32. SigLIP2 uses its
+        standard offline ``SiglipImageProcessor`` so resize semantics are not
+        silently replaced by the DINOv2 bicubic path.
     """
 
     def __init__(
@@ -258,6 +842,10 @@ class DINOv2FeatureExtractor:
         patch_size: int | Sequence[int] = 14,
         prefix_tokens: int = 1,
         model_input_name: str | None = "pixel_values",
+        global_embedding_name: str | None = None,
+        normalization_mean: Sequence[float] = tuple(_IMAGENET_MEAN),
+        normalization_std: Sequence[float] = tuple(_IMAGENET_STD),
+        preprocessor: Callable[..., Float32Array] | None = None,
         torch_module: Any | None = None,
     ) -> None:
         if model is None:
@@ -271,21 +859,30 @@ class DINOv2FeatureExtractor:
             for image, patch in zip(self.image_size, self.patch_size, strict=True)
         ):
             raise ValueError("image_size must be divisible by patch_size")
-        if prefix_tokens < 1:
-            raise ValueError("prefix_tokens must be at least one for a CLS encoder")
+        if prefix_tokens < 0:
+            raise ValueError("prefix_tokens cannot be negative")
         if model_input_name is not None and not str(model_input_name).strip():
             raise ValueError("model_input_name must be non-empty or None")
+        if global_embedding_name is not None and not str(global_embedding_name).strip():
+            raise ValueError("global_embedding_name must be non-empty or None")
+        if prefix_tokens == 0 and global_embedding_name is None:
+            raise ValueError(
+                "prefix_tokens=0 requires an explicit global_embedding_name"
+            )
         self.prefix_tokens = int(prefix_tokens)
         self.model_input_name = model_input_name
+        self.global_embedding_name = global_embedding_name
+        mean, std = _validate_normalization(normalization_mean, normalization_std)
+        self.normalization_mean = tuple(float(value) for value in mean.reshape(-1))
+        self.normalization_std = tuple(float(value) for value in std.reshape(-1))
+        self.preprocessor = preprocessor
         self.model = model.to(self.device)
         self.model.eval()
         for parameter in self.model.parameters():
             parameter.requires_grad_(False)
 
     @staticmethod
-    def _normalize_pair(
-        value: int | Sequence[int], name: str
-    ) -> tuple[int, int]:
+    def _normalize_pair(value: int | Sequence[int], name: str) -> tuple[int, int]:
         if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
             values = tuple(int(item) for item in value)
             if len(values) != 2:
@@ -310,6 +907,9 @@ class DINOv2FeatureExtractor:
 
     def _forward(self, tensor: Any) -> Any:
         if self.model_input_name is None:
+            forward_features = getattr(self.model, "forward_features", None)
+            if callable(forward_features):
+                return forward_features(tensor)
             return self.model(tensor)
         return self.model(**{self.model_input_name: tensor})
 
@@ -318,15 +918,20 @@ class DINOv2FeatureExtractor:
         cls_token = None
         patch_tokens = None
         hidden = None
+        named_global = None
 
         if hasattr(output, "last_hidden_state"):
             hidden = output.last_hidden_state
+            if self.global_embedding_name is not None:
+                named_global = getattr(output, self.global_embedding_name, None)
         elif isinstance(output, Mapping):
             if "x_norm_clstoken" in output and "x_norm_patchtokens" in output:
                 cls_token = output["x_norm_clstoken"]
                 patch_tokens = output["x_norm_patchtokens"]
             elif "last_hidden_state" in output:
                 hidden = output["last_hidden_state"]
+                if self.global_embedding_name is not None:
+                    named_global = output.get(self.global_embedding_name)
         elif isinstance(output, (tuple, list)) and output:
             hidden = output[0]
         elif torch.is_tensor(output):
@@ -346,13 +951,13 @@ class DINOv2FeatureExtractor:
                     f"{expected_patches} spatial). Configure patch_size and "
                     "prefix_tokens explicitly."
                 )
-            cls_token = hidden[:, 0, :]
+            cls_token = hidden[:, 0, :] if self.prefix_tokens else named_global
             patch_tokens = hidden[:, self.prefix_tokens :, :]
 
         if not torch.is_tensor(cls_token) or not torch.is_tensor(patch_tokens):
             raise TypeError(
-                "Model output must expose last_hidden_state or both "
-                "x_norm_clstoken and x_norm_patchtokens"
+                "Model output must expose last_hidden_state with the configured "
+                "global embedding, or both x_norm_clstoken and x_norm_patchtokens"
             )
         if cls_token.ndim != 2 or patch_tokens.ndim != 3:
             raise ValueError("Model CLS/patch tensors have incompatible ranks")
@@ -362,10 +967,9 @@ class DINOv2FeatureExtractor:
                 f"Model returned {patch_tokens.shape[1]} patch tokens; expected "
                 f"{expected_patches} for grid {self.grid_shape}"
             )
-        if (
-            int(cls_token.shape[0]) != int(patch_tokens.shape[0])
-            or int(cls_token.shape[-1]) != int(patch_tokens.shape[-1])
-        ):
+        if int(cls_token.shape[0]) != int(patch_tokens.shape[0]) or int(
+            cls_token.shape[-1]
+        ) != int(patch_tokens.shape[-1]):
             raise ValueError("Model CLS and patch tokens have incompatible shapes")
         return cls_token, patch_tokens
 
@@ -381,11 +985,30 @@ class DINOv2FeatureExtractor:
         if batch_size <= 0:
             raise ValueError("batch_size must be positive")
         channels = _validate_semantic_channels(semantic_channels)
-        preprocessed = preprocess_dinov2_rgb(
-            images,
-            image_size=self.image_size,
-            semantic_channels=channels,
-        )
+        if self.preprocessor is None:
+            preprocessed = preprocess_dinov2_rgb(
+                images,
+                image_size=self.image_size,
+                semantic_channels=channels,
+                normalization_mean=self.normalization_mean,
+                normalization_std=self.normalization_std,
+            )
+        else:
+            preprocessed = np.asarray(
+                self.preprocessor(images, semantic_channels=channels),
+                dtype=np.float32,
+            )
+            if (
+                preprocessed.ndim != 4
+                or preprocessed.shape[0] <= 0
+                or tuple(preprocessed.shape[1:])
+                != (3, self.image_size[0], self.image_size[1])
+                or not np.isfinite(preprocessed).all()
+            ):
+                raise ValueError(
+                    "Locked foundation preprocessor returned an invalid NCHW batch"
+                )
+            preprocessed = np.ascontiguousarray(preprocessed)
         cls_batches: list[Float32Array] = []
         patch_batches: list[Float32Array] = []
         torch = self._torch
@@ -527,9 +1150,7 @@ class PatchKNNAnomalyScorer:
             )
             matrix = matrix[indices]
         if self.neighbors > matrix.shape[0]:
-            raise ValueError(
-                "neighbors cannot exceed the number of reference tokens"
-            )
+            raise ValueError("neighbors cannot exceed the number of reference tokens")
         self.reference_bank_ = np.ascontiguousarray(matrix, dtype=np.float64)
         self.n_features_in_ = int(matrix.shape[1])
         self._fitted = True
@@ -721,9 +1342,7 @@ class FoundationRuntimeDiagnostics:
             "mps_available": self.mps_available,
             "mps_current_allocated_bytes": self.mps_current_allocated_bytes,
             "mps_driver_allocated_bytes": self.mps_driver_allocated_bytes,
-            "mps_recommended_max_memory_bytes": (
-                self.mps_recommended_max_memory_bytes
-            ),
+            "mps_recommended_max_memory_bytes": (self.mps_recommended_max_memory_bytes),
             "error": self.error,
         }
 
@@ -780,11 +1399,18 @@ def foundation_runtime_diagnostics(
 
 
 __all__ = [
+    "HIBOU_B_MEAN",
+    "HIBOU_B_STD",
+    "SIGLIP2_BASE_MEAN",
+    "SIGLIP2_BASE_STD",
     "DINOv2FeatureExtractor",
     "FoundationFeatures",
     "FoundationRuntimeDiagnostics",
+    "LoadedLocalFoundationModel",
     "PatchKNNAnomalyScorer",
     "foundation_runtime_diagnostics",
+    "load_local_hibou_b",
+    "load_local_siglip2_base_vision",
     "preprocess_dinov2_rgb",
     "reconstruct_anomaly_heatmaps",
     "select_torch_device",

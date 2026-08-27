@@ -13,13 +13,12 @@ for feature computation, while the source data are never modified.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Mapping, Sequence
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy import ndimage
-
 
 FloatArray = NDArray[np.float64]
 BoolArray = NDArray[np.bool_]
@@ -636,9 +635,9 @@ def extract_patch_feature_table(
 
 
 __all__ = [
-    "FeatureTable",
     "FLUORESCENCE_FEATURE_NAMES",
     "HE_FEATURE_NAMES",
+    "FeatureTable",
     "extract_patch_feature_table",
     "fluorescence_patch_features",
     "he_patch_features",

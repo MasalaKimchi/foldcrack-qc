@@ -8,6 +8,7 @@ without requiring a GPU or a supervised training set.
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Protocol, runtime_checkable
@@ -85,6 +86,7 @@ class HybridResult:
     fused_score: FloatArray
     predicted_mask: BoolArray
     feature_table: FeatureTable
+    anomaly_coverage: BoolArray | None = None
 
     def __post_init__(self) -> None:
         shape = self.candidates.tissue.shape
@@ -93,9 +95,17 @@ class HybridResult:
         predicted = np.asarray(self.predicted_mask, dtype=bool)
         if anomaly.shape != shape or fused.shape != shape or predicted.shape != shape:
             raise ValueError("Hybrid result maps must match the candidate-mask shape")
+        coverage = (
+            np.ones(shape, dtype=bool)
+            if self.anomaly_coverage is None
+            else np.asarray(self.anomaly_coverage, dtype=bool)
+        )
+        if coverage.shape != shape:
+            raise ValueError("anomaly_coverage must match the candidate-mask shape")
         object.__setattr__(self, "anomaly_score", anomaly)
         object.__setattr__(self, "fused_score", fused)
         object.__setattr__(self, "predicted_mask", predicted)
+        object.__setattr__(self, "anomaly_coverage", coverage)
 
 
 def _mode(modality: str) -> tuple[str, bool]:
@@ -653,7 +663,7 @@ class CleanReferenceAnomalyDetector:
         *,
         variance_retained: float = 0.98,
         shrinkage: float = 0.15,
-        threshold_quantile: float = 0.995,
+        calibration_quantile: float = 0.99,
         max_components: int | None = None,
         regularization: float = 1e-6,
     ) -> None:
@@ -661,22 +671,37 @@ class CleanReferenceAnomalyDetector:
             raise ValueError("variance_retained must lie in (0, 1]")
         if not 0.0 <= shrinkage <= 1.0:
             raise ValueError("shrinkage must lie in [0, 1]")
-        if not 0.5 < threshold_quantile < 1.0:
-            raise ValueError("threshold_quantile must lie in (0.5, 1)")
+        if not 0.5 < calibration_quantile < 1.0:
+            raise ValueError("calibration_quantile must lie in (0.5, 1)")
         if max_components is not None and max_components <= 0:
             raise ValueError("max_components must be positive")
         if regularization <= 0:
             raise ValueError("regularization must be positive")
         self.variance_retained = float(variance_retained)
         self.shrinkage = float(shrinkage)
-        self.threshold_quantile = float(threshold_quantile)
+        self.calibration_quantile = float(calibration_quantile)
         self.max_components = max_components
         self.regularization = float(regularization)
         self._fitted = False
+        self._calibrated = False
 
     @property
     def is_fitted(self) -> bool:
         return self._fitted
+
+    @property
+    def is_calibrated(self) -> bool:
+        """Whether an independently estimated stitched-domain threshold is locked."""
+
+        return self._calibrated
+
+    @property
+    def locked_threshold_provenance(self) -> dict[str, Any]:
+        """Return an auditable copy of the locked calibration record."""
+
+        if not self._calibrated:
+            raise RuntimeError("No stitched-domain calibration threshold is locked")
+        return copy.deepcopy(self.threshold_provenance_)
 
     def _as_matrix(self, features: FeatureTable | ArrayLike) -> FloatArray:
         matrix = (
@@ -692,8 +717,21 @@ class CleanReferenceAnomalyDetector:
         return matrix
 
     def fit(
-        self, features: FeatureTable | ArrayLike
+        self,
+        features: FeatureTable | ArrayLike,
+        *,
+        reference_group_id: str = "unspecified-fit-reference",
     ) -> CleanReferenceAnomalyDetector:
+        """Fit the clean feature distribution without selecting a threshold.
+
+        Threshold selection is deliberately a separate operation on independent
+        clean calibration images after patch scores have been stitched into the
+        final pixel-score domain.
+        """
+
+        normalized_group_id = str(reference_group_id).strip()
+        if not normalized_group_id:
+            raise ValueError("reference_group_id must be non-empty")
         matrix = self._as_matrix(features)
         if matrix.shape[0] < 3:
             raise ValueError("At least three clean-reference samples are required")
@@ -747,11 +785,94 @@ class CleanReferenceAnomalyDetector:
         self.projected_center_ = projected_center
         self.precision_ = np.linalg.pinv(covariance, hermitian=True)
         self.n_features_in_ = int(matrix.shape[1])
+        self.fit_reference_group_id_ = normalized_group_id
         self._fitted = True
         training_scores = self.score_samples(matrix)
-        threshold = float(np.quantile(training_scores, self.threshold_quantile))
-        self.threshold_ = max(threshold, np.finfo(np.float64).eps)
         self.training_scores_ = training_scores
+        self._calibrated = False
+        for attribute in ("threshold_", "threshold_provenance_"):
+            if hasattr(self, attribute):
+                delattr(self, attribute)
+        return self
+
+    def calibrate_stitched_maps(
+        self,
+        score_maps: Sequence[ArrayLike],
+        *,
+        support_masks: Sequence[ArrayLike] | None = None,
+        calibration_group_ids: Sequence[str],
+        source: str = "independent_reviewed_clean_calibration",
+    ) -> CleanReferenceAnomalyDetector:
+        """Lock one threshold in the final stitched clean-pixel score domain.
+
+        ``score_maps`` must contain raw (not normalized) Mahalanobis maps after
+        the exact overlap-stitching operation used at inference.  Fit and
+        calibration group identifiers are checked for exact overlap.  Once
+        locked, the threshold cannot be silently replaced; callers must refit a
+        new detector to start a new experiment.
+        """
+
+        if not self._fitted:
+            raise RuntimeError("Fit the clean feature distribution before calibration")
+        if self._calibrated:
+            raise RuntimeError("The stitched-domain threshold is already locked")
+        if self.fit_reference_group_id_ == "unspecified-fit-reference":
+            raise ValueError(
+                "An explicit fit reference_group_id is required to verify disjointness"
+            )
+        normalized_source = str(source).strip()
+        if not normalized_source:
+            raise ValueError("Calibration source provenance must be non-empty")
+        maps = [np.asarray(score_map, dtype=np.float64) for score_map in score_maps]
+        if not maps:
+            raise ValueError("At least one clean calibration score map is required")
+        group_ids = tuple(str(group_id).strip() for group_id in calibration_group_ids)
+        if len(group_ids) != len(maps) or any(not group_id for group_id in group_ids):
+            raise ValueError(
+                "calibration_group_ids must provide one non-empty identifier per map"
+            )
+        if len(set(group_ids)) != len(group_ids):
+            raise ValueError("calibration_group_ids must be unique")
+        if self.fit_reference_group_id_ in set(group_ids):
+            raise ValueError("Fit and calibration source groups must be disjoint")
+        if support_masks is None:
+            supports = [np.ones(score_map.shape, dtype=bool) for score_map in maps]
+        else:
+            supports = [np.asarray(mask, dtype=bool) for mask in support_masks]
+            if len(supports) != len(maps):
+                raise ValueError("support_masks must provide one mask per score map")
+
+        valid_values: list[FloatArray] = []
+        valid_pixel_counts: list[int] = []
+        for score_map, support in zip(maps, supports, strict=True):
+            if score_map.ndim != 2 or support.shape != score_map.shape:
+                raise ValueError(
+                    "Calibration maps and supports must be matching 2D arrays"
+                )
+            valid = support & np.isfinite(score_map) & (score_map >= 0.0)
+            values = score_map[valid]
+            if values.size == 0:
+                raise ValueError("Every calibration map needs at least one valid score")
+            valid_values.append(values)
+            valid_pixel_counts.append(int(values.size))
+
+        pooled = np.concatenate(valid_values)
+        threshold = float(np.quantile(pooled, self.calibration_quantile))
+        self.threshold_ = max(threshold, np.finfo(np.float64).eps)
+        self.threshold_provenance_ = {
+            "locked": True,
+            "source": normalized_source,
+            "fit_reference_group_id": self.fit_reference_group_id_,
+            "calibration_group_ids": list(group_ids),
+            "fit_calibration_exact_overlap": False,
+            "score_domain": "raw_mahalanobis_after_mean_overlap_stitching_valid_pixels",
+            "calibration_quantile": self.calibration_quantile,
+            "raw_score_threshold": self.threshold_,
+            "normalized_decision_threshold": 0.5,
+            "valid_pixel_counts": valid_pixel_counts,
+            "n_valid_pixels": int(pooled.size),
+        }
+        self._calibrated = True
         return self
 
     def _prepare(self, features: FeatureTable | ArrayLike) -> FloatArray:
@@ -778,14 +899,27 @@ class CleanReferenceAnomalyDetector:
         return np.sqrt(np.maximum(squared, 0.0))
 
     def calibrated_scores(self, features: FeatureTable | ArrayLike) -> FloatArray:
-        """Map scores to ``[0, 1]`` with the clean threshold represented by 0.5."""
+        """Score features and apply the locked stitched-domain normalization."""
 
-        scores = self.score_samples(features)
-        return np.clip(0.5 * scores / self.threshold_, 0.0, 1.0)
+        return self.normalize_raw_scores(self.score_samples(features))
+
+    def normalize_raw_scores(self, scores: ArrayLike) -> FloatArray:
+        """Map raw scores to ``[0, 1]`` with the one locked threshold at 0.5."""
+
+        if not self._calibrated:
+            raise RuntimeError(
+                "Calibrate on independent stitched clean maps before normalization"
+            )
+        values = np.asarray(scores, dtype=np.float64)
+        if np.any(~np.isfinite(values)) or np.any(values < 0.0):
+            raise ValueError("Raw anomaly scores must be finite and non-negative")
+        return np.clip(0.5 * values / self.threshold_, 0.0, 1.0)
 
     def predict(self, features: FeatureTable | ArrayLike) -> BoolArray:
-        """Flag samples beyond the fitted upper clean-reference quantile."""
+        """Flag feature scores beyond the independently calibrated threshold."""
 
+        if not self._calibrated:
+            raise RuntimeError("Calibrate the detector before prediction")
         return self.score_samples(features) > self.threshold_
 
 
@@ -795,8 +929,15 @@ def tile_scores_to_map(
     image_shape: Sequence[int],
     *,
     reduction: str = "mean",
-) -> FloatArray:
-    """Project patch scores into an image map using mean or max overlap fusion."""
+    return_coverage: bool = False,
+) -> FloatArray | tuple[FloatArray, BoolArray]:
+    """Project patch scores into an image map using mean or max overlap fusion.
+
+    Uncovered pixels retain a numeric zero for backward compatibility.  Callers
+    making calibration or decision claims must request and propagate the
+    coverage mask so that absence of a selected feature patch is not treated as
+    evidence for a nominal zero anomaly score.
+    """
 
     values = np.asarray(scores, dtype=np.float64).reshape(-1)
     boxes = np.asarray(coordinates, dtype=np.int64)
@@ -809,6 +950,7 @@ def tile_scores_to_map(
         raise ValueError("reduction must be 'mean' or 'max'")
     output = np.zeros(shape, dtype=np.float64)
     count = np.zeros(shape, dtype=np.float64) if reduction == "mean" else None
+    coverage = np.zeros(shape, dtype=bool)
     for value, (y0, x0, y1, x1) in zip(values, boxes, strict=True):
         if not (0 <= y0 < y1 <= shape[0] and 0 <= x0 < x1 <= shape[1]):
             raise ValueError(f"Invalid patch coordinate {(y0, x0, y1, x1)}")
@@ -818,9 +960,10 @@ def tile_scores_to_map(
             count[y0:y1, x0:x1] += 1.0
         else:
             output[y0:y1, x0:x1] = np.maximum(output[y0:y1, x0:x1], value)
+        coverage[y0:y1, x0:x1] = True
     if count is not None:
         output = np.divide(output, count, out=np.zeros_like(output), where=count > 0)
-    return output
+    return (output, coverage) if return_coverage else output
 
 
 def fuse_score_maps(
@@ -876,7 +1019,6 @@ class HybridQCDetector:
         classical_weight: float = 0.55,
         anomaly_weight: float = 0.45,
         decision_threshold: float = 0.5,
-        anomaly_decision_threshold: float = 0.75,
     ) -> None:
         if (
             classical_weight < 0
@@ -886,16 +1028,24 @@ class HybridQCDetector:
             raise ValueError("Fusion weights must be non-negative with a positive sum")
         if not 0.0 <= decision_threshold <= 1.0:
             raise ValueError("decision_threshold must lie in [0, 1]")
-        if not 0.0 <= anomaly_decision_threshold <= 1.0:
-            raise ValueError("anomaly_decision_threshold must lie in [0, 1]")
         self.anomaly_detector = anomaly_detector or CleanReferenceAnomalyDetector()
         self.classical_weight = float(classical_weight)
         self.anomaly_weight = float(anomaly_weight)
         self.decision_threshold = float(decision_threshold)
-        self.anomaly_decision_threshold = float(anomaly_decision_threshold)
+        # The normalized level is not a second tuned cutoff: by construction it
+        # is exactly the independently calibrated raw stitched-score threshold.
+        self.anomaly_decision_threshold = 0.5
 
-    def fit(self, reference: FeatureTable | ArrayLike) -> HybridQCDetector:
-        self.anomaly_detector.fit(reference)
+    def fit(
+        self,
+        reference: FeatureTable | ArrayLike,
+        *,
+        reference_group_id: str = "unspecified-fit-reference",
+    ) -> HybridQCDetector:
+        self.anomaly_detector.fit(
+            reference,
+            reference_group_id=reference_group_id,
+        )
         return self
 
     def score(
@@ -918,6 +1068,13 @@ class HybridQCDetector:
         if not self.anomaly_detector.is_fitted:
             raise RuntimeError(
                 "HybridQCDetector.fit must be called with clean-reference features"
+            )
+        if (
+            hasattr(self.anomaly_detector, "is_calibrated")
+            and not self.anomaly_detector.is_calibrated
+        ):
+            raise RuntimeError(
+                "HybridQCDetector requires an independently calibrated, locked threshold"
             )
         spacing = _normalize_pixel_size_um(pixel_size_um)
         resolved_patch_size = (
@@ -958,15 +1115,32 @@ class HybridQCDetector:
             structural_channels=structural_channels,
         )
         if len(table):
-            patch_anomaly = self.anomaly_detector.calibrated_scores(table)
-            anomaly_map = tile_scores_to_map(
-                patch_anomaly,
-                table.coordinates,
-                table.image_shape,
-                reduction="mean",
-            )
+            if hasattr(self.anomaly_detector, "normalize_raw_scores"):
+                raw_patch_anomaly = self.anomaly_detector.score_samples(table)
+                raw_anomaly_map, anomaly_coverage = tile_scores_to_map(
+                    raw_patch_anomaly,
+                    table.coordinates,
+                    table.image_shape,
+                    reduction="mean",
+                    return_coverage=True,
+                )
+                anomaly_map = self.anomaly_detector.normalize_raw_scores(
+                    raw_anomaly_map
+                )
+            else:
+                # Lightweight injected test/comparator implementations may
+                # expose only the normalized-score protocol.
+                patch_anomaly = self.anomaly_detector.calibrated_scores(table)
+                anomaly_map, anomaly_coverage = tile_scores_to_map(
+                    patch_anomaly,
+                    table.coordinates,
+                    table.image_shape,
+                    reduction="mean",
+                    return_coverage=True,
+                )
         else:
             anomaly_map = np.zeros(candidates.tissue.shape, dtype=np.float64)
+            anomaly_coverage = np.zeros(candidates.tissue.shape, dtype=bool)
         classical_map = np.maximum(candidates.fold_score, candidates.crack_score)
         fused = fuse_score_maps(
             (classical_map, anomaly_map),
@@ -976,8 +1150,10 @@ class HybridQCDetector:
         fusion_alert = fused >= self.decision_threshold
         classical_alert = candidates.fold | candidates.crack
         anomaly_alert = (
-            anomaly_map >= self.anomaly_decision_threshold
-        ) & candidates.review_support
+            (anomaly_map >= self.anomaly_decision_threshold)
+            & candidates.review_support
+            & anomaly_coverage
+        )
         predicted = connected_component_cleanup(
             fusion_alert | classical_alert | anomaly_alert,
             min_area=max(4, int(np.prod(table.patch_size) // 128)),
@@ -985,7 +1161,14 @@ class HybridQCDetector:
             pixel_size_um=pixel_size_um,
             min_area_um2=min_component_area_um2,
         )
-        return HybridResult(candidates, anomaly_map, fused, predicted, table)
+        return HybridResult(
+            candidates,
+            anomaly_map,
+            fused,
+            predicted,
+            table,
+            anomaly_coverage,
+        )
 
     def detect(self, *args: Any, **kwargs: Any) -> HybridResult:
         """Alias for :meth:`score` for detector-oriented call sites."""
@@ -1004,10 +1187,10 @@ class PatchEncoder(Protocol):
 class FrozenDINOv2Encoder:
     """Optional frozen DINOv2 patch encoder with explicit dependency/network use.
 
-    A caller can inject an already-loaded torch model, which is the recommended
-    offline/corporate path.  Setting ``allow_download=True`` loads the requested
-    official DINOv2 model through torch hub.  The default never accesses the
-    network and fails with an actionable message if no model was supplied.
+    A caller must inject an already-loaded, approved torch model. The legacy
+    ``allow_download`` parameter remains only for API compatibility and is
+    rejected: unpinned ``torch.hub`` code execution is not an acceptable model
+    loading boundary.
 
     New benchmark code should prefer :class:`foldcrack_qc.foundation.DINOv2FeatureExtractor`,
     which preserves both CLS and spatial patch tokens.  This legacy wrapper
@@ -1043,19 +1226,15 @@ class FrozenDINOv2Encoder:
         self.device = str(device)
         self.image_size = int(image_size)
         if model is None:
-            if not allow_download:
+            if allow_download:
                 raise RuntimeError(
-                    "No DINOv2 model was supplied. Inject a locally approved frozen torch "
-                    "model, or explicitly set allow_download=True to use torch.hub."
+                    "FrozenDINOv2Encoder no longer permits unpinned torch.hub "
+                    "downloads; load a pinned, approved model and inject it"
                 )
-            try:  # pragma: no cover - requires network/cache
-                model = torch.hub.load(
-                    "facebookresearch/dinov2", model_name, pretrained=True
-                )
-            except Exception as error:
-                raise RuntimeError(
-                    f"Unable to load {model_name!r} from the DINOv2 torch hub"
-                ) from error
+            raise RuntimeError(
+                "No DINOv2 model was supplied. Inject a pinned, locally approved "
+                "frozen torch model"
+            )
         self.model = model.to(self.device).eval()
         for parameter in self.model.parameters():
             parameter.requires_grad_(False)
@@ -1078,9 +1257,7 @@ class FrozenDINOv2Encoder:
             )
         if array.shape[-1] == 1:
             array = np.repeat(array, 3, axis=-1)
-        normalized = np.stack(
-            [_channels_last(patch, -1) for patch in array], axis=0
-        )
+        normalized = np.stack([_channels_last(patch, -1) for patch in array], axis=0)
         # Keep input validation independent of the optional torch dependency so
         # unsafe multiplex truncation fails before any model/device work.
         torch = self._torch

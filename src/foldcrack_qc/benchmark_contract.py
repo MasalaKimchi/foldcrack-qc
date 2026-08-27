@@ -231,7 +231,9 @@ class _Collector:
 
 
 def _is_sequence(value: object) -> bool:
-    return isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray))
+    return isinstance(value, Sequence) and not isinstance(
+        value, (str, bytes, bytearray)
+    )
 
 
 def _is_present(value: object) -> bool:
@@ -253,7 +255,9 @@ def _read_contract_source(
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise BenchmarkContractError(f"Could not load benchmark contract {path}: {exc}") from exc
+        raise BenchmarkContractError(
+            f"Could not load benchmark contract {path}: {exc}"
+        ) from exc
     if not isinstance(payload, dict):
         raise BenchmarkContractError("Benchmark contract JSON root must be an object")
     return payload, str(path.resolve())
@@ -291,7 +295,9 @@ def _as_named_mapping(
             continue
         raw_name = item.get(key_name)
         if not isinstance(raw_name, str) or not raw_name.strip():
-            collector.add("missing_id", f"Entry requires non-empty {key_name!r}", item_path)
+            collector.add(
+                "missing_id", f"Entry requires non-empty {key_name!r}", item_path
+            )
             continue
         name = raw_name.strip()
         if name in result:
@@ -446,14 +452,22 @@ def _validate_modalities(
         for index, variant in enumerate(variants):
             variant_path = f"{path}.input_variants[{index}]"
             if not isinstance(variant, Mapping):
-                collector.add("expected_object", "Input variant must be an object", variant_path)
+                collector.add(
+                    "expected_object", "Input variant must be an object", variant_path
+                )
                 continue
             variant_id = variant.get("id")
             if not isinstance(variant_id, str) or not variant_id.strip():
-                collector.add("missing_id", "Input variant requires an id", variant_path)
+                collector.add(
+                    "missing_id", "Input variant requires an id", variant_path
+                )
                 continue
             if variant_id in variant_modalities:
-                collector.add("duplicate_id", f"Duplicate input variant {variant_id!r}", variant_path)
+                collector.add(
+                    "duplicate_id",
+                    f"Duplicate input variant {variant_id!r}",
+                    variant_path,
+                )
             variant_modalities[str(variant_id)] = modality_id
             if variant.get("channel_selection") != "semantic_role":
                 collector.add(
@@ -462,8 +476,10 @@ def _validate_modalities(
                     f"{variant_path}.channel_selection",
                 )
             roles = variant.get("semantic_channels")
-            if not _is_sequence(roles) or not roles or any(
-                not isinstance(role, str) or not role.strip() for role in roles
+            if (
+                not _is_sequence(roles)
+                or not roles
+                or any(not isinstance(role, str) or not role.strip() for role in roles)
             ):
                 collector.add(
                     "missing_semantic_channels",
@@ -498,9 +514,7 @@ def _validate_regimes(
             continue
         required = regimes[regime_id].get("required_cohorts")
         required_set = (
-            {str(item) for item in required}
-            if _is_sequence(required)
-            else set()
+            {str(item) for item in required} if _is_sequence(required) else set()
         )
         if required_set != set(EXPECTED_REGIME_COHORTS[regime_id]):
             collector.add(
@@ -575,7 +589,9 @@ def _validate_capabilities(
         output = capability.get("output_type")
         if artifact not in ALLOWED_ARTIFACTS:
             collector.add(
-                "invalid_artifact", f"artifact must be one of {ALLOWED_ARTIFACTS}", item_path
+                "invalid_artifact",
+                f"artifact must be one of {ALLOWED_ARTIFACTS}",
+                item_path,
             )
             continue
         allowed = (
@@ -834,9 +850,11 @@ def _validate_metrics(
                         "metric_ids cannot contain duplicates",
                         f"{path}.metric_ids",
                     )
-            if task == "presence" and ids.intersection(
-                {"brier_score", "expected_calibration_error"}
-            ) and group.get("score_semantics") != "calibrated_probability":
+            if (
+                task == "presence"
+                and ids.intersection({"brier_score", "expected_calibration_error"})
+                and group.get("score_semantics") != "calibrated_probability"
+            ):
                 collector.add(
                     "probability_metric_semantics_missing",
                     "Brier score and ECE require calibrated_probability semantics",
@@ -966,7 +984,9 @@ def _validate_comparisons(
         if not isinstance(comparison_id, str) or not comparison_id.strip():
             collector.add("missing_id", "Comparison requires an id", path)
         elif comparison_id in seen:
-            collector.add("duplicate_id", f"Duplicate comparison {comparison_id!r}", path)
+            collector.add(
+                "duplicate_id", f"Duplicate comparison {comparison_id!r}", path
+            )
         else:
             seen.add(comparison_id)
         artifact = comparison.get("artifact")
@@ -984,7 +1004,9 @@ def _validate_comparisons(
             continue
         metric_group = metrics.get((str(artifact), str(task)))
         if metric_group is None:
-            collector.add("unknown_metric_group", "No metric group exists for comparison", path)
+            collector.add(
+                "unknown_metric_group", "No metric group exists for comparison", path
+            )
         elif output != metric_group[0]:
             collector.add(
                 "comparison_metric_output_mismatch",
@@ -1043,7 +1065,9 @@ def _validate_comparisons(
                     f"{path}.method_ids",
                 )
                 continue
-            if modality not in {str(item) for item in methods[method_id].get("modalities", [])}:
+            if modality not in {
+                str(item) for item in methods[method_id].get("modalities", [])
+            }:
                 collector.add(
                     "method_modality_incompatible",
                     f"Method {method_id!r} does not support modality {modality!r}",
@@ -1067,7 +1091,9 @@ def _validate_comparisons(
                     f"Method {method_id!r} does not consume {input_variant!r}",
                     f"{path}.method_ids",
                 )
-            method_output = capabilities.get(method_id, {}).get((str(artifact), str(task)))
+            method_output = capabilities.get(method_id, {}).get(
+                (str(artifact), str(task))
+            )
             if method_output is None:
                 collector.add(
                     "method_task_incompatible",
@@ -1082,7 +1108,8 @@ def _validate_comparisons(
                 )
             if (
                 method_id in eligible_set
-                and modality in {str(item) for item in methods[method_id].get("modalities", [])}
+                and modality
+                in {str(item) for item in methods[method_id].get("modalities", [])}
                 and regime in method_regimes
                 and input_variant in method_variants
                 and method_output == output
@@ -1107,7 +1134,11 @@ def _validate_comparisons(
 
         required = comparison.get("required_for_acceptance", False)
         minimum = comparison.get("minimum_eligible_methods", 2)
-        if not isinstance(required, bool) or not isinstance(minimum, int) or minimum < 1:
+        if (
+            not isinstance(required, bool)
+            or not isinstance(minimum, int)
+            or minimum < 1
+        ):
             collector.add(
                 "invalid_comparison_acceptance_rule",
                 "required_for_acceptance must be boolean and minimum_eligible_methods positive",
@@ -1203,7 +1234,9 @@ def _validate_cohorts_and_records(
 ) -> tuple[tuple[str, int], ...]:
     split_policy = config.get("split_policy")
     if not isinstance(split_policy, Mapping):
-        collector.add("missing_split_policy", "split_policy must be an object", "$.split_policy")
+        collector.add(
+            "missing_split_policy", "split_policy must be an object", "$.split_policy"
+        )
         unit_keys: list[str] = []
     else:
         raw_keys = split_policy.get("unit_keys")
@@ -1251,7 +1284,9 @@ def _validate_cohorts_and_records(
                 f"{path}.manifest_path",
             )
         artifacts = cohort.get("annotated_artifacts")
-        artifact_set = {str(item) for item in artifacts} if _is_sequence(artifacts) else set()
+        artifact_set = (
+            {str(item) for item in artifacts} if _is_sequence(artifacts) else set()
+        )
         if not set(REQUIRED_ARTIFACTS).issubset(artifact_set):
             collector.add(
                 "missing_artifact_annotations",
@@ -1373,7 +1408,9 @@ def _validate_cohorts_and_records(
                     f"Record modality must be one of {REQUIRED_MODALITIES}",
                     f"{path}.modality",
                 )
-            status = record.get("annotation_status", cohort_defaults.get("annotation_status"))
+            status = record.get(
+                "annotation_status", cohort_defaults.get("annotation_status")
+            )
             if status not in accepted:
                 collector.add(
                     "unaccepted_annotation_status",
@@ -1500,7 +1537,9 @@ def validate_benchmark_contract(
             "$.schema_version",
         )
     if not _is_present(config.get("benchmark_id")):
-        collector.add("missing_benchmark_id", "benchmark_id is required", "$.benchmark_id")
+        collector.add(
+            "missing_benchmark_id", "benchmark_id is required", "$.benchmark_id"
+        )
 
     _validate_acceptance(config, collector)
     _validate_ontology_and_governance(config, collector)
@@ -1528,7 +1567,9 @@ def validate_benchmark_contract(
         variant_modalities,
     )
     _validate_reporting(config, collector)
-    realized_records = config.get("cohort_records") if cohort_records is None else cohort_records
+    realized_records = (
+        config.get("cohort_records") if cohort_records is None else cohort_records
+    )
     counts = _validate_cohorts_and_records(config, collector, realized_records)
 
     return BenchmarkContractReport(

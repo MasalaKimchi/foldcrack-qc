@@ -18,13 +18,12 @@ import numpy as np
 
 from .schema import Modality
 
-
 DECISIONS = frozenset({"PASS", "REVIEW", "FAIL"})
 
 
 def _as_bool(value: Any, name: str) -> bool:
     if not isinstance(value, (bool, np.bool_)):
-        raise ValueError(f"{name} must be boolean")
+        raise TypeError(f"{name} must be boolean")
     return bool(value)
 
 

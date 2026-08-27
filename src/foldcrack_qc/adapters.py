@@ -7,16 +7,17 @@ and exported channel order can change between runs.
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from pathlib import Path
 import re
-from typing import Any, Mapping, Sequence
+from abc import ABC, abstractmethod
+from collections.abc import Mapping, Sequence
+from numbers import Integral
+from pathlib import Path
+from typing import Any
 
 import cv2
 import numpy as np
 
 from .schema import CanonicalImage, ChannelRole, Modality, QCSample
-
 
 _TIFF_SUFFIXES = {".tif", ".tiff"}
 
@@ -109,7 +110,12 @@ def _to_hwc(
 
     resolved_axis = channel_axis
     if resolved_axis is not None:
-        resolved_axis = int(resolved_axis) % 3
+        if isinstance(resolved_axis, bool) or not isinstance(resolved_axis, Integral):
+            raise TypeError("channel_axis must be an integer in [-3, 2]")
+        supplied_axis = int(resolved_axis)
+        if supplied_axis < -3 or supplied_axis > 2:
+            raise ValueError("channel_axis must lie in [-3, 2] for a 3-D image")
+        resolved_axis = supplied_axis + 3 if supplied_axis < 0 else supplied_axis
     elif channel_names:
         matching = [
             axis

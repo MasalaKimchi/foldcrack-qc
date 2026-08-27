@@ -15,7 +15,7 @@ test:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m unittest discover -s tests -v
 
 feasibility:
-	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m foldcrack_qc feasibility --output $(OUTPUT) --samples-per-modality $(SAMPLES) --size $(SIZE)
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m foldcrack_qc feasibility --output $(OUTPUT) --samples-per-modality $(SAMPLES) --size $(SIZE) --patch-size 32
 
 clean:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m foldcrack_qc clean --output $(OUTPUT)

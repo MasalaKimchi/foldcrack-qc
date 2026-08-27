@@ -7,8 +7,8 @@ sanity checks, and modality/channel ablations before private data is available.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Sequence
 
 import cv2
 import numpy as np

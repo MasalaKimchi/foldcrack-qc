@@ -86,16 +86,94 @@ class CleanCommandTests(unittest.TestCase):
 
 
 class EvaluationCommandTests(unittest.TestCase):
+    def test_multiplex_proxy_cli_defaults_to_locked_logo_cross_validation(self) -> None:
+        fields = [
+            SimpleNamespace(modality="comet"),
+            SimpleNamespace(modality="cosmx"),
+        ]
+        report = {
+            "schema_version": "multiplex-real-background-proxy-logo-cv-v3",
+            "report_eligible": False,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "proxy.json"
+            with (
+                patch(
+                    "foldcrack_qc.multiplex_proxy_benchmark.load_public_multiplex_fields",
+                    return_value=fields,
+                ) as loader,
+                patch(
+                    "foldcrack_qc.multiplex_proxy_benchmark.run_multiplex_proxy_cross_validation",
+                    return_value=report,
+                ) as cross_validator,
+                patch(
+                    "foldcrack_qc.multiplex_proxy_benchmark.run_multiplex_proxy_benchmark"
+                ) as locked_split,
+                patch(
+                    "foldcrack_qc.multiplex_proxy_benchmark.write_multiplex_proxy_report",
+                    return_value=output,
+                ) as writer,
+                redirect_stdout(StringIO()),
+            ):
+                status = main(
+                    [
+                        "multiplex-proxy-benchmark",
+                        "--comet-dir",
+                        "data/comet",
+                        "--cosmx-dir",
+                        "data/cosmx-a",
+                        "data/cosmx-b",
+                        "--max-dimension",
+                        "256",
+                        "--group-bootstrap-resamples",
+                        "100",
+                        "--output-json",
+                        str(output),
+                    ]
+                )
+
+        self.assertEqual(status, 0)
+        loader.assert_called_once_with(
+            comet_dir=Path("data/comet"),
+            cosmx_dir=(Path("data/cosmx-a"), Path("data/cosmx-b")),
+            max_dimension=256,
+        )
+        config = cross_validator.call_args.args[1]
+        self.assertEqual(config.group_bootstrap_resamples, 100)
+        locked_split.assert_not_called()
+        writer.assert_called_once_with(report, output)
+
+    def test_feasibility_cli_uses_corrected_thin_crack_patch_default(self) -> None:
+        outcome = {
+            "engineering_smoke_test_passed": True,
+            "summary": "passed",
+            "report_path": "report.md",
+        }
+        with (
+            patch(
+                "foldcrack_qc.benchmark.run_feasibility",
+                return_value=outcome,
+            ) as runner,
+            redirect_stdout(StringIO()),
+        ):
+            status = main(["feasibility", "--output", "artifacts/test-default"])
+
+        self.assertEqual(status, 0)
+        self.assertEqual(runner.call_args.args[0].patch_size, 32)
+
     def test_foundation_smoke_cli_wires_auditable_configuration(self) -> None:
         revision = "a" * 40
         captured = StringIO()
-        with patch(
-            "foldcrack_qc.foundation_smoke.run_foundation_smoke",
-            return_value={
-                "status": "passed",
-                "result_type": "engineering_foundation_smoke_only",
-            },
-        ) as runner, redirect_stdout(captured):
+        with (
+            patch(
+                "foldcrack_qc.foundation_smoke.run_foundation_smoke",
+                return_value={
+                    "status": "passed",
+                    "result_type": "engineering_foundation_smoke_only",
+                },
+            ) as runner,
+            redirect_stdout(captured),
+        ):
             status = main(
                 [
                     "foundation-smoke",
@@ -208,7 +286,392 @@ class EvaluationCommandTests(unittest.TestCase):
             self.assertEqual(runner.call_args.kwargs["patch_size_um"], 112.0)
             self.assertEqual(runner.call_args.kwargs["stride_um"], 56.0)
 
-    def test_validate_benchmark_distinguishes_valid_plan_from_report_ready(self) -> None:
+    def test_public_fold_cli_wires_real_dataset_and_audited_mask_exclusion(
+        self,
+    ) -> None:
+        revision = "d" * 40
+        digest = SimpleNamespace(
+            as_dict=lambda: {
+                "filename": "model.safetensors",
+                "sha256": "e" * 64,
+                "size_bytes": 456,
+            }
+        )
+        loaded = SimpleNamespace(
+            model=object(),
+            resolved_revision=revision,
+            weight_digests=(digest,),
+            configuration_digests=(),
+        )
+        report = {
+            "status": "complete_reportable_real_public_fold_benchmark",
+            "report_eligible": True,
+            "methods": {
+                "dinov2_linear_probe": {
+                    "locked_test": {"pixel_all_fields_micro": {"dice": 0.7}}
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "public-fold.json"
+            with (
+                patch(
+                    "foldcrack_qc.foundation_smoke.load_huggingface_model",
+                    return_value=loaded,
+                ),
+                patch(
+                    "foldcrack_qc.foundation_smoke.dinov2_model_geometry",
+                    return_value=((14, 14), 1),
+                ),
+                patch(
+                    "foldcrack_qc.foundation.DINOv2FeatureExtractor",
+                    return_value=object(),
+                ),
+                patch(
+                    "foldcrack_qc.public_fold_benchmark.run_public_fold_benchmark",
+                    return_value=report,
+                ) as runner,
+                redirect_stdout(StringIO()),
+            ):
+                status = main(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "dinov2_linear_probe",
+                        "--revision",
+                        revision,
+                        "--device",
+                        "mps",
+                        "--exclude-empty-positive-masks",
+                        "--bootstrap-resamples",
+                        "10",
+                        "--probe-max-iterations",
+                        "123",
+                        "--output-json",
+                        str(output),
+                    ]
+                )
+
+            self.assertEqual(status, 0)
+            config = runner.call_args.kwargs["config"]
+            self.assertEqual(config.methods, ("dinov2_linear_probe",))
+            self.assertEqual(config.empty_positive_mask_policy, "exclude_localization")
+            self.assertEqual(config.bootstrap_resamples, 10)
+            self.assertEqual(config.probe_max_iterations, 123)
+            provenance = runner.call_args.kwargs["run_provenance"]
+            self.assertEqual(provenance["method_model"]["weights_sha256"], "e" * 64)
+            self.assertTrue(provenance["capture"]["captured_before_scoring"])
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(payload["model_identity"]["requested_revision"], revision)
+            self.assertEqual(
+                payload["model_identity"]["weight_files"][0]["sha256"], "e" * 64
+            )
+
+    def test_public_fold_cli_loads_local_hibou_with_official_contract(self) -> None:
+        local = SimpleNamespace(
+            model=object(),
+            provenance={
+                "id": "HistAI/Hibou-B",
+                "weights": {"sha256": "a" * 64},
+                "source": {"commit": "b" * 40},
+                "license": {"spdx": "Apache-2.0"},
+                "trust_remote_code": False,
+                "network_access_allowed": False,
+            },
+        )
+        report = {
+            "status": "complete_nonreportable_feasibility_run",
+            "report_eligible": False,
+            "methods": {
+                "foundation_linear_probe": {
+                    "locked_test": {"pixel_all_fields_micro": {"dice": 0.8}}
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "hibou-fold.json"
+            with (
+                patch(
+                    "foldcrack_qc.foundation.load_local_hibou_b",
+                    return_value=local,
+                ) as loader,
+                patch(
+                    "foldcrack_qc.foundation.DINOv2FeatureExtractor",
+                    return_value=SimpleNamespace(device="mps"),
+                ) as extractor,
+                patch(
+                    "foldcrack_qc.public_fold_benchmark.run_public_fold_benchmark",
+                    return_value=report,
+                ) as runner,
+                redirect_stdout(StringIO()),
+            ):
+                status = main(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "foundation_linear_probe",
+                        "--foundation-encoder",
+                        "hibou-b-local",
+                        "--hibou-weights",
+                        "models/hibou-b/hibou-b.pth",
+                        "--hibou-source",
+                        "models/hibou-b/source",
+                        "--hibou-weights-sha256",
+                        "a" * 64,
+                        "--hibou-source-commit",
+                        "b" * 40,
+                        "--device",
+                        "mps",
+                        "--bootstrap-resamples",
+                        "0",
+                        "--output-json",
+                        str(output),
+                    ]
+                )
+
+            self.assertEqual(status, 0)
+            loader.assert_called_once_with(
+                Path("models/hibou-b/hibou-b.pth"),
+                Path("models/hibou-b/source"),
+                expected_weights_sha256="a" * 64,
+                expected_source_commit="b" * 40,
+            )
+            kwargs = extractor.call_args.kwargs
+            self.assertEqual(kwargs["model_input_name"], None)
+            self.assertEqual(kwargs["patch_size"], 14)
+            self.assertEqual(kwargs["prefix_tokens"], 5)
+            self.assertEqual(kwargs["normalization_mean"], (0.7068, 0.5755, 0.722))
+            self.assertEqual(kwargs["normalization_std"], (0.195, 0.2316, 0.1816))
+            self.assertEqual(
+                runner.call_args.kwargs["config"].methods, ("foundation_linear_probe",)
+            )
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(payload["model_identity"]["id"], "HistAI/Hibou-B")
+            self.assertEqual(payload["model_identity"]["resolved_device"], "mps")
+            self.assertFalse(payload["model_identity"]["trust_remote_code"])
+
+    def test_public_fold_cli_loads_local_siglip2_with_dense_contract(self) -> None:
+        local = SimpleNamespace(
+            model=object(),
+            preprocessor=object(),
+            provenance={
+                "id": "google/siglip2-base-patch16-224",
+                "source": {"revision": "a" * 40},
+                "assets": {"model.safetensors": {"sha256": "b" * 64}},
+                "license": {"spdx": "Apache-2.0"},
+                "trust_remote_code": False,
+                "token_used": False,
+                "network_access_allowed": False,
+            },
+        )
+        report = {
+            "status": "complete_nonreportable_feasibility_run",
+            "report_eligible": False,
+            "methods": {
+                "foundation_linear_probe": {
+                    "locked_test": {"pixel_all_fields_micro": {"dice": 0.8}}
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "siglip2-fold.json"
+            with (
+                patch(
+                    "foldcrack_qc.foundation.load_local_siglip2_base_vision",
+                    return_value=local,
+                ) as loader,
+                patch(
+                    "foldcrack_qc.foundation.DINOv2FeatureExtractor",
+                    return_value=SimpleNamespace(device="mps"),
+                ) as extractor,
+                patch(
+                    "foldcrack_qc.public_fold_benchmark.run_public_fold_benchmark",
+                    return_value=report,
+                ) as runner,
+                redirect_stdout(StringIO()),
+            ):
+                status = main(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "foundation_linear_probe",
+                        "--foundation-encoder",
+                        "siglip2-base-local",
+                        "--siglip2-snapshot",
+                        "models/siglip2-base",
+                        "--device",
+                        "mps",
+                        "--bootstrap-resamples",
+                        "0",
+                        "--output-json",
+                        str(output),
+                    ]
+                )
+
+            self.assertEqual(status, 0)
+            loader.assert_called_once_with(Path("models/siglip2-base"))
+            kwargs = extractor.call_args.kwargs
+            self.assertEqual(kwargs["model_input_name"], "pixel_values")
+            self.assertEqual(kwargs["global_embedding_name"], "pooler_output")
+            self.assertEqual(kwargs["patch_size"], 16)
+            self.assertEqual(kwargs["prefix_tokens"], 0)
+            self.assertEqual(kwargs["normalization_mean"], (0.5, 0.5, 0.5))
+            self.assertEqual(kwargs["normalization_std"], (0.5, 0.5, 0.5))
+            self.assertIs(kwargs["preprocessor"], local.preprocessor)
+            self.assertEqual(
+                runner.call_args.kwargs["config"].methods,
+                ("foundation_linear_probe",),
+            )
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            identity = payload["model_identity"]
+            self.assertEqual(identity["id"], "google/siglip2-base-patch16-224")
+            self.assertEqual(identity["resolved_device"], "mps")
+            self.assertEqual(identity["output_contract"]["global_key"], "pooler_output")
+            self.assertEqual(
+                identity["output_contract"]["patch_key"], "last_hidden_state"
+            )
+            self.assertEqual(identity["output_contract"]["prefix_tokens"], 0)
+            self.assertFalse(identity["network_access_allowed"])
+
+    def test_public_fold_cli_rejects_unsafe_siglip2_selection(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = str(Path(temporary) / "out.json")
+
+            errors = StringIO()
+            with redirect_stderr(errors):
+                missing_status = entrypoint(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "foundation_patchknn",
+                        "--foundation-encoder",
+                        "siglip2-base-local",
+                        "--output-json",
+                        output,
+                    ]
+                )
+            self.assertEqual(missing_status, 2)
+            self.assertIn("requires --siglip2-snapshot", errors.getvalue())
+
+            errors = StringIO()
+            with redirect_stderr(errors):
+                alias_status = entrypoint(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "dinov2_patchknn",
+                        "--foundation-encoder",
+                        "siglip2-base-local",
+                        "--siglip2-snapshot",
+                        "models/siglip2-base",
+                        "--output-json",
+                        output,
+                    ]
+                )
+            self.assertEqual(alias_status, 2)
+            self.assertIn("not DINOv2 aliases", errors.getvalue())
+
+            errors = StringIO()
+            with redirect_stderr(errors):
+                download_status = entrypoint(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "foundation_patchknn",
+                        "--foundation-encoder",
+                        "siglip2-base-local",
+                        "--siglip2-snapshot",
+                        "models/siglip2-base",
+                        "--allow-download",
+                        "--output-json",
+                        output,
+                    ]
+                )
+            self.assertEqual(download_status, 2)
+            self.assertIn("local-only SigLIP2 Base loader", errors.getvalue())
+
+    def test_public_fold_cli_rejects_incomplete_or_ambiguous_hibou_selection(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = str(Path(temporary) / "out.json")
+            errors = StringIO()
+            with redirect_stderr(errors):
+                missing_status = entrypoint(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "foundation_patchknn",
+                        "--foundation-encoder",
+                        "hibou-b-local",
+                        "--output-json",
+                        output,
+                    ]
+                )
+            self.assertEqual(missing_status, 2)
+            self.assertIn("requires both --hibou-weights", errors.getvalue())
+
+            errors = StringIO()
+            with redirect_stderr(errors):
+                unpinned_status = entrypoint(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "foundation_patchknn",
+                        "--foundation-encoder",
+                        "hibou-b-local",
+                        "--hibou-weights",
+                        "weights.pth",
+                        "--hibou-source",
+                        "source",
+                        "--output-json",
+                        output,
+                    ]
+                )
+            self.assertEqual(unpinned_status, 2)
+            self.assertIn("requires both --hibou-weights-sha256", errors.getvalue())
+
+            errors = StringIO()
+            with redirect_stderr(errors):
+                alias_status = entrypoint(
+                    [
+                        "public-fold-benchmark",
+                        "--dataset-root",
+                        "public-data",
+                        "--methods",
+                        "dinov2_patchknn",
+                        "--foundation-encoder",
+                        "hibou-b-local",
+                        "--hibou-weights",
+                        "weights.pth",
+                        "--hibou-source",
+                        "source",
+                        "--output-json",
+                        output,
+                    ]
+                )
+            self.assertEqual(alias_status, 2)
+            self.assertIn("not DINOv2 aliases", errors.getvalue())
+
+    def test_validate_benchmark_distinguishes_valid_plan_from_report_ready(
+        self,
+    ) -> None:
         root = Path(__file__).resolve().parents[1]
         contract = root / "configs" / "benchmark.real.example.json"
         captured = StringIO()

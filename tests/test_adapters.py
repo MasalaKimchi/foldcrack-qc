@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -21,8 +21,8 @@ from foldcrack_qc.schema import (
     CanonicalImage,
     ChannelRole,
     Modality,
-    QCSample,
     QCResult,
+    QCSample,
 )
 
 
@@ -155,6 +155,21 @@ class AdapterTests(unittest.TestCase):
         image = adapt_image(array, "cosmx", channel_axis=0)
         self.assertEqual(image.data.shape, (16, 18, 4))
         self.assertEqual(image.channel_names, ("DAPI", "PanCK", "CD45", "CD298_B2M"))
+
+    def test_explicit_axis_rejects_wrapped_or_noninteger_values(self) -> None:
+        array = np.zeros((4, 16, 18), np.float32)
+        for invalid in (-4, 3, 4):
+            with (
+                self.subTest(channel_axis=invalid),
+                self.assertRaisesRegex(ValueError, r"\[-3, 2\]"),
+            ):
+                adapt_image(array, "cosmx", channel_axis=invalid)
+        for invalid in (True, 1.5):
+            with (
+                self.subTest(channel_axis=invalid),
+                self.assertRaisesRegex(TypeError, "channel_axis must be an integer"),
+            ):
+                adapt_image(array, "cosmx", channel_axis=invalid)  # type: ignore[arg-type]
 
 
 class ReaderTests(unittest.TestCase):

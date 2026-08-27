@@ -16,7 +16,7 @@ def load_registry(path: str | Path | None = None) -> list[dict[str, Any]]:
     with registry_path.open("r", encoding="utf-8") as handle:
         value = json.load(handle)
     if not isinstance(value, list):
-        raise ValueError("Dataset registry must contain a JSON list")
+        raise TypeError("Dataset registry must contain a JSON list")
     return value
 
 

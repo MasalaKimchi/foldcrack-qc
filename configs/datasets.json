@@ -1,5 +1,16 @@
 [
   {
+    "id": "histology_tissue_fold_v1",
+    "name": "Histology Tissue Fold Dataset v1.0",
+    "url": "https://doi.org/10.5281/zenodo.21493260",
+    "modalities": ["he"],
+    "labels": ["clean", "fold"],
+    "annotation": "pixel_masks_and_slide_mapping",
+    "license_status": "cc_by_4_0",
+    "commercial_use": true,
+    "notes": "2,127 real 10x H&E microscope fields from 283 source slides and five veterinary tissues; 1,228 fold-positive images with manual masks. Two released positive masks are empty and require an audited localization exclusion. Fold only: no crack class, human clinical WSI, COMET, or CosMx claim. Associated publication: https://doi.org/10.3390/bioengineering13080937."
+  },
+  {
     "id": "grandqc_test",
     "name": "GrandQC expert test patches",
     "url": "https://zenodo.org/records/14039591",
@@ -19,7 +30,7 @@
     "annotation": "model_and_dataset_release",
     "license_status": "dataset_cc_by_4_code_terms_verify",
     "commercial_use": null,
-    "notes": "Best public COMET-related fold-localization candidate. The Zenodo v2 deposit states CC BY 4.0, while repository code terms require separate legal review. No crack class; audit archive contents and subject-level splits before use."
+    "notes": "Best public COMET-related fold-localization publication, but not an independently reproducible efficacy set. The exact 12.49 GB, publisher-sized, MD5-matching Zenodo v2 archive terminates unexpectedly during gzip decoding and exposes no masks/split manifest. Five complete real DAPI TIFFs were recovered for compatibility and label-free proxy testing only. Dataset is CC BY 4.0; repository code/model terms require separate review."
   },
   {
     "id": "lunaphore_comet_lung_tma",
@@ -53,6 +64,28 @@
     "license_status": "not_clearly_declared",
     "commercial_use": null,
     "notes": "Small and incompletely annotated; tear and fold are conflated."
+  },
+  {
+    "id": "cosmx_gastric_zenodo",
+    "name": "CosMx gastric mucosa raw morphology images",
+    "url": "https://zenodo.org/records/8333281",
+    "modalities": ["cosmx"],
+    "labels": [],
+    "annotation": "raw_five_channel_morphology_fovs_and_spatial_outputs_without_artifact_masks",
+    "license_status": "cc_by_4_0",
+    "commercial_use": true,
+    "notes": "Two source slide/run archives. Four CRC-verified real FOVs are locally represented by the locked public-data manifest. Native morphology MPP is 0.18 from TIFF metadata. No fold/crack ground truth."
+  },
+  {
+    "id": "cosmx_phgg_zenodo",
+    "name": "CosMx pediatric high-grade glioma raw data",
+    "url": "https://zenodo.org/records/16877090",
+    "modalities": ["cosmx"],
+    "labels": [],
+    "annotation": "raw_five_channel_morphology_fovs_and_spatial_outputs_without_artifact_masks",
+    "license_status": "cc_by_4_0",
+    "commercial_use": true,
+    "notes": "Two independent slide/run directories in an 8.31 GB archive. Two exact byte-range-extracted and CRC-verified real FOVs augment the proxy benchmark. Native MPP is 0.120280945 from TIFF metadata. No fold/crack ground truth."
   },
   {
     "id": "cosmx_public",

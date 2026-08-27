@@ -8,8 +8,9 @@ OpenSlide, cuCIM, OME-Zarr, or vendor adapter must implement.  The included
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Protocol, Sequence, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 import numpy as np
 
@@ -144,12 +145,10 @@ def iter_tile_windows(
     tile_um = _pair(tile_size_um, "tile_size_um")
     halo_pair = _pair(halo_um, "halo_um", allow_zero=True)
     tile_px = tuple(
-        max(1, int(round(value / spacing[index])))
-        for index, value in enumerate(tile_um)
+        max(1, round(value / spacing[index])) for index, value in enumerate(tile_um)
     )
     halo_px = tuple(
-        max(0, int(round(value / spacing[index])))
-        for index, value in enumerate(halo_pair)
+        max(0, round(value / spacing[index])) for index, value in enumerate(halo_pair)
     )
 
     windows: list[TileWindow] = []
@@ -211,10 +210,10 @@ def level_box_to_level0(
     scale_x = level_spacing[1] / level0_spacing[1]
     y0, x0, y1, x1 = (int(item) for item in box)
     return (
-        int(round(y0 * scale_y)),
-        int(round(x0 * scale_x)),
-        int(round(y1 * scale_y)),
-        int(round(x1 * scale_x)),
+        round(y0 * scale_y),
+        round(x0 * scale_x),
+        round(y1 * scale_y),
+        round(x1 * scale_x),
     )
 
 

@@ -240,16 +240,16 @@ class FrozenBenchmarkTests(unittest.TestCase):
                 "artifact_union",
             )
             self.assertFalse(
-                report["evaluation"]["samples"][0]["metadata"][
-                    "semantic_subtype_claim"
-                ]
+                report["evaluation"]["samples"][0]["metadata"]["semantic_subtype_claim"]
             )
             self.assertTrue(np.isfinite(report["calibration"]["threshold"]))
             self.assertEqual(
                 report["calibration"]["score_domain"],
                 "native_stitched_valid_pixel_anomaly_distance",
             )
-            self.assertIn("identical_stitch_path", report["calibration"]["threshold_source"])
+            self.assertIn(
+                "identical_stitch_path", report["calibration"]["threshold_source"]
+            )
             self.assertFalse(report["calibration"]["test_labels_used_for_threshold"])
             self.assertEqual(
                 report["method"]["patch_geometry"],
@@ -312,7 +312,9 @@ class FrozenBenchmarkTests(unittest.TestCase):
                     stride_px=4,
                     n_resamples=2,
                 )
-            self.assertEqual(caught.exception.code, "explicit_fold_and_crack_masks_required")
+            self.assertEqual(
+                caught.exception.code, "explicit_fold_and_crack_masks_required"
+            )
 
     def test_positive_clean_mask_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

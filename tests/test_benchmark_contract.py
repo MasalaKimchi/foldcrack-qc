@@ -39,34 +39,36 @@ class RealBenchmarkContractTests(unittest.TestCase):
                             f"{record_prefix}-{suffix}".encode()
                         ).hexdigest()
 
-                    result[role].append({
-                        "sample_id": f"sample-{prefix}",
-                        "modality": modality,
-                        "data_origin": "acquired_real",
-                        "provenance_status": "approved",
-                        "strict_manifest_validated": True,
-                        "image_sha256": digest("image"),
-                        "annotation_status": "adjudicated",
-                        "annotations": {
-                            "fold": f"annotations/{prefix}-fold.npy",
-                            "crack": f"annotations/{prefix}-crack.npy",
-                        },
-                        "annotation_sha256": {
-                            "fold": digest("fold"),
-                            "crack": digest("crack"),
-                        },
-                        "reference_positive": {
-                            "fold": case_type == "fold_positive",
-                            "crack": case_type == "crack_positive",
-                        },
-                        "ignore_mask": f"annotations/{prefix}-ignore.npy",
-                        "ignore_mask_sha256": digest("ignore"),
-                        "patient_id": f"patient-{prefix}",
-                        "block_id": f"block-{prefix}",
-                        "slide_id": f"slide-{prefix}",
-                        "run_id": f"run-{prefix}",
-                        "content_id": f"sha256-{prefix}",
-                    })
+                    result[role].append(
+                        {
+                            "sample_id": f"sample-{prefix}",
+                            "modality": modality,
+                            "data_origin": "acquired_real",
+                            "provenance_status": "approved",
+                            "strict_manifest_validated": True,
+                            "image_sha256": digest("image"),
+                            "annotation_status": "adjudicated",
+                            "annotations": {
+                                "fold": f"annotations/{prefix}-fold.npy",
+                                "crack": f"annotations/{prefix}-crack.npy",
+                            },
+                            "annotation_sha256": {
+                                "fold": digest("fold"),
+                                "crack": digest("crack"),
+                            },
+                            "reference_positive": {
+                                "fold": case_type == "fold_positive",
+                                "crack": case_type == "crack_positive",
+                            },
+                            "ignore_mask": f"annotations/{prefix}-ignore.npy",
+                            "ignore_mask_sha256": digest("ignore"),
+                            "patient_id": f"patient-{prefix}",
+                            "block_id": f"block-{prefix}",
+                            "slide_id": f"slide-{prefix}",
+                            "run_id": f"run-{prefix}",
+                            "content_id": f"sha256-{prefix}",
+                        }
+                    )
         return result
 
     def _eligible_config(self) -> dict[str, object]:
@@ -180,9 +182,9 @@ class RealBenchmarkContractTests(unittest.TestCase):
 
     def test_policy_cannot_opt_synthetic_data_into_acceptance(self) -> None:
         config = self._eligible_config()
-        config["scientific_acceptance"][
-            "allow_synthetic_for_scientific_acceptance"
-        ] = True
+        config["scientific_acceptance"]["allow_synthetic_for_scientific_acceptance"] = (
+            True
+        )
         report = validate_benchmark_contract(config)
         self.assertIn(
             "synthetic_acceptance_forbidden", {issue.code for issue in report.errors}
@@ -236,9 +238,7 @@ class RealBenchmarkContractTests(unittest.TestCase):
 
     def test_adjudication_requirement_cannot_be_configured_away(self) -> None:
         config = self._eligible_config()
-        config["scientific_acceptance"]["accepted_annotation_statuses"] = [
-            "unreviewed"
-        ]
+        config["scientific_acceptance"]["accepted_annotation_statuses"] = ["unreviewed"]
         for records in config["cohort_records"].values():
             for record in records:
                 record["annotation_status"] = "unreviewed"
@@ -341,7 +341,9 @@ class RealBenchmarkContractTests(unittest.TestCase):
         config = self._eligible_config()
         config["comparisons"][0]["stratify_by_regime"] = False
         report = validate_benchmark_contract(config)
-        self.assertIn("regime_pooling_forbidden", {issue.code for issue in report.errors})
+        self.assertIn(
+            "regime_pooling_forbidden", {issue.code for issue in report.errors}
+        )
 
     def test_all_five_regime_contracts_and_cohort_semantics_are_required(self) -> None:
         config = self._eligible_config()
@@ -349,7 +351,9 @@ class RealBenchmarkContractTests(unittest.TestCase):
             regime for regime in config["regimes"] if regime["id"] != "lora"
         ]
         report = validate_benchmark_contract(config)
-        self.assertIn("missing_required_regime", {issue.code for issue in report.errors})
+        self.assertIn(
+            "missing_required_regime", {issue.code for issue in report.errors}
+        )
 
         config = self._eligible_config()
         lora = next(regime for regime in config["regimes"] if regime["id"] == "lora")
@@ -358,14 +362,18 @@ class RealBenchmarkContractTests(unittest.TestCase):
         self.assertIn("invalid_regime_cohorts", {issue.code for issue in report.errors})
         self.assertTupleEqual(REQUIRED_REGIMES, tuple(EXPECTED_REGIME_IDS))
 
-    def test_semantic_channels_are_required_and_positional_indices_forbidden(self) -> None:
+    def test_semantic_channels_are_required_and_positional_indices_forbidden(
+        self,
+    ) -> None:
         config = self._eligible_config()
         variant = config["modalities"]["comet"]["input_variants"][0]
         variant["channel_selection"] = "position"
         variant["channel_indices"] = [0]
         report = validate_benchmark_contract(config)
         positional = [
-            issue for issue in report.errors if issue.code == "positional_channel_selection_forbidden"
+            issue
+            for issue in report.errors
+            if issue.code == "positional_channel_selection_forbidden"
         ]
         self.assertGreaterEqual(len(positional), 2)
 

@@ -1,0 +1,72 @@
+{
+  "schema_version": "public-data-recovery-manifest-1.0",
+  "dataset_id": "cosmx_gastric_v1",
+  "title": "CosMx Spatial transcriptome dataset of human gastric mucosa",
+  "record_url": "https://zenodo.org/records/8333281",
+  "record_doi": "10.5281/zenodo.8333281",
+  "publication_doi": "10.1016/j.celrep.2023.113236",
+  "record_license": "CC-BY-4.0",
+  "upstream_archives": [
+    {
+      "name": "Run5458_0507.zip",
+      "size_bytes": 3787888990,
+      "md5": "8c1ad06535fa253588be1a3576964b61"
+    },
+    {
+      "name": "Run5458_5006.zip",
+      "size_bytes": 3851568086,
+      "md5": "635183c4c20e9276d3411ea4dd11c305"
+    }
+  ],
+  "subset_contract": {
+    "content": "four real raw morphology FOVs from two independent source slides/runs",
+    "axes": "IYX",
+    "channels": "five acquisition UIDs in TIFF ChannelOrder BGYRU; no unverified biological reassignment",
+    "native_pixel_size_um": 0.18,
+    "pixel_size_source": "TIFF ImageDescription.ImPixelSize_nm=180",
+    "artifact_ground_truth": false,
+    "extraction": "ZIP central-directory enumeration followed by exact member byte-range extraction, decompression, CRC verification, TIFF decode, and local SHA-256"
+  },
+  "files": [
+    {
+      "path": "raw_morphology/20221003_141716_S2_C902_P99_N99_F007_Z004.TIF",
+      "group_id": "zenodo8333281:S2",
+      "upstream_archive": "Run5458_5006.zip",
+      "upstream_member_crc32": "703442e7",
+      "shape_cyx": [5, 3648, 5472],
+      "size_bytes": 85360218,
+      "md5": "2b20ef6306ae7be055c170c8319bf2ea",
+      "sha256": "b8ea26d22875597e0b156958b9cc722c8b3a9cbeaadd53247d9e8d274a529096"
+    },
+    {
+      "path": "raw_morphology/20221003_141716_S2_C902_P99_N99_F023_Z004.TIF",
+      "group_id": "zenodo8333281:S2",
+      "upstream_archive": "Run5458_5006.zip",
+      "upstream_member_crc32": "1ea265a6",
+      "shape_cyx": [5, 3648, 5472],
+      "size_bytes": 84221564,
+      "md5": "e3ec8c174d60ab80c20288f0d0432839",
+      "sha256": "9e85c5caf6799056ad1413a91fa4ef17f84163f7d31c6695a6c173d24e155d7a"
+    },
+    {
+      "path": "raw_morphology/20221003_141716_S3_C902_P99_N99_F004_Z004.TIF",
+      "group_id": "zenodo8333281:S3",
+      "upstream_archive": "Run5458_0507.zip",
+      "upstream_member_crc32": "eaee3986",
+      "shape_cyx": [5, 3648, 5472],
+      "size_bytes": 141659078,
+      "md5": "e4d7e4f65e2c354426bb7360d68c9310",
+      "sha256": "9963d1b21e16b84fd5cfbbb1683f56d4a0cd1a721f3c59713a1a872edc00efbf"
+    },
+    {
+      "path": "raw_morphology/20221003_141716_S3_C902_P99_N99_F011_Z004.TIF",
+      "group_id": "zenodo8333281:S3",
+      "upstream_archive": "Run5458_0507.zip",
+      "upstream_member_crc32": "8621b024",
+      "shape_cyx": [5, 3648, 5472],
+      "size_bytes": 68097718,
+      "md5": "9dd965f70eb8011ec7edaa9683e89106",
+      "sha256": "7f332fa0a02a1f2d09e338897600b25da6178aa3fac469e9535089cd01522930"
+    }
+  ]
+}

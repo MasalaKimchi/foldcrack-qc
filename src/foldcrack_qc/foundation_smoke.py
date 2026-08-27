@@ -119,9 +119,7 @@ class FoundationSmokeConfig:
             "steady_runs": self.steady_runs,
             "lora_rank": self.lora_rank,
             "max_device_abs_error": float(self.max_device_abs_error),
-            "min_device_cosine_similarity": float(
-                self.min_device_cosine_similarity
-            ),
+            "min_device_cosine_similarity": float(self.min_device_cosine_similarity),
         }
 
 
@@ -137,7 +135,9 @@ class WeightDigest:
         if not self.filename or Path(self.filename).is_absolute():
             raise ValueError("weight filename must be a non-empty relative path")
         if not re.fullmatch(r"[0-9a-f]{64}", self.sha256):
-            raise ValueError("weight sha256 must contain exactly 64 lowercase hex digits")
+            raise ValueError(
+                "weight sha256 must contain exactly 64 lowercase hex digits"
+            )
         if self.size_bytes <= 0:
             raise ValueError("weight file must be non-empty")
 
@@ -204,7 +204,9 @@ def _hash_snapshot_configuration(snapshot_path: Path) -> tuple[WeightDigest, ...
             sha256=_sha256_file(path),
             size_bytes=path.stat().st_size,
         )
-        for path in sorted(snapshot_path.rglob("*.json"), key=lambda item: item.as_posix())
+        for path in sorted(
+            snapshot_path.rglob("*.json"), key=lambda item: item.as_posix()
+        )
         if path.is_file() and path.stat().st_size > 0
     )
 
@@ -256,7 +258,9 @@ def load_huggingface_model(
             allow_patterns=("*.json",) + _WEIGHT_PATTERNS,
         )
     except (OSError, RuntimeError, ValueError) as error:
-        mode = "offline cache lookup" if not config.allow_download else "public download"
+        mode = (
+            "offline cache lookup" if not config.allow_download else "public download"
+        )
         raise RuntimeError(
             f"Hugging Face {mode} failed for {config.model_id}@{config.revision}. "
             "Populate the explicit cache first or rerun with allow_download=True."
@@ -315,10 +319,14 @@ def deterministic_smoke_patches(image_size: int = 224) -> np.ndarray:
     )
     second = first.copy()
     fold_band = np.abs(y - (np.float32(0.25) + np.float32(0.45) * x)) < np.float32(0.06)
-    crack_line = np.abs(y - (np.float32(0.82) - np.float32(0.50) * x)) < np.float32(0.012)
+    crack_line = np.abs(y - (np.float32(0.82) - np.float32(0.50) * x)) < np.float32(
+        0.012
+    )
     second[fold_band] = np.clip(second[fold_band] * np.float32(0.55), 0.0, 1.0)
     second[crack_line] = np.float32(0.97)
-    return np.ascontiguousarray(np.clip(np.stack((first, second)), 0.0, 1.0), dtype=np.float32)
+    return np.ascontiguousarray(
+        np.clip(np.stack((first, second)), 0.0, 1.0), dtype=np.float32
+    )
 
 
 def _synchronize(torch: Any, device: str) -> None:
@@ -429,9 +437,7 @@ def _device_agreement_gate(
         "observed_max_abs_error": max_error,
         "allowed_max_abs_error": float(config.max_device_abs_error),
         "observed_min_cosine_similarity": minimum_cosine,
-        "required_min_cosine_similarity": float(
-            config.min_device_cosine_similarity
-        ),
+        "required_min_cosine_similarity": float(config.min_device_cosine_similarity),
     }
 
 
@@ -472,9 +478,7 @@ def _pair(value: Any, *, fallback: int) -> tuple[int, int]:
     return side, side
 
 
-def dinov2_model_geometry(
-    model: Any, image_size: int
-) -> tuple[tuple[int, int], int]:
+def dinov2_model_geometry(model: Any, image_size: int) -> tuple[tuple[int, int], int]:
     """Resolve patch and prefix-token geometry from a loaded DINOv2 config."""
 
     model_config = getattr(model, "config", None)
@@ -670,9 +674,7 @@ def _execute_foundation_smoke(
         ) from error
 
     patches = deterministic_smoke_patches(config.image_size)
-    patch_size, prefix_tokens = dinov2_model_geometry(
-        loaded.model, config.image_size
-    )
+    patch_size, prefix_tokens = dinov2_model_geometry(loaded.model, config.image_size)
     runtime_before = foundation_runtime_diagnostics(torch_module=torch).as_dict()
 
     cpu_extractor = DINOv2FeatureExtractor(
@@ -737,9 +739,7 @@ def _execute_foundation_smoke(
         )
 
     return {
-        "status": (
-            "passed" if agreement_gate["passed"] else "failed_device_agreement"
-        ),
+        "status": ("passed" if agreement_gate["passed"] else "failed_device_agreement"),
         "resolved_device": resolved_device,
         "runtime_versions": _runtime_versions(),
         "input": {
@@ -789,9 +789,7 @@ def _build_report(
             "network_access_allowed": bool(config.allow_download),
             "trust_remote_code": False,
             "token_used": False,
-            "weight_files": [
-                digest.as_dict() for digest in loaded.weight_digests
-            ],
+            "weight_files": [digest.as_dict() for digest in loaded.weight_digests],
             "configuration_files": [
                 digest.as_dict() for digest in loaded.configuration_digests
             ],
@@ -841,7 +839,9 @@ def _argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run an offline-first DINOv2 CPU/MPS engineering smoke test"
     )
-    parser.add_argument("--revision", required=True, help="exact 40-character commit hash")
+    parser.add_argument(
+        "--revision", required=True, help="exact 40-character commit hash"
+    )
     parser.add_argument("--model-id", default="facebook/dinov2-small")
     parser.add_argument(
         "--cache-dir",
@@ -858,9 +858,7 @@ def _argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--steady-runs", type=int, default=3)
     parser.add_argument("--lora-rank", type=int, choices=(4, 8), default=None)
     parser.add_argument("--max-device-abs-error", type=float, default=1e-3)
-    parser.add_argument(
-        "--min-device-cosine-similarity", type=float, default=0.9999
-    )
+    parser.add_argument("--min-device-cosine-similarity", type=float, default=0.9999)
     parser.add_argument("--output-json", type=Path, default=None)
     return parser
 
